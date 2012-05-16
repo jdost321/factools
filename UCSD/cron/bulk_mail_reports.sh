@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.bash_profile
+
 script_dir=`dirname $0`
 mail_report=${script_dir}/../libexec/mail_report.sh
 conf=$1

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.bash_profile
+
 # Fail if reply-to is not set
 if [ -z "$GLIDEIN_MAIL_REPLY_TO" ]; then
     exit 1
