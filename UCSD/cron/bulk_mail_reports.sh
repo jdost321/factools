@@ -1,6 +1,7 @@
 #!/bin/bash
 
-mail_report=../libexec/mail_report.sh
+script_dir=`dirname $0`
+mail_report=${script_dir}../libexec/mail_report.sh
 conf=$1
 
 while read line; do
