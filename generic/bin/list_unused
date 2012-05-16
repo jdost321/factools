@@ -1,0 +1,131 @@
+#!/usr/bin/python
+
+import sys
+import os
+import re
+
+STARTUP_DIR="/home/gfactory/glideinWMS/creation"
+sys.path.append(os.path.join(STARTUP_DIR,"lib"))
+sys.path.append(os.path.join(STARTUP_DIR,"../lib"))
+import cgWParams
+import ldapMonitor
+
+# translates GLIDEIN_Supported_VOs list name to bdii name
+vo_map = {'glowVO':'glow','CMS':'cms','HCC':'hcc','EngageVO':'engage','ATLAS':'atlas',
+	'OSGVO':'osg', 'nanoHUB':'nanohub', 'NEES':'nees'}
+
+def build_entry_dict(conf_file):
+    entries = {}
+    cparams=cgWParams.GlideinParams("dummy",os.path.join(STARTUP_DIR,"web_base"),["dummy",conf_file])
+
+    for entry in cparams.entries.keys():
+        if eval(cparams.entries[entry]['enabled']):
+            if cparams.entries[entry]['gridtype'] == 'cream':
+                gk = cparams.entries[entry]['gatekeeper'].split()
+                contact = gk[0]
+                if 'https' in contact:
+                    contact = contact[8:]
+                host = contact.split(':')[0]
+                jm = gk[-2]
+                queue = gk[-1]
+                key = "%s,%s,%s" % (host,jm,queue)
+            else:
+                host = cparams.entries[entry]['gatekeeper'].split(':')[0]
+                if cparams.entries[entry]['gridtype'] == 'nordugrid':
+                    jm = "arc"
+                else:
+                    jm = cparams.entries[entry]['gatekeeper'].split('-')[-1]
+                rsl = cparams.entries[entry]['rsl']
+                if jm == "condor":
+                    key = "%s,%s" % (host,jm)
+                else:
+                    if rsl is not None and "queue" in rsl:
+                        queue = re.search(r"queue=(\w+)\)", rsl).group(1)
+                    # try pulling queue from infosys if there
+                    elif len(cparams.entries[entry]['infosys_refs']) > 0:
+                        dn = cparams.entries[entry]['infosys_refs'][0]['ref']
+                        queue = dn.split(',')[0].split('-')[-1]
+                        #print "%s %s" % (entry, queue)
+                    else:
+                        # finally just assume default if queue not specified
+                        queue = 'default'
+                    key = "%s,%s,%s" % (host,jm,queue)
+            if key not in entries:
+                entries[key] = {}
+                # to figure out who we visited later
+                entries[key]['found'] = False
+                entries[key]['name'] = entry
+                entries[key]['GLIDEIN_Supported_VOs'] = cparams.entries[entry]['attrs']['GLIDEIN_Supported_VOs']['value']
+    #for e in entries:
+    #    print "%s %s %s" % (e, entries[e]['name'], entries[e]['dn'])
+    return entries
+
+# choose is.grid.iu.edu or exp-bdii.cern.ch for server
+def search_bdii(server, entries, vo):
+    bdii_obj=ldapMonitor.BDIICEQuery(bdii_url=server,additional_filter_str="(GlueCEAccessControlBaseRule=VO:%s)" % vo_map[vo])
+    bdii_data=bdii_obj.fetch()
+
+
+    ''' browse bdii to see condor queue names
+    for k in bdii_data2:
+        if bdii_data2[k]['GlueCEInfoJobManager'][0] == "condor":
+            print k
+    '''
+
+    cur_sites = {}
+    new_sites = {}
+    for b_entry in bdii_data.keys():
+        host = bdii_data[b_entry]['GlueCEInfoHostName'][0]
+        jm = bdii_data[b_entry]['GlueCEInfoJobManager'][0]
+        site_name = b_entry.split(',')[-3].split('=')[1]
+
+        if jm == 'condor':
+            key = "%s,%s" % (host, jm)
+        else:
+            queue = bdii_data[b_entry]['GlueCEName'][0]
+            key = "%s,%s,%s" % (host, jm, queue)
+
+        if not key in entries:
+            if not site_name in new_sites:
+                new_sites[site_name] = []
+            new_sites[site_name].append(bdii_data[b_entry]['GlueCEUniqueID'][0])
+
+        elif key in entries and not entries[key]['found']:
+            entries[key]['found'] = True
+            if vo not in entries[key]['GLIDEIN_Supported_VOs']:
+                #print entries[key]['name']
+                if not site_name in cur_sites:
+                    cur_sites[site_name] = []
+                cur_sites[site_name].append(bdii_data[b_entry]['GlueCEUniqueID'][0])
+    #print cur_sites
+    #print new_sites
+
+    return (cur_sites, new_sites)
+
+def print_results(cur_sites, new_sites):
+    print "In Factory but Not Whitelisted"
+    print "------------------------------"
+    for s in sorted(cur_sites):
+        print s
+        for e in sorted(cur_sites[s]):
+            print e
+        print
+                
+    print "Not Yet Added to Factory"
+    print "------------------------"
+    for s in sorted(new_sites):
+        print s
+        for e in sorted(new_sites[s]):
+            print e
+        print
+
+# ./list_unused <vo> <server> <config>
+# choose is.grid.iu.edu or exp-bdii.cern.ch for server
+if __name__ == '__main__':
+    vo = sys.argv[1]
+    db = sys.argv[2]
+    conf = sys.argv[3]
+    print 'Queues Not Whitelisted in the Factory that Claim to Support %s:\n' % vo
+    entries = build_entry_dict(conf)
+    cur_sites, new_sites = search_bdii(db, entries, vo)
+    print_results(cur_sites, new_sites)

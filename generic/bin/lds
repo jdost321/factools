@@ -1,0 +1,18 @@
+#!/bin/bash
+
+case $1 in
+osg)
+    server=is.grid.iu.edu
+    shift
+    ;;
+egi)
+    server=exp-bdii.cern.ch
+    shift
+    ;;
+*)
+    server=exp-bdii.cern.ch
+    ;;
+esac
+
+query=$1
+ldapsearch -p2170 -h $server -xLLL -b 'mds-vo-name=local,o=grid' "GlueCEUniqueID=${query}" | awk "{if (NR == 1)prev = \$0;else if (\$0 ~ /^ /)prev=prev substr(\$0,2);else {print prev;prev=\$0}}END{print prev}"
