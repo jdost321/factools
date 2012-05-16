@@ -1,0 +1,1 @@
+../../generic/libexec/check_infosys.py
