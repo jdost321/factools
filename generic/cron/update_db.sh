@@ -47,11 +47,15 @@ if [ -e $data_dir/sitedb.old.xml ]; then
         log "Comparing with previous update..."
     fi
     out=`${script_dir}/../libexec/cms_sitedb/diff_db.py $data_dir/sitedb.old.xml $data_dir/sitedb.xml`
-    # if not debug and have new output print date
-    if ! $debug && [ -n "$out" ]; then
-        log
+
+    if [ -n "$out" ];then
+        # if not debug and have new output print date
+        if ! $debug; then
+            log
+        fi
+        echo "$out" >> $log_file
     fi
-    echo "$out" >> $log_file
+
     if $debug; then
         log "Comparison complete."
     fi
