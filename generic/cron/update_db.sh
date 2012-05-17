@@ -1,23 +1,25 @@
 #!/bin/bash
 
-script_dir=/home/gfactory/Scripts/cms_sitedb
-log_file=${script_dir}/update.log
+script_dir=`dirname $0`
+conf=${script_dir}/../etc/cms_sitedb.conf
+source $conf
+log_file=${log_dir}/update.log
 
 log () {
     echo "`date +'%F %T'` ${1}" >> $log_file
 }
 
 log "Update started..."
-$script_dir/build_xml.py > $script_dir/sitedb.xml.tmp 2>> $script_dir/update.log
+$sdata_dir/build_xml.py > $data_dir/sitedb.xml.tmp 2>> $log_file
 if [ $? -ne 0 ]; then
     log "Update failed."
-    rm $script_dir/sitedb.xml.tmp
+    rm $data_dir/sitedb.xml.tmp
     exit 1
 fi
 
-mv $script_dir/sitedb.xml $script_dir/sitedb.old.xml
-mv -f $script_dir/sitedb.xml.tmp $script_dir/sitedb.xml
+mv $data_dir/sitedb.xml $data_dir/sitedb.old.xml
+mv -f $data_dir/sitedb.xml.tmp $data_dir/sitedb.xml
 log "Update finished."
 log "Comparing with previous update..."
-$script_dir/diff_db.py $script_dir/sitedb.old.xml $script_dir/sitedb.xml >> $script_dir/update.log
+$data_dir/diff_db.py $data_dir/sitedb.old.xml $data_dir/sitedb.xml >> $log_file
 log "Comparison complete."
