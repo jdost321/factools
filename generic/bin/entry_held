@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# assumes entry_q is in path
+entry_q $1 -const 'jobstatus==5' -format '%s ' owner -format '%s\n' holdreason
