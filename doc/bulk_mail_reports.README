@@ -1,0 +1,25 @@
+bulk_email_reports
+------------------
+setup:
+1. create config file, e.g.:
+$FACTOOLS/<factory name>/etc/ae_morning.conf
+
+The formatting for each line is:
+<mode> <target> <interval> <list of email addresses to send to>
+
+mode can be one of:
+ae - analyze_entries
+aq - analyze_queues
+af - analyze_frontends
+
+target can be:
+factory - give full factory report
+<frontend name> - security name of frontend to only report for that frontend
+
+interval (in hours):
+2
+24
+168
+
+2. set line in crontab, e.g. to run at 7:01 am every day:
+1 7 * * * $FACTOOLS/<factory name>/cron/bulk_mail_reports.sh $FACTOOLS/<factory name>/etc/ae_morning.conf> /dev/null 2>&1
