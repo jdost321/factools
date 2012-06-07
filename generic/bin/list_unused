@@ -4,9 +4,13 @@ import sys
 import os
 import re
 
-STARTUP_DIR="/home/gfactory/glideinWMS/creation"
-sys.path.append(os.path.join(STARTUP_DIR,"lib"))
-sys.path.append(os.path.join(STARTUP_DIR,"../lib"))
+if 'GLIDEIN_SRC_DIR' in os.environ:
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "creation/lib"))
+else:
+    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
+    sys.exit(1)
+
 import cgWParams
 import ldapMonitor
 
@@ -16,7 +20,7 @@ vo_map = {'glowVO':'glow','CMS':'cms','HCC':'hcc','EngageVO':'engage','ATLAS':'a
 
 def build_entry_dict(conf_file):
     entries = {}
-    cparams=cgWParams.GlideinParams("dummy",os.path.join(STARTUP_DIR,"web_base"),["dummy",conf_file])
+    cparams=cgWParams.GlideinParams("dummy",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["dummy",conf_file])
 
     for entry in cparams.entries.keys():
         if eval(cparams.entries[entry]['enabled']):
