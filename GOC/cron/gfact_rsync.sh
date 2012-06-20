@@ -3,7 +3,7 @@
 backup_root=/usr/local/log
 glidein_name="v1_2"
 base_client_log_dir="/usr/local/share/gfactory/clientlogs"
-base_log_dir="/usr/local/share/gfactory/glideinsubmit"
+base_log_dir="/usr/local/share/gfactory/glideinlogs"
 dest_client_log_dir="${backup_root}/clientlogs"
 dest_log_dir="${backup_root}/glideinlogs"
 opts='-a --stats'
