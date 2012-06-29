@@ -5,9 +5,13 @@ import sys
 import os
 import re
 
-STARTUP_DIR="/home/gfactory/glideinWMS/creation"
-sys.path.append(os.path.join(STARTUP_DIR,"lib"))
-sys.path.append(os.path.join(STARTUP_DIR,"../lib"))
+if 'GLIDEIN_SRC_DIR' in os.environ:
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "creation/lib"))
+else:
+    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
+    sys.exit(1)
+
 import cgWParams
 import ldapMonitor
 
@@ -97,7 +101,7 @@ def parse_bdii(bdii_data, other_bdii_data, server, unique_ids):
     return errors
 
 conf = sys.argv[1]
-cparams=cgWParams.GlideinParams("dummy",os.path.join(STARTUP_DIR,"web_base"),["dummy",conf])
+cparams=cgWParams.GlideinParams("dummy",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["dummy",conf])
 server_osg="is.grid.iu.edu"
 server_cern="exp-bdii.cern.ch"
 bdii_obj=ldapMonitor.BDIICEQuery(bdii_url=server_osg)

@@ -1,7 +1,13 @@
 #!/usr/bin/python
 
-import sys, getopt
-sys.path.append("/home/gfactory/glideinWMS/lib/")
+import os, sys, getopt
+
+if 'GLIDEIN_SRC_DIR' in os.environ:
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+else:
+    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
+    sys.exit(1)
+
 import ldapMonitor
 
 def search(bdii_url, bdii_port=None, infosysref=None, vo=None, ce=None, ldap_search=None, search_string=None):

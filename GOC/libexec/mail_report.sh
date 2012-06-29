@@ -6,10 +6,10 @@ if [ -z "$GLIDEIN_MAIL_REPLY_TO" ]; then
 fi
 
 tools_path="${GLIDEIN_SRC_DIR}/factory/tools"
-source="http://glidein-1.t2.ucsd.edu:8319/osg_gfactory/"
+source="http://glidein.grid.iu.edu/osg_gfactory/"
 #source="http://glidein.grid.iu.edu/glidefactory/monitor/glidein_v1_0/"
 date=$(eval date +%m-%d-%Y)
-factory_name="UCSD Factory"
+factory_name="GOC Factory"
 
 mode=$1
 shift
