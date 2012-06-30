@@ -59,8 +59,8 @@ def createGenericSupportedVOList(supportedVOs):
         "EngageVOHTPC":"Engage",
         "EngageVOLong4d":"Engage",
         "EngageVOVirt":"Engage",
-        "glowVO":"GLOW",
         "GLUEX":"Gluex",
+        "glowVO":"GLOW",
         "HCC":"HCC",
         "HCC4d":"HCC",
         "HCCHTPC":"HCC",
@@ -71,6 +71,7 @@ def createGenericSupportedVOList(supportedVOs):
         "NWICG":"NWICG",
         "OSGVO":"OSG",
         "OSGVOHTPC":"OSG",
+        "OSGVO_ITB":"OSG",
         "UCSDRok":"Engage"}
     genericSupportedVOs = []
     for i in supportedVOs.split(","):
@@ -151,8 +152,8 @@ if __name__ == "__main__":
         #remove all references to this tool in glideinWMS.xml
 #        removeElement(attrs,"_SE_",i.find("attrs"))
         #increment through entries with GLIDEIN_SEs defined
-        if params.entries[i]["enabled"] and params.entries[i]["attrs"].has_key("GLIDEIN_SEs"):
-##            print i
+        if params.entries[i]["enabled"]=="True" and params.entries[i]["attrs"].has_key("GLIDEIN_SEs"):
+#            print i, params.entries[i]["enabled"], params.entries[i]["attrs"].has_key("GLIDEIN_SEs")
             currentGlideinSE = params.entries[i]["attrs"]["GLIDEIN_SEs"]["value"]
             currentGlideinSVOs = params.entries[i]["attrs"]["GLIDEIN_Supported_VOs"]["value"]
 #            print params.entries[i]["attrs"]["GLIDEIN_SEs"]["value"]
