@@ -7,6 +7,10 @@ base_log_dir="/usr/local/share/gfactory/glideinlogs"
 dest_client_log_dir="${backup_root}/clientlogs"
 dest_log_dir="${backup_root}/glideinlogs"
 opts='-a --stats'
+age=720 # how many hours to keep logs in backup area
+
+echo "Cleaning up backup area..."
+tmpwatch -m $age $dest_client_log_dir $dest_log_dir
 
 echo "Backing up $glidein_name..."
 # backup job logs
