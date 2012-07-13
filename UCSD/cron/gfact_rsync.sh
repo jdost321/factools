@@ -10,7 +10,7 @@ opts='-a --stats'
 age=720 # how many hours to keep logs in backup area
 
 echo "Cleaning up backup area..."
-tmpwatch -m $age $dest_client_log_dir $dest_log_dir
+/usr/sbin/tmpwatch -m $age $dest_client_log_dir $dest_log_dir
 
 echo "Backing up $glidein_name..."
 # backup job logs
