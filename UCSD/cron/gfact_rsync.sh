@@ -7,38 +7,38 @@ base_log_dir="/var/gfactory/glideinlogs"
 dest_client_log_dir="${backup_root}/clientlogs"
 dest_log_dir="${backup_root}/glideinlogs"
 opts='-a --stats'
-age=720 # how many hours to keep logs in backup area
+age=30 # how many days to keep logs in backup area
 
 echo "Cleaning up backup area..."
-/usr/sbin/tmpwatch -m $age $dest_client_log_dir $dest_log_dir
+/usr/sbin/tmpwatch -m $((age * 24)) $dest_client_log_dir $dest_log_dir
 
 echo "Backing up $glidein_name..."
 # backup job logs
 echo "Backing up job logs from $base_client_log_dir to $dest_client_log_dir..."
 pushd $base_client_log_dir > /dev/null
-find ./user_*/glidein_${glidein_name}/entry_* -mmin +360 -name 'job.*' > ${backup_root}/.file_list.tmp
+find ./user_*/glidein_${glidein_name}/entry_* -mtime -${age} -mmin +360 -name 'job.*' > ${backup_root}/.file_list.tmp
 popd > /dev/null
 rsync $opts --files-from=${backup_root}/.file_list.tmp $base_client_log_dir $dest_client_log_dir
 
 # backup condor logs
 echo "Backing up condor logs from $base_client_log_dir to $dest_client_log_dir..."
 pushd $base_client_log_dir > /dev/null
-find ./user_*/glidein_${glidein_name}/entry_* -mmin +360 -name 'condor_activity*' > ${backup_root}/.file_list.tmp
-find ./user_*/glidein_${glidein_name}/entry_* -mmin +360 -name 'submit*' >> ${backup_root}/.file_list.tmp
+find ./user_*/glidein_${glidein_name}/entry_* -mtime -${age} -mmin +360 -name 'condor_activity*' > ${backup_root}/.file_list.tmp
+find ./user_*/glidein_${glidein_name}/entry_* -mtime -${age} -mmin +360 -name 'submit*' >> ${backup_root}/.file_list.tmp
 popd > /dev/null
 rsync $opts --files-from=${backup_root}/.file_list.tmp $base_client_log_dir $dest_client_log_dir
 
 # backup factory logs
 echo "Backing up factory logs from $base_log_dir to $dest_log_dir..."
 pushd $base_log_dir > /dev/null
-find  ./glidein_${glidein_name}/* -mmin +360 -name 'factory.*' > ${backup_root}/.file_list.tmp
+find  ./glidein_${glidein_name}/* -mtime -${age} -mmin +360 -name 'factory.*' > ${backup_root}/.file_list.tmp
 popd > /dev/null
 rsync $opts --files-from=${backup_root}/.file_list.tmp $base_log_dir $dest_log_dir
 
 # backup summary logs
 echo "Backing up summary logs from $base_log_dir to $dest_log_dir..."
 pushd $base_log_dir > /dev/null
-find  ./glidein_${glidein_name}/* -mmin +360 -name 'completed*' > ${backup_root}/.file_list.tmp
+find  ./glidein_${glidein_name}/* -mtime -${age} -mmin +360 -name 'completed*' > ${backup_root}/.file_list.tmp
 popd > /dev/null
 rsync $opts --files-from=${backup_root}/.file_list.tmp $base_log_dir $dest_log_dir
 
