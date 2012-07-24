@@ -84,24 +84,16 @@ def createGenericSupportedVOList(supportedVOs):
 def createSurlDictionary():
     surlDict = {}
     f = open(config.locationSurlFile)
-    firstLine = f.readline()
-    ce = firstLine.split()[0]
-    vo = firstLine.split()[1]
-    surl = "/".join(firstLine.split()[2].split("/")[:-1])
-    if surl[-1] != "/":
-        surl = surl + "/"
-    seList = " ".join(firstLine.split()[1:])
     for i in f:
+        ce = i.split()[0]
         vo = i.split()[1]
-        surl = "/".join(i.split()[2].split("/")[:-1]) 
+        surl = "/".join(i.split()[2].split("/")[:-1])
         if surl[-1] != "/":
             surl = surl + "/"
-        if ce == i.split()[0]:
-            seList.append(vo + " " + surl)
+        if ce in surlDict:
+            surlDict[ce] = surlDict[ce] + [vo + " " + surl]
         else:
-            surlDict[ce] = seList
-            ce = i.split()[0]
-            seList = [vo + " " + surl]
+            surlDict[ce] = [vo + " " + surl]
     f.close()
     return surlDict
 
@@ -157,6 +149,9 @@ if __name__ == "__main__":
             currentGlideinSE = params.entries[i]["attrs"]["GLIDEIN_SEs"]["value"]
             currentGlideinSVOs = params.entries[i]["attrs"]["GLIDEIN_Supported_VOs"]["value"]
 #            print params.entries[i]["attrs"]["GLIDEIN_SEs"]["value"]
+#            print "currentGlideinSE in surlDict: " + currentGlideinSE in surlDict
+#            print currentGlideinSE
+#            print surlDict
             #check if this entries' GLIDEIN_SE is in the provided surl list
             if currentGlideinSE in surlDict:
                 lowerVOs = []

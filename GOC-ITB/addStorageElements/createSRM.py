@@ -2,8 +2,10 @@
 
 import config
 import elementtree.ElementTree as ET
+import sys
 
-glideinWMSxml = ET.parse(config.locationGlideinWMSxml)
+#glideinWMSxml = ET.parse(config.locationGlideinWMSxml)
+glideinWMSxml = ET.parse(sys.argv[1])
 srmList = []
 entries = glideinWMSxml.findall("entries/entry")
 for entry in entries:
@@ -29,7 +31,7 @@ for entry in entries:
                 otherSurls.append(attr.get("name").split("GLIDEIN_SE_PATH_")[1] + "\t" + attr.get("value"))
         if lowerVOs:
             for i in lowerVOs.split(","):
-                srmList.append(glideinSE + "\t" + i + "\t" + lowerSurl + i)
+                srmList.append(glideinSE + "\t" + i + "\t" + lowerSurl + i.lower())
         if baseVOs:
             for i in baseVOs.split(","):
                 srmList.append(glideinSE + "\t" + i + "\t" + baseSurl)
