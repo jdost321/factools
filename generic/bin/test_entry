@@ -43,7 +43,7 @@ def createSubmitFile(sfile,log_dir,
         fd.write("transfer_executable=True\n")
         fd.write("when_to_transfer_output=ON_EXIT\n")
         fd.write("notification=Never\n")
-        fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
+        #fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
         fd.write("stream_output=False\n")
         fd.write("stream_error=False\n")
         fd.write("queue\n")
@@ -183,12 +183,12 @@ if __name__ == "__main__":
         createScript(script_file)
         createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
         
-        jid=privSubmit(user, schedd_name, sub_file, proxy)
-        log_file = os.path.join(log_dir,"testpilot.%s.0.log" % jid)
-        out_file = os.path.join(log_dir,"testpilot.%s.0.out" % jid)
-        err_file = os.path.join(log_dir,"testpilot.%s.0.err" % jid)
+        #jid=privSubmit(user, schedd_name, sub_file, proxy)
+        #log_file = os.path.join(log_dir,"testpilot.%s.0.log" % jid)
+        #out_file = os.path.join(log_dir,"testpilot.%s.0.out" % jid)
+        #err_file = os.path.join(log_dir,"testpilot.%s.0.err" % jid)
 
-        try:
+        '''try:
             results = checkFile(log_file,schedd_name,timeout)
             if results[0]:
                 if results[1] == '005':
@@ -205,6 +205,7 @@ if __name__ == "__main__":
         except:
             condorManager.condorRemoveOne(jid,schedd_name,None)
             raise
+        '''
         
         
     finally:
