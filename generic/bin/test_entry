@@ -141,7 +141,10 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
                             if os.environ.has_key(var):
                                 exe_env.append('%s=%s'%(var,os.environ[var]))
 
-    submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
+    if schedd_name is None:
+        submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,sub_file],exe_env)
+    else:
+        submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
     cluster,count=glideFactoryLib.extractJobId(submit_out)
     return cluster
 
@@ -166,7 +169,8 @@ if __name__ == "__main__":
         verbose = True
 
     jobDescript=glideFactoryConfig.JobDescript(entry)
-    schedd_name=jobDescript.data['Schedd']
+    #schedd_name=jobDescript.data['Schedd']
+    schedd_name=None
     grid_type=jobDescript.data['GridType']
     # later figure out how to convert to fork
     gatekeeper=jobDescript.data['Gatekeeper']
