@@ -183,7 +183,7 @@ if __name__ == "__main__":
         createScript(script_file)
         createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
         
-        #jid=privSubmit(user, schedd_name, sub_file, proxy)
+        privSubmit(user, schedd_name, sub_file, proxy)
         #log_file = os.path.join(log_dir,"testpilot.%s.0.log" % jid)
         #out_file = os.path.join(log_dir,"testpilot.%s.0.out" % jid)
         #err_file = os.path.join(log_dir,"testpilot.%s.0.err" % jid)
