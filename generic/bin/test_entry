@@ -1,0 +1,216 @@
+#!/usr/bin/python
+import sys
+import os
+import tempfile
+import time
+import shutil
+
+STARTUP_DIR=sys.path[0]
+
+#sys.path.append(os.path.join(STARTUP_DIR,".."))
+#sys.path.append(os.path.join(STARTUP_DIR,"../../lib"))
+# get source dir from env var until we push upstream to glideinWMS
+if 'GLIDEIN_SRC_DIR' in os.environ:
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "factory"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+else:
+    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
+    sys.exit(1)
+
+import condorManager
+import glideFactoryConfig
+import condorLogParser
+import condorPrivsep
+import condorExe
+import glideFactoryLib
+
+#globals
+# statuses of lost connections
+lost_con_stats=('020','026','022','010','029')
+verbose = False
+
+def createSubmitFile(sfile,log_dir,
+                     script_file, timeout, grid_type, gatekeeper):
+    fd=open(sfile,"w")
+    try:
+        fd.write("universe=grid\n")
+        fd.write("grid_resource=%s %s\n" % (grid_type, gatekeeper))
+        fd.write("executable=%s\n"%script_file)
+        fd.write("copy_to_spool=True\n")
+        fd.write("output=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).out"))
+        fd.write("error=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).err"))
+        fd.write("log=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).log"))
+        fd.write("transfer_executable=True\n")
+        fd.write("when_to_transfer_output=ON_EXIT\n")
+        fd.write("notification=Never\n")
+        fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
+        fd.write("stream_output=False\n")
+        fd.write("stream_error=False\n")
+        fd.write("queue\n")
+    finally:
+        fd.close()
+
+def createScript(sfile):
+    try:
+        fd = open(sfile, "w")
+        fd.write("#!/bin/sh\n")
+        fd.write("whoami\n")
+        #fd.write("sleep 600\n")
+        #fd.write('echo Done > $PWD/job.done\n')
+    finally:
+        fd.close()
+
+# returns tuple (True | False,status,message) True if job does not require removal (terminated or aborted) 
+def checkFile(fname,schedd_name, timeout):
+    interval = 5
+    deadline=time.time()+timeout
+    ptime = -1 # force the file to be read the first time
+    while True:
+        mtime = os.path.getmtime(fname)
+
+        if mtime > ptime:
+            status,message = getLastLogStatus(fname)
+            if verbose:
+                print message
+            # terminated or aborted
+            if status == '005' or status == '009':
+                return (True, status, message)
+            # failed to submit, held, or connection lost
+            elif status == '018' or status == '012' or status in lost_con_stats:
+                return (False, status, message)
+
+        time.sleep(interval)
+
+        if time.time() > deadline:
+            break
+        
+        ptime = mtime
+
+    raise RuntimeError, "Command did not reply within timeout (%ss)"%timeout
+
+def printFile(fname,outfd):
+    fd=open(fname)
+    try:
+        data=fd.read()
+        outfd.write(data)
+    finally:
+        fd.close()
+
+def getLastLogStatus(fname):
+    fin = open(fname)
+    
+    lines = fin.readlines()
+    fin.close()
+
+    # could i have done a for loop with negatives instead?
+    cur = len(lines)-1
+    end = -1
+    start = -1
+    while cur >= 0:
+        if lines[cur].startswith('...'):
+            end = cur
+        elif lines[cur][:3].isdigit():
+            start = cur
+            status = lines[cur][:3]
+            break
+        cur -= 1
+
+    # if can't find status number throw error
+    if start == -1:
+        raise RuntimeError, "Error retrieving status in:%s" % fname
+
+    # if couldn't find '...' string just print to eof
+    if end == -1:
+        end = len(lines)-1
+        
+    # could i have done a for loop with negatives instead?
+    message = ""
+    for i in range(start,end+1):
+        message += lines[i]
+    
+    message = message.rstrip()
+    return status,message
+
+# should we ever attempt without privsep like glidein does?
+def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
+    cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
+    exe_env=['X509_USER_PROXY=%s'%x509_proxy_fname]
+    for var in os.environ.keys():
+                        if ((var in ('PATH','LD_LIBRARY_PATH','X509_CERT_DIR')) or
+                            (var[:8]=='_CONDOR_') or (var[:7]=='CONDOR_')):
+                            if os.environ.has_key(var):
+                                exe_env.append('%s=%s'%(var,os.environ[var]))
+
+    submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
+    cluster,count=glideFactoryLib.extractJobId(submit_out)
+    return cluster
+
+# what if user / entry create invalid path?
+def getLogDir(user, entry):
+    glide_conf = glideFactoryConfig.GlideinDescript()
+    return os.path.join(glide_conf.data['ClientLogBaseDir'],"user_%s/glidein_%s/entry_%s"
+        % (user, glide_conf.data['GlideinName'],entry))
+
+if __name__ == "__main__":
+    user = sys.argv[-3]
+    entry = sys.argv[-2]
+    proxy = sys.argv[-1]
+    
+
+    if '-t' in sys.argv:
+        timeout = int(sys.argv[sys.argv.index('-t')+1])
+    else:
+        timeout = 300
+
+    if '-v' in sys.argv:
+        verbose = True
+
+    jobDescript=glideFactoryConfig.JobDescript(entry)
+    schedd_name=jobDescript.data['Schedd']
+    grid_type=jobDescript.data['GridType']
+    # later figure out how to convert to fork
+    gatekeeper=jobDescript.data['Gatekeeper']
+    
+    tmpdir = tempfile.mkdtemp(prefix="testpilot_")
+
+    try:
+        os.chmod(tmpdir, 0755)
+        sub_file = os.path.join(tmpdir, "job.condor")
+        script_file = os.path.join(tmpdir, "testpilot.sh")
+        log_dir = getLogDir(user, entry)
+        print log_dir
+
+        createScript(script_file)
+        createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
+        
+        jid=privSubmit(user, schedd_name, sub_file, proxy)
+        log_file = os.path.join(log_dir,"testpilot.%s.0.log" % jid)
+        out_file = os.path.join(log_dir,"testpilot.%s.0.out" % jid)
+        err_file = os.path.join(log_dir,"testpilot.%s.0.err" % jid)
+
+        try:
+            results = checkFile(log_file,schedd_name,timeout)
+            if results[0]:
+                if results[1] == '005':
+                    printFile(out_file,sys.stdout)
+                    printFile(err_file,sys.stderr)
+                elif results[1] == '009':
+                    # if verbose this will already be printed
+                    if not verbose:
+                        print results[2]
+            else:
+                if not verbose:
+                    print results[2]
+                condorManager.condorRemoveOne(jid,schedd_name,None)
+        except:
+            condorManager.condorRemoveOne(jid,schedd_name,None)
+            raise
+        
+        
+    finally:
+        shutil.rmtree(tmpdir)
+        # race condition: if job is not removed before these are
+        # condor rewrites them just leave logs in for now
+        #condorPrivsep.execute(user,".",'/bin/rm',['/bin/rm','-f',log_file,out_file,err_file])
+        #print tmpdir
+    
