@@ -188,7 +188,7 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
 '''
 
 def get_log_dir(glide_desc, user):
-    return os.path.join(glide_desc.data['ClientLogBaseDir'],"user_%s/test" % (user)
+    return os.path.join(glide_desc.data['ClientLogBaseDir'],"user_%s/test" % (user))
 
 if __name__ == "__main__":
     user = sys.argv[-3]
