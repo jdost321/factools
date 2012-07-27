@@ -29,7 +29,7 @@ import glideFactoryLib
 lost_con_stats=('020','026','022','010','029')
 verbose = False
 
-def createSubmitFile(sfile,log_dir,
+'''def createSubmitFile(sfile,log_dir,
                      script_file, timeout, grid_type, gatekeeper):
     fd=open(sfile,"w")
     try:
@@ -40,6 +40,38 @@ def createSubmitFile(sfile,log_dir,
         fd.write("output=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).out"))
         fd.write("error=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).err"))
         fd.write("log=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).log"))
+        fd.write("transfer_executable=True\n")
+        fd.write("when_to_transfer_output=ON_EXIT\n")
+        fd.write("notification=Never\n")
+        #fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
+        fd.write("stream_output=False\n")
+        fd.write("stream_error=False\n")
+        fd.write("queue\n")
+    finally:
+        fd.close()
+'''
+
+def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
+    inst_name = glide_desc.data['GlideinName']
+    log_dir = get_log_dir(glide_desc, user)
+    ent_name = job_desc.data['EntryName']
+    grid_type = job_desc.data['GridType']
+    # consider later case where we want fork instead
+    gatekeeper = job_desc.data['Gatekeeper']
+    rsl = None
+    if 'GlobusRSL' in job_desc.data:
+        rsl = job_desc.data['GlobusRSL']
+    fd=open(sub_file,"w")
+    try:
+        fd.write("universe=grid\n")
+        fd.write("grid_resource=%s %s\n" % (grid_type, gatekeeper))
+        if rsl is not None:
+            fd.write("globus_rsl=%s\n" % rsl)
+        fd.write("executable=%s\n"%script_file)
+        fd.write("copy_to_spool=True\n")
+        fd.write("output=%s\n"%os.path.join(log_dir,"testpilot_%s_%s.$(Cluster).$(Process).out" % (inst_name, ent_name)))
+        fd.write("error=%s\n"%os.path.join(log_dir,"testpilot_%s_%s.$(Cluster).$(Process).err" % (inst_name, ent_name)))
+        fd.write("log=%s\n"%os.path.join(log_dir,"testpilot_%s_%s.log" % (inst_name, ent_name)))
         fd.write("transfer_executable=True\n")
         fd.write("when_to_transfer_output=ON_EXIT\n")
         fd.write("notification=Never\n")
@@ -149,10 +181,14 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
     return cluster
 
 # what if user / entry create invalid path?
-def getLogDir(user, entry):
+'''def getLogDir(user, entry):
     glide_conf = glideFactoryConfig.GlideinDescript()
     return os.path.join(glide_conf.data['ClientLogBaseDir'],"user_%s/glidein_%s/entry_%s"
         % (user, glide_conf.data['GlideinName'],entry))
+'''
+
+def get_log_dir(glide_desc, user):
+    return os.path.join(glide_desc.data['ClientLogBaseDir'],"user_%s/test" % (user)
 
 if __name__ == "__main__":
     user = sys.argv[-3]
@@ -168,12 +204,10 @@ if __name__ == "__main__":
     if '-v' in sys.argv:
         verbose = True
 
-    jobDescript=glideFactoryConfig.JobDescript(entry)
-    #schedd_name=jobDescript.data['Schedd']
+    glide_desc = glideFactoryConfig.GlideinDescript()
+    job_desc = glideFactoryConfig.JobDescript(entry)
+    #schedd_name=job_desc.data['Schedd']
     schedd_name=None
-    grid_type=jobDescript.data['GridType']
-    # later figure out how to convert to fork
-    gatekeeper=jobDescript.data['Gatekeeper']
     
     tmpdir = tempfile.mkdtemp(prefix="testpilot_")
 
@@ -181,11 +215,10 @@ if __name__ == "__main__":
         os.chmod(tmpdir, 0755)
         sub_file = os.path.join(tmpdir, "job.condor")
         script_file = os.path.join(tmpdir, "testpilot.sh")
-        log_dir = getLogDir(user, entry)
-        print log_dir
 
         createScript(script_file)
-        createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
+        #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
+        create_submit_file(sub_file, script_file, glide_desc, job_desc, user)
         
         privSubmit(user, schedd_name, sub_file, proxy)
         #log_file = os.path.join(log_dir,"testpilot.%s.0.log" % jid)
