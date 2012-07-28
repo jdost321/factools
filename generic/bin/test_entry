@@ -52,8 +52,7 @@ verbose = False
 '''
 
 def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
-    inst_name = glide_desc.data['GlideinName']
-    log_dir = "%s/user_%s/test" % (glide_desc.data['ClientLogBaseDir'],user)
+    log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
     # consider later case where we want fork instead
@@ -69,9 +68,9 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
             fd.write("globus_rsl=%s\n" % rsl)
         fd.write("executable=%s\n"%script_file)
         fd.write("copy_to_spool=True\n")
-        fd.write("output=%s\n"%os.path.join(log_dir,"testpilot_%s_%s.$(Cluster).$(Process).out" % (inst_name, ent_name)))
-        fd.write("error=%s\n"%os.path.join(log_dir,"testpilot_%s_%s.$(Cluster).$(Process).err" % (inst_name, ent_name)))
-        fd.write("log=%s\n"%os.path.join(log_dir,"testpilot_%s_%s.log" % (inst_name, ent_name)))
+        fd.write("output=%s\n"%os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).out" % ent_name))
+        fd.write("error=%s\n"%os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).err" % ent_name))
+        fd.write("log=%s\n"%os.path.join(log_dir,"testpilot_%s.log" % ent_name))
         fd.write("transfer_executable=True\n")
         fd.write("when_to_transfer_output=ON_EXIT\n")
         fd.write("notification=Never\n")
@@ -212,7 +211,7 @@ if __name__ == "__main__":
         os.chmod(tmpdir, 0755)
         sub_file = os.path.join(tmpdir, "job.condor")
         script_file = os.path.join(tmpdir, "testpilot.sh")
-        user_dir = "%s/user_%s" % (glide_desc.data['ClientLogBaseDir'],user)
+        user_dir = "%s/user_%s/glidein_%s" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
         if not os.path.exists("%s/test" % user_dir):
             condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
 
