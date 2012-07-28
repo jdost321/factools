@@ -212,9 +212,9 @@ if __name__ == "__main__":
         os.chmod(tmpdir, 0755)
         sub_file = os.path.join(tmpdir, "job.condor")
         script_file = os.path.join(tmpdir, "testpilot.sh")
-        user_dir = glide_desc.data['ClientLogBaseDir'],"user_%s" % (user)
+        user_dir = "%s/user_%s" % (glide_desc.data['ClientLogBaseDir'],user)
         if not os.path.exists("%s/test" % user_dir):
-            condorPrivsep.mkdir(user_dir, 'test', user)
+            condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
 
         createScript(script_file)
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
