@@ -53,7 +53,7 @@ verbose = False
 
 def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
     inst_name = glide_desc.data['GlideinName']
-    log_dir = glide_desc.data['ClientLogBaseDir'],"user_%s/test" % (user)
+    log_dir = "%s/user_%s/test" % (glide_desc.data['ClientLogBaseDir'],user)
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
     # consider later case where we want fork instead
