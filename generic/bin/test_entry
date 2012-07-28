@@ -53,7 +53,7 @@ verbose = False
 
 def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
     inst_name = glide_desc.data['GlideinName']
-    log_dir = get_log_dir(glide_desc, user)
+    log_dir = glide_desc.data['ClientLogBaseDir'],"user_%s/test" % (user)
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
     # consider later case where we want fork instead
@@ -187,9 +187,6 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
         % (user, glide_conf.data['GlideinName'],entry))
 '''
 
-def get_log_dir(glide_desc, user):
-    return os.path.join(glide_desc.data['ClientLogBaseDir'],"user_%s/test" % (user))
-
 if __name__ == "__main__":
     user = sys.argv[-3]
     entry = sys.argv[-2]
@@ -215,6 +212,9 @@ if __name__ == "__main__":
         os.chmod(tmpdir, 0755)
         sub_file = os.path.join(tmpdir, "job.condor")
         script_file = os.path.join(tmpdir, "testpilot.sh")
+        user_dir = glide_desc.data['ClientLogBaseDir'],"user_%s" % (user)
+        if not os.path.exists("%s/test" % user_dir):
+            condorPrivsep.mkdir(user_dir, 'test', user)
 
         createScript(script_file)
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
