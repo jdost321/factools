@@ -185,6 +185,11 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
     return os.path.join(glide_conf.data['ClientLogBaseDir'],"user_%s/glidein_%s/entry_%s"
         % (user, glide_conf.data['GlideinName'],entry))
 '''
+    def proxy_ls(glide_desc,job_desc,user):
+        proxy_dir = "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
+            glide_desc.data['GlideinName'],job_desc.data['EntryName'])
+        out = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
+       print out
 
 if __name__ == "__main__":
     user = sys.argv[-3]
@@ -202,8 +207,10 @@ if __name__ == "__main__":
 
     glide_desc = glideFactoryConfig.GlideinDescript()
     job_desc = glideFactoryConfig.JobDescript(entry)
+
+    proxy_ls(glide_desc, job_desc, user)
     #schedd_name=job_desc.data['Schedd']
-    schedd_name=None
+    '''schedd_name=None
     
     tmpdir = tempfile.mkdtemp(prefix="testpilot_")
 
@@ -220,34 +227,7 @@ if __name__ == "__main__":
         create_submit_file(sub_file, script_file, glide_desc, job_desc, user)
         
         privSubmit(user, schedd_name, sub_file, proxy)
-        #log_file = os.path.join(log_dir,"testpilot.%s.0.log" % jid)
-        #out_file = os.path.join(log_dir,"testpilot.%s.0.out" % jid)
-        #err_file = os.path.join(log_dir,"testpilot.%s.0.err" % jid)
-
-        '''try:
-            results = checkFile(log_file,schedd_name,timeout)
-            if results[0]:
-                if results[1] == '005':
-                    printFile(out_file,sys.stdout)
-                    printFile(err_file,sys.stderr)
-                elif results[1] == '009':
-                    # if verbose this will already be printed
-                    if not verbose:
-                        print results[2]
-            else:
-                if not verbose:
-                    print results[2]
-                condorManager.condorRemoveOne(jid,schedd_name,None)
-        except:
-            condorManager.condorRemoveOne(jid,schedd_name,None)
-            raise
-        '''
-        
         
     finally:
         shutil.rmtree(tmpdir)
-        # race condition: if job is not removed before these are
-        # condor rewrites them just leave logs in for now
-        #condorPrivsep.execute(user,".",'/bin/rm',['/bin/rm','-f',log_file,out_file,err_file])
-        #print tmpdir
-    
+    '''
