@@ -232,7 +232,7 @@ if __name__ == "__main__":
     proxies = proxy_ls(user, proxy_dir)
     for p in proxies:
         if not p.endswith('.old'):
-            print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p))
+            print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p)))
     
     #schedd_name=job_desc.data['Schedd']
     '''schedd_name=None
