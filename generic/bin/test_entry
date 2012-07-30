@@ -4,6 +4,7 @@ import os
 import tempfile
 import time
 import shutil
+import re
 
 STARTUP_DIR=sys.path[0]
 
@@ -60,6 +61,11 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
     rsl = None
     if 'GlobusRSL' in job_desc.data:
         rsl = job_desc.data['GlobusRSL']
+
+    logs = [os.path.join(log_dir,"testpilot_%s.log" % ent_name),
+        os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).out" % ent_name),
+        os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).err" % ent_name)]
+
     fd=open(sub_file,"w")
     try:
         fd.write("universe=grid\n")
@@ -68,9 +74,9 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
             fd.write("globus_rsl=%s\n" % rsl)
         fd.write("executable=%s\n"%script_file)
         fd.write("copy_to_spool=True\n")
-        fd.write("output=%s\n"%os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).out" % ent_name))
-        fd.write("error=%s\n"%os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).err" % ent_name))
-        fd.write("log=%s\n"%os.path.join(log_dir,"testpilot_%s.log" % ent_name))
+        fd.write("log=%s\n" % logs[0])
+        fd.write("output=%s\n" % logs[1])
+        fd.write("error=%s\n" % logs[2])
         fd.write("transfer_executable=True\n")
         fd.write("when_to_transfer_output=ON_EXIT\n")
         fd.write("notification=Never\n")
@@ -80,6 +86,7 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
         fd.write("queue\n")
     finally:
         fd.close()
+    return logs
 
 def createScript(sfile):
     try:
@@ -177,7 +184,7 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
     else:
         submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
     cluster,count=glideFactoryLib.extractJobId(submit_out)
-    return cluster
+    return submit_out,cluster,count
 
 # what if user / entry create invalid path?
 '''def getLogDir(user, entry):
@@ -217,8 +224,8 @@ def get_proxy_life(user, proxy_file):
     return int(out[0][:-1])
 
 if __name__ == "__main__":
-    user = sys.argv[-3]
-    entry = sys.argv[-2]
+    user = sys.argv[1]
+    entry = sys.argv[2]
     #proxy = sys.argv[-1]
     
 
@@ -234,7 +241,6 @@ if __name__ == "__main__":
     job_desc = glideFactoryConfig.JobDescript(entry)
 
     proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
-    print proxy_dir
     out = proxy_lslt(user, proxy_dir)
 
     #for p in proxies:
@@ -276,9 +282,18 @@ if __name__ == "__main__":
 
         createScript(script_file)
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
-        create_submit_file(sub_file, script_file, glide_desc, job_desc, user)
+        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user)
         
-        privSubmit(user, schedd_name, sub_file, proxy)
+        out,cluster,count = privSubmit(user, schedd_name, sub_file, proxy)
+        for i in out:
+            print out,
+        
+        print "log files:"
+        print logs[0]
+        for l in logs[1:]:
+            l = re.sub(r'\$\(Cluster\)',str(cluster),l)
+            for i in range(count):
+                print re.sub(r'\$(Process\)',str(i),l)
         
     finally:
         shutil.rmtree(tmpdir)
