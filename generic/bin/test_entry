@@ -228,9 +228,11 @@ if __name__ == "__main__":
     job_desc = glideFactoryConfig.JobDescript(entry)
 
     proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
+    print proxy_dir
     proxies = proxy_ls(user, proxy_dir)
-    print proxies[0]
-    print get_proxy_life(user, "%s/%s" % (proxy_dir, proxies[0]))
+    for p in proxies:
+        if not p.endswith('.old'):
+            print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p))
     
     #schedd_name=job_desc.data['Schedd']
     '''schedd_name=None
