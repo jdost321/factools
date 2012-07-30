@@ -196,6 +196,12 @@ def proxy_ls(user, proxy_dir):
     # strip away newline chars
     return [i[:-1] for i in out]
 
+# return long list of proxies; time sorted
+def proxy_lslt(user, proxy_dir):
+    out = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
+    # strip away newline chars
+    return [i[:-1] for i in out]
+
 def get_proxy_life(user, proxy_file):
     try:
         voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
@@ -229,10 +235,20 @@ if __name__ == "__main__":
 
     proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
     print proxy_dir
-    proxies = proxy_ls(user, proxy_dir)
-    for p in proxies:
-        if not p.endswith('.old'):
-            print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p)))
+    out = proxy_lslt(user, proxy_dir)
+
+    #for p in proxies:
+    #    if not p.endswith('.old'):
+    #        print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p)))
+
+    count = 0
+    proxies = []
+    for line in out:
+        if not line.endswith('.old'):
+            proxies.append(line.split()[9])
+            print "[%s] %s" % (count,line)
+            count += 1
+    print proxies
     
     #schedd_name=job_desc.data['Schedd']
     '''schedd_name=None
