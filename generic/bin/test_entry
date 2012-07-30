@@ -185,11 +185,27 @@ def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
     return os.path.join(glide_conf.data['ClientLogBaseDir'],"user_%s/glidein_%s/entry_%s"
         % (user, glide_conf.data['GlideinName'],entry))
 '''
-    def proxy_ls(glide_desc,job_desc,user):
-        proxy_dir = "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
-            glide_desc.data['GlideinName'],job_desc.data['EntryName'])
-        out = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
-       print out
+
+def get_proxy_dir(glide_desc, job_desc, user):
+    return "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
+        glide_desc.data['GlideinName'],job_desc.data['EntryName'])
+
+# return list of proxies
+def proxy_ls(user, proxy_dir):
+    out = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
+    # strip away newline chars
+    return [i[:-1] for i in out]
+
+def get_proxy_life(user, proxy_file):
+    try:
+        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+    except:
+        print "ERROR: voms-proxy-info not found, but needed"
+        return 1
+
+    
+    out = condorPrivsep.execute(user,'.','voms_path',['voms_path', '-timeleft', '-file', proxy_file])
+    return out
 
 if __name__ == "__main__":
     user = sys.argv[-3]
@@ -208,7 +224,11 @@ if __name__ == "__main__":
     glide_desc = glideFactoryConfig.GlideinDescript()
     job_desc = glideFactoryConfig.JobDescript(entry)
 
-    proxy_ls(glide_desc, job_desc, user)
+    proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
+    proxies = proxy_ls(proxy_dir)
+    print proxies[0]
+    print get_proxy_life("%s/%s" % proxy_dir, proxies[0])
+    
     #schedd_name=job_desc.data['Schedd']
     '''schedd_name=None
     
