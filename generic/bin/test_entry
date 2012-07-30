@@ -243,12 +243,21 @@ if __name__ == "__main__":
 
     count = 0
     proxies = []
-    for line in out:
+    
+    print "Select proxy from %s:" % (proxy_dir)
+    for line in out[1:]:
         if not line.endswith('.old'):
-            proxies.append(line.split()[9])
+            proxies.append(line.split()[8])
             print "[%s] %s" % (count,line)
             count += 1
-    print proxies
+    
+    while True:
+        try:
+            num = int(raw_input("[0-%s]:" % (len(proxies) - 1)))
+            if num >= 0 and num < len(proxies):
+                break
+        except ValueError:
+            print "Input must be a number [0-%s]." % (len(proxies) - 1)
     
     #schedd_name=job_desc.data['Schedd']
     '''schedd_name=None
