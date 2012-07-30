@@ -198,14 +198,13 @@ def proxy_ls(user, proxy_dir):
 
 def get_proxy_life(user, proxy_file):
     try:
-        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+        voms_path = condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
     except:
         print "ERROR: voms-proxy-info not found, but needed"
         return 1
 
-    
-    out = condorPrivsep.execute(user,'.','voms_path',['voms_path', '-timeleft', '-file', proxy_file])
-    return out
+    out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-timeleft', '-file', proxy_file])
+    return int(out[0][:-1])
 
 if __name__ == "__main__":
     user = sys.argv[-3]
@@ -225,9 +224,9 @@ if __name__ == "__main__":
     job_desc = glideFactoryConfig.JobDescript(entry)
 
     proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
-    proxies = proxy_ls(proxy_dir)
+    proxies = proxy_ls(user, proxy_dir)
     print proxies[0]
-    print get_proxy_life("%s/%s" % proxy_dir, proxies[0])
+    print get_proxy_life(user, "%s/%s" % (proxy_dir, proxies[0]))
     
     #schedd_name=job_desc.data['Schedd']
     '''schedd_name=None
