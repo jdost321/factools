@@ -198,12 +198,16 @@ def proxy_ls(user, proxy_dir):
 
 def get_proxy_life(user, proxy_file):
     try:
-        voms_path = condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
     except:
         print "ERROR: voms-proxy-info not found, but needed"
         return 1
 
-    out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-timeleft', '-file', proxy_file])
+   env=[]
+   for k in os.environ.keys():
+      env.append('%s=%s'%(k,os.environ[k]))
+
+    out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-timeleft', '-file', proxy_file],env)
     return int(out[0][:-1])
 
 if __name__ == "__main__":
