@@ -203,9 +203,9 @@ def get_proxy_life(user, proxy_file):
         print "ERROR: voms-proxy-info not found, but needed"
         return 1
 
-   env=[]
-   for k in os.environ.keys():
-      env.append('%s=%s'%(k,os.environ[k]))
+    env=[]
+    for k in os.environ.keys():
+       env.append('%s=%s'%(k,os.environ[k]))
 
     out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-timeleft', '-file', proxy_file],env)
     return int(out[0][:-1])
