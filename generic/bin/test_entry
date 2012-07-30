@@ -219,7 +219,7 @@ def get_proxy_life(user, proxy_file):
 if __name__ == "__main__":
     user = sys.argv[-3]
     entry = sys.argv[-2]
-    proxy = sys.argv[-1]
+    #proxy = sys.argv[-1]
     
 
     if '-t' in sys.argv:
@@ -257,10 +257,12 @@ if __name__ == "__main__":
             if num >= 0 and num < len(proxies):
                 break
         except ValueError:
-            print "Input must be a number [0-%s]." % (len(proxies) - 1)
+            print "Input must be an integer [0-%s]." % (len(proxies) - 1)
+
+    proxy = "%s/%s" % (proxy_dir, proxies[num])
     
     #schedd_name=job_desc.data['Schedd']
-    '''schedd_name=None
+    schedd_name=None
     
     tmpdir = tempfile.mkdtemp(prefix="testpilot_")
 
@@ -280,4 +282,4 @@ if __name__ == "__main__":
         
     finally:
         shutil.rmtree(tmpdir)
-    '''
+    
