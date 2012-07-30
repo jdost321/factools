@@ -286,14 +286,14 @@ if __name__ == "__main__":
         
         out,cluster,count = privSubmit(user, schedd_name, sub_file, proxy)
         for i in out:
-            print out,
+            print i,
         
-        print "log files:"
+        print "Log files:"
         print logs[0]
         for l in logs[1:]:
             l = re.sub(r'\$\(Cluster\)',str(cluster),l)
             for i in range(count):
-                print re.sub(r'\$(Process\)',str(i),l)
+                print re.sub(r'\$\(Process\)',str(i),l)
         
     finally:
         shutil.rmtree(tmpdir)
