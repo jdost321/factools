@@ -78,13 +78,16 @@ def createGenericSupportedVOList(supportedVOs):
         if i in mappedSupportedVOs:
             genericSupportedVOs.append(mappedSupportedVOs[i])
         else:
-            print "Add support in mappedSVOs for " + i
+            print "  Add support in mappedSVOs for " + i
     return list(set(genericSupportedVOs))
 
 def createSurlDictionary():
     surlDict = {}
     f = open(config.locationSurlFile)
     for i in f:
+        #check for empty lines
+        if len(i) < 5:
+            continue
         ce = i.split()[0]
         vo = i.split()[1]
         surl = "/".join(i.split()[2].split("/")[:-1])
@@ -124,6 +127,17 @@ def removeElement(elementList,elementName,elementParent):
         if elementName in i.get("name"):
             elementParent.remove(i)
 
+#remove all references to GLIDEIN_SE_ and VOS_USING_SE_ in case the SE URL is removed
+def removeAllSURLAttributes(file):
+    f = open(file)
+    t = open("tempConfigFile", "w")
+    for i in f:
+        if "GLIDEIN_SE_" not in i and "VOS_USING_SE_" not in i:
+            t.write(i)
+    t.close()
+    f.close()
+    os.rename("tempConfigFile", file)
+
 
 ############################################################
 #
@@ -132,6 +146,8 @@ def removeElement(elementList,elementName,elementParent):
 ############################################################
 
 if __name__ == "__main__":
+
+    removeAllSURLAttributes(config.locationGlideinWMSxml)
 
     surlDict = createSurlDictionary()
 #    print surlDict
@@ -161,6 +177,7 @@ if __name__ == "__main__":
                 otherVOs = []
                 otherSurls = []
                 #translate glideinWMS.xml's GLIDEIN_Supported_VOs list to a more generic list
+                print i
                 genericSupportedVOs = createGenericSupportedVOList(currentGlideinSVOs)
 #                print surlDict[params.entries[i]["attrs"]["GLIDEIN_SEs"]["value"]]
                 #base case has to be the first check
