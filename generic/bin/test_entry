@@ -339,7 +339,10 @@ if __name__ == "__main__":
     try:
         os.chmod(tmpdir, 0755)
         sub_file = os.path.join(tmpdir, "job.condor")
-        script_file = os.path.join(tmpdir, "testpilot.sh")
+        if mode == "int":
+            script_file = os.path.join(tmpdir, "testpilot.sh")
+        elif mode == "ext":
+            script_file = os.path.join(tmpdir, os.path.basename(script_infile))
         user_dir = "%s/user_%s/glidein_%s" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
         if not os.path.exists("%s/test" % user_dir):
             condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
