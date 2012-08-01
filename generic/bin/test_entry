@@ -284,7 +284,7 @@ if __name__ == "__main__":
     try:
         pwd.getpwnam(user)
     except KeyError:
-        sys.stderr.write("User "%s" not found! Exiting.\n" % user)
+        sys.stderr.write('User "%s" not found! Exiting.\n' % user)
         sys.exit(1)
 
     entry = args[1]
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     try:
         job_desc = glideFactoryConfig.JobDescript(entry)
     catch IOError:
-        sys.stderr.write("Entry "%s" not found! Exiting.\n" % entry)
+        sys.stderr.write('Entry "%s" not found! Exiting.\n' % entry)
         sys.exit(1)
 
     if fork:
