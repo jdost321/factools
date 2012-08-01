@@ -6,6 +6,7 @@ import time
 import shutil
 import re
 import getopt
+import pwd
 
 STARTUP_DIR=sys.path[0]
 
@@ -30,6 +31,8 @@ import glideFactoryLib
 # statuses of lost connections
 lost_con_stats=('020','026','022','010','029')
 verbose = False
+ALLOWED_FORK = ('gt2', 'gt5')
+ALLOWED_RSL =  ('gt2', 'gt5', 'nordugrid')
 
 '''def createSubmitFile(sfile,log_dir,
                      script_file, timeout, grid_type, gatekeeper):
@@ -60,7 +63,7 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
 
     if fork:
         # assume fork only works for globus
-        if grid_type not in ('gt2', 'gt5'):
+        if grid_type not in ALLOWED_FORK:
             raise ValueError, 'fork is unsupported for gridtype "%s"' % grid_type
         gatekeeper = re.sub(r'jobmanager-.*$','jobmanager-fork', job_desc.data['Gatekeeper'])
     else:
@@ -69,7 +72,7 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
     rsl = None
     if 'GlobusRSL' in job_desc.data:
         # assume rsl only works for globus and nordugrid
-        if grid_type not in ('gt2', 'gt5', 'nordugrid'):
+        if grid_type not in ALLOWED_RSL:
             raise RuntimeError, 'Config error: gridtype "%s" does not support rsl' % grid_type
         rsl = job_desc.data['GlobusRSL']
 
@@ -256,6 +259,8 @@ OPTIONS:
 -f      run as fork job'''
 
 if __name__ == "__main__":
+    # this will fail immediately if not in correct dir for now..
+    glide_desc = glideFactoryConfig.GlideinDescript()
     try:
         opts,args = getopt.getopt(sys.argv[1:],'hf')
     except getopt.GetoptError:
@@ -275,23 +280,40 @@ if __name__ == "__main__":
         sys.exit(1)
 
     user = args[0]
+
+    try:
+        pwd.getpwnam(user)
+    except KeyError:
+        sys.stderr.write("User "%s" not found! Exiting.\n" % user)
+        sys.exit(1)
+
     entry = args[1]
+
+    try:
+        job_desc = glideFactoryConfig.JobDescript(entry)
+    catch IOError:
+        sys.stderr.write("Entry "%s" not found! Exiting.\n" % entry)
+        sys.exit(1)
+
+    if fork:
+        grid_type = job_desc.data['GridType']
+
+        if grid_type not in ALLOWED_FORK:
+            sys.stderr.write('fork is unsupported for gridtype "%s." Exiting.\n' % grid_type)
+            sys.exit(1)
 
     script_args = None
 
     if len(args) > 2:
         script_infile = args[2]
         if not os.path.exists(script_infile):
-            sys.stderr.write("Script file %s does not exist! Exiting.\n")
+            sys.stderr.write("Script file %s does not exist! Exiting.\n" % script_infile)
             sys.exit(1)
         if len(args) > 3:
             script_args = args[3:]
         mode = "ext"
     else:
         mode = "int"
-
-    glide_desc = glideFactoryConfig.GlideinDescript()
-    job_desc = glideFactoryConfig.JobDescript(entry)
 
     proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
     out = proxy_lslt(user, proxy_dir)
