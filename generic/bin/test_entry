@@ -53,7 +53,7 @@ verbose = False
         fd.close()
 '''
 
-def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, fork=false):
+def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, fork=False):
     log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
@@ -61,7 +61,7 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
     if fork:
         # assume fork only works for globus
         if grid_type not in ('gt2', 'gt5'):
-            raise ValueError, 'fork is unsupported for gridtype "%s"' % gridtype
+            raise ValueError, 'fork is unsupported for gridtype "%s"' % grid_type
         gatekeeper = re.sub(r'jobmanager-.*$','jobmanager-fork', job_desc.data['Gatekeeper'])
     else:
         gatekeeper = job_desc.data['Gatekeeper']
@@ -104,13 +104,21 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
         fd.close()
     return logs
 
-def createScript(sfile):
-    fd = open(sfile, "w")
+def create_script(out_file, sleep_time=300):
+    fd = open(out_file, "w")
     try:
-        fd.write("#!/bin/sh\n")
-        fd.write("whoami\n")
-        #fd.write("sleep 600\n")
-        #fd.write('echo Done > $PWD/job.done\n')
+        fd.write('#!/bin/sh\n')
+        fd.write('echo "Date: `date`"\n')
+        fd.write('echo "Whoami: `whoami`"\n')
+        fd.write('echo "System: `uname -a`"\n')
+        fd.write('echo "PWD: `echo $PWD`"\n')
+        fd.write('echo\n')
+        fd.write('echo "Environment:"\n')
+        fd.write('env\n')
+        fd.write('echo\n')
+        fd.write('echo "Sleeping for %s seconds."\n' % sleep_time)
+        fd.write('sleep %s\n' % sleep_time)
+        fd.write('echo "Done."\n')
     finally:
         fd.close()
 
@@ -249,7 +257,7 @@ OPTIONS:
 
 if __name__ == "__main__":
     try:
-        opts,args = getopt.getopt(sys.argv[1:],'h')
+        opts,args = getopt.getopt(sys.argv[1:],'hf')
     except getopt.GetoptError:
         print_help()
         sys.exit(1)
@@ -337,7 +345,7 @@ if __name__ == "__main__":
             condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
 
         if mode == "int":
-            createScript(script_file)
+            create_script(script_file)
         elif mode == "ext":
             shutil.copyfile(script_infile, script_file)
             os.chmod(script_file, 0644)
