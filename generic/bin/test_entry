@@ -53,14 +53,24 @@ verbose = False
         fd.close()
 '''
 
-def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None):
+def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, fork=false):
     log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
-    # consider later case where we want fork instead
-    gatekeeper = job_desc.data['Gatekeeper']
+
+    if fork:
+        # assume fork only works for globus
+        if grid_type not in ('gt2', 'gt5'):
+            raise ValueError, 'fork is unsupported for gridtype "%s"' % gridtype
+        gatekeeper = re.sub(r'jobmanager-.*$','jobmanager-fork', job_desc.data['Gatekeeper'])
+    else:
+        gatekeeper = job_desc.data['Gatekeeper']
+
     rsl = None
     if 'GlobusRSL' in job_desc.data:
+        # assume rsl only works for globus and nordugrid
+        if grid_type not in ('gt2', 'gt5', 'nordugrid'):
+            raise RuntimeError, 'Config error: gridtype "%s" does not support rsl' % grid_type
         rsl = job_desc.data['GlobusRSL']
 
     logs = [os.path.join(log_dir,"testpilot_%s.log" % ent_name),
@@ -72,7 +82,10 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
         fd.write("universe=grid\n")
         fd.write("grid_resource=%s %s\n" % (grid_type, gatekeeper))
         if rsl is not None:
-            fd.write("globus_rsl=%s\n" % rsl)
+            if grid_type == 'gt2' or grid_type == 'gt5':
+                fd.write("globus_rsl=%s\n" % rsl)
+            elif grid_type == 'nordugrid':
+                fd.write("nordugrid_rsl=%s\n" % rsl)
         fd.write("executable=%s\n"%script_file)
         if args is not None:
             fd.write("arguments=%s\n" % (" ".join(args)))
@@ -231,7 +244,8 @@ def print_help():
 Usage: test_entry [OPTIONS] USER ENTRY [SCRIPT] [ARGS..]
 
 OPTIONS:
--h      prints this message'''
+-h      prints this message
+-f      run as fork job'''
 
 if __name__ == "__main__":
     try:
@@ -240,10 +254,13 @@ if __name__ == "__main__":
         print_help()
         sys.exit(1)
 
+    fork = False
     for opt in opts:
         if opt[0] == '-h':
             print_help()
             sys.exit(0)
+        if opt[0] == '-f':
+            fork = True
 
     if len(args) < 2:
         print_help()
@@ -326,7 +343,7 @@ if __name__ == "__main__":
             os.chmod(script_file, 0644)
 
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
-        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args)
+        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args, fork)
         
         out,cluster,count = priv_submit(user, sub_file, proxy)
         for i in out:
