@@ -92,8 +92,8 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
     return logs
 
 def createScript(sfile):
+    fd = open(sfile, "w")
     try:
-        fd = open(sfile, "w")
         fd.write("#!/bin/sh\n")
         fd.write("whoami\n")
         #fd.write("sleep 600\n")
@@ -173,7 +173,7 @@ def getLastLogStatus(fname):
     return status,message
 
 # should we ever attempt without privsep like glidein does?
-def privSubmit(username, schedd_name, sub_file, x509_proxy_fname):
+def priv_submit(username, sub_file, x509_proxy_fname, schedd_name=None):
     cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
     exe_env=['X509_USER_PROXY=%s'%x509_proxy_fname]
     for var in os.environ.keys():
@@ -256,6 +256,9 @@ if __name__ == "__main__":
 
     if len(args) > 2:
         script_infile = args[2]
+        if not os.path.exists(script_infile):
+            sys.stderr.write("Script file %s does not exist! Exiting.\n")
+            sys.exit(1)
         if len(args) > 3:
             script_args = args[3:]
         mode = "ext"
@@ -268,6 +271,10 @@ if __name__ == "__main__":
     proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
     out = proxy_lslt(user, proxy_dir)
 
+    if len(out) <= 1:
+        sys.stderr.write("Could not find pilot proxies! Exiting.\n")
+        sys.exit(1)
+
     #for p in proxies:
     #    if not p.endswith('.old'):
     #        print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p)))
@@ -275,12 +282,20 @@ if __name__ == "__main__":
     count = 0
     proxies = []
     
-    print "Select proxy from %s:" % (proxy_dir)
+    proxy_select_list = []
     for line in out[1:]:
         if not line.endswith('.old'):
             proxies.append(line.split()[8])
-            print "[%s] %s" % (count,line)
+            proxy_select_list.append("[%s] %s" % (count,line))
             count += 1
+
+    if len(proxies) == 0:
+        sys.stderr.write("Only found old pilot proxies! Exiting.\n")
+        sys.exit(1)
+
+    print "Select proxy from %s:" % (proxy_dir)
+    for line in proxy_select_list:
+        print line
     
     while True:
         try:
@@ -293,7 +308,6 @@ if __name__ == "__main__":
     proxy = "%s/%s" % (proxy_dir, proxies[num])
     
     #schedd_name=job_desc.data['Schedd']
-    schedd_name=None
     
     tmpdir = tempfile.mkdtemp(prefix="testpilot_")
 
@@ -308,17 +322,13 @@ if __name__ == "__main__":
         if mode == "int":
             createScript(script_file)
         elif mode == "ext":
-            try:
-                shutil.copyfile(script_infile, script_file)
-            except IOError:
-                "Failed to write to /tmp. exiting."
-                sys.exit(1)
+            shutil.copyfile(script_infile, script_file)
             os.chmod(script_file, 0644)
 
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
         logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args)
         
-        out,cluster,count = privSubmit(user, schedd_name, sub_file, proxy)
+        out,cluster,count = priv_submit(user, sub_file, proxy)
         for i in out:
             print i,
         
