@@ -5,6 +5,7 @@ import tempfile
 import time
 import shutil
 import re
+import getopt
 
 STARTUP_DIR=sys.path[0]
 
@@ -52,7 +53,7 @@ verbose = False
         fd.close()
 '''
 
-def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
+def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None):
     log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
@@ -73,6 +74,8 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user):
         if rsl is not None:
             fd.write("globus_rsl=%s\n" % rsl)
         fd.write("executable=%s\n"%script_file)
+        if args is not None:
+            fd.write("arguments=%s\n" % (" ".join(args)))
         fd.write("copy_to_spool=True\n")
         fd.write("log=%s\n" % logs[0])
         fd.write("output=%s\n" % logs[1])
@@ -223,19 +226,41 @@ def get_proxy_life(user, proxy_file):
     out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-timeleft', '-file', proxy_file],env)
     return int(out[0][:-1])
 
+def print_help():
+    print '''\
+Usage: test_entry [OPTIONS] USER ENTRY [SCRIPT] [ARGS..]
+
+OPTIONS:
+-h      prints this message'''
+
 if __name__ == "__main__":
-    user = sys.argv[1]
-    entry = sys.argv[2]
-    #proxy = sys.argv[-1]
-    
+    try:
+        opts,args = getopt.getopt(sys.argv[1:],'h')
+    except getopt.GetoptError:
+        print_help()
+        sys.exit(1)
 
-    if '-t' in sys.argv:
-        timeout = int(sys.argv[sys.argv.index('-t')+1])
+    for opt in opts:
+        if opt[0] == '-h':
+            print_help()
+            sys.exit(0)
+
+    if len(args) < 2:
+        print_help()
+        sys.exit(1)
+
+    user = args[0]
+    entry = args[1]
+
+    script_args = None
+
+    if len(args) > 2:
+        script_infile = args[2]
+        if len(args) > 3:
+            script_args = args[3:]
+        mode = "ext"
     else:
-        timeout = 300
-
-    if '-v' in sys.argv:
-        verbose = True
+        mode = "int"
 
     glide_desc = glideFactoryConfig.GlideinDescript()
     job_desc = glideFactoryConfig.JobDescript(entry)
@@ -280,9 +305,18 @@ if __name__ == "__main__":
         if not os.path.exists("%s/test" % user_dir):
             condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
 
-        createScript(script_file)
+        if mode == "int":
+            createScript(script_file)
+        elif mode == "ext":
+            try:
+                shutil.copyfile(script_infile, script_file)
+            except IOError:
+                "Failed to write to /tmp. exiting."
+                sys.exit(1)
+            os.chmod(script_file, 0644)
+
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
-        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user)
+        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args)
         
         out,cluster,count = privSubmit(user, schedd_name, sub_file, proxy)
         for i in out:
