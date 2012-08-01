@@ -291,7 +291,7 @@ if __name__ == "__main__":
 
     try:
         job_desc = glideFactoryConfig.JobDescript(entry)
-    catch IOError:
+    except IOError:
         sys.stderr.write('Entry "%s" not found! Exiting.\n' % entry)
         sys.exit(1)
 
