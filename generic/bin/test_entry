@@ -292,8 +292,7 @@ if __name__ == "__main__":
         print logs[0]
         for l in logs[1:]:
             l = re.sub(r'\$\(Cluster\)',str(cluster),l)
-            for i in range(count):
-                print re.sub(r'\$\(Process\)',str(i),l)
+            print re.sub(r'\$\(Process\)','*',l)
         
     finally:
         shutil.rmtree(tmpdir)
