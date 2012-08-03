@@ -125,7 +125,7 @@ def proxy_ls(user, proxy_dir):
 
 # return long list of proxies; time sorted
 def proxy_lslt(user, proxy_dir):
-    return = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
+    return condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
 
 # shamelessly stolen from glideinWMS/factory/tools/proxy_info exec_info
 # unfortunately couldn't import since it doesn't check for main
@@ -161,8 +161,9 @@ def print_help():
 Usage: test_entry [OPTIONS] USER ENTRY [SCRIPT] [ARGS..]
 
 OPTIONS:
--h      prints this message
--f      run as fork job'''
+-h         prints this message
+-f         run as fork job
+-p PROXY   use specified PROXY instead of opening interactive selection'''
 
 if __name__ == "__main__":
     # this will fail immediately if not in correct dir for now..
@@ -201,7 +202,7 @@ if __name__ == "__main__":
         try:
             get_proxy_info(user, proxy)
         except condorExe.ExeError:
-            sys.stderr.write('Could not access proxy file %s. Exiting.\n' % proxy)
+            sys.stderr.write('Could not access proxy file "%s". Exiting.\n' % proxy)
             sys.exit(1)
 
     entry = args[1]
@@ -216,7 +217,7 @@ if __name__ == "__main__":
         grid_type = job_desc.data['GridType']
 
         if grid_type not in ALLOWED_FORK:
-            sys.stderr.write('fork is unsupported for gridtype "%s." Exiting.\n' % grid_type)
+            sys.stderr.write('fork is unsupported for gridtype "%s". Exiting.\n' % grid_type)
             sys.exit(1)
 
     script_args = None
@@ -224,7 +225,7 @@ if __name__ == "__main__":
     if len(args) > 2:
         script_infile = args[2]
         if not os.path.exists(script_infile):
-            sys.stderr.write("Script file %s does not exist! Exiting.\n" % script_infile)
+            sys.stderr.write('Script file "%s" does not exist! Exiting.\n' % script_infile)
             sys.exit(1)
         if len(args) > 3:
             script_args = args[3:]
@@ -237,7 +238,7 @@ if __name__ == "__main__":
 
         out = proxy_lslt(user, proxy_dir)
         # strip away newline chars
-        out = [i.strip() for i in out]
+        out = [i.rstrip() for i in out]
 
         if len(out) <= 1:
             sys.stderr.write("Could not find pilot proxies! Exiting.\n")
