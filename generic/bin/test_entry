@@ -29,7 +29,7 @@ import glideFactoryLib
 ALLOWED_FORK = ('gt2', 'gt5')
 ALLOWED_RSL =  ('gt2', 'gt5', 'nordugrid')
 
-def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, fork=False):
+def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, queue=1, fork=False):
     log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
     ent_name = job_desc.data['EntryName']
     grid_type = job_desc.data['GridType']
@@ -75,7 +75,7 @@ def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=N
         #fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
         fd.write("stream_output=False\n")
         fd.write("stream_error=False\n")
-        fd.write("queue\n")
+        fd.write("queue %s\n" % queue)
     finally:
         fd.close()
     return logs
@@ -163,25 +163,33 @@ Usage: test_entry [OPTIONS] USER ENTRY [SCRIPT] [ARGS..]
 OPTIONS:
 -h         prints this message
 -f         run as fork job
+-q NUM     queue NUM copies to run
 -p PROXY   use specified PROXY instead of opening interactive selection'''
 
 if __name__ == "__main__":
     # this will fail immediately if not in correct dir for now..
     glide_desc = glideFactoryConfig.GlideinDescript()
     try:
-        opts,args = getopt.getopt(sys.argv[1:],'hfp:')
+        opts,args = getopt.getopt(sys.argv[1:],'hfq:p:')
     except getopt.GetoptError:
         print_help()
         sys.exit(1)
 
+    # defaults
     fork = False
     interact_proxy = True   
+    queue = 1
     for opt in opts:
         if opt[0] == '-h':
             print_help()
             sys.exit(0)
         if opt[0] == '-f':
             fork = True
+        if opt[0] == '-q':
+            queue = int(opt[1])
+            if queue < 1:
+                sys.stderr.write('queue must be >= 1. Exiting.\n' % queue)
+                sys.exit(1)
         if opt[0] == '-p':
             interact_proxy = False
             proxy = opt[1]
@@ -292,7 +300,7 @@ if __name__ == "__main__":
             os.chmod(script_file, 0644)
 
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
-        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args, fork)
+        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args, queue, fork)
         
         out,cluster,count = priv_submit(user, sub_file, proxy)
         for i in out:
