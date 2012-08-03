@@ -1,0 +1,332 @@
+#!/usr/bin/python
+import sys
+import os
+import tempfile
+import time
+import shutil
+import re
+import getopt
+import pwd
+
+STARTUP_DIR=sys.path[0]
+
+#sys.path.append(os.path.join(STARTUP_DIR,".."))
+#sys.path.append(os.path.join(STARTUP_DIR,"../../lib"))
+# get source dir from env var until we push upstream to glideinWMS
+if 'GLIDEIN_SRC_DIR' in os.environ:
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "factory"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+else:
+    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
+    sys.exit(1)
+
+import glideFactoryConfig
+import condorPrivsep
+import condorExe
+import glideFactoryLib
+
+#globals
+ALLOWED_FORK = ('gt2', 'gt5')
+ALLOWED_RSL =  ('gt2', 'gt5', 'nordugrid')
+
+def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, queue=1, fork=False):
+    log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
+    ent_name = job_desc.data['EntryName']
+    grid_type = job_desc.data['GridType']
+
+    if fork:
+        # assume fork only works for globus
+        if grid_type not in ALLOWED_FORK:
+            raise ValueError, 'fork is unsupported for gridtype "%s"' % grid_type
+        gatekeeper = re.sub(r'jobmanager-.*$','jobmanager-fork', job_desc.data['Gatekeeper'])
+    else:
+        gatekeeper = job_desc.data['Gatekeeper']
+
+    rsl = None
+    if 'GlobusRSL' in job_desc.data:
+        # assume rsl only works for globus and nordugrid
+        if grid_type not in ALLOWED_RSL:
+            raise RuntimeError, 'Config error: gridtype "%s" does not support rsl' % grid_type
+        rsl = job_desc.data['GlobusRSL']
+
+    logs = [os.path.join(log_dir,"testpilot_%s.log" % ent_name),
+        os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).out" % ent_name),
+        os.path.join(log_dir,"testpilot_%s.$(Cluster).$(Process).err" % ent_name)]
+
+    fd=open(sub_file,"w")
+    try:
+        fd.write("universe=grid\n")
+        fd.write("grid_resource=%s %s\n" % (grid_type, gatekeeper))
+        if rsl is not None:
+            if grid_type == 'gt2' or grid_type == 'gt5':
+                fd.write("globus_rsl=%s\n" % rsl)
+            elif grid_type == 'nordugrid':
+                fd.write("nordugrid_rsl=%s\n" % rsl)
+        fd.write("executable=%s\n"%script_file)
+        if args is not None:
+            fd.write("arguments=%s\n" % (" ".join(args)))
+        fd.write("copy_to_spool=True\n")
+        fd.write("log=%s\n" % logs[0])
+        fd.write("output=%s\n" % logs[1])
+        fd.write("error=%s\n" % logs[2])
+        fd.write("transfer_executable=True\n")
+        fd.write("when_to_transfer_output=ON_EXIT\n")
+        fd.write("notification=Never\n")
+        #fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
+        fd.write("stream_output=False\n")
+        fd.write("stream_error=False\n")
+        fd.write("queue %s\n" % queue)
+    finally:
+        fd.close()
+    return logs
+
+def create_script(out_file, sleep_time=300):
+    fd = open(out_file, "w")
+    try:
+        fd.write('#!/bin/sh\n')
+        fd.write('echo "Date: `date`"\n')
+        fd.write('echo "Whoami: `whoami`"\n')
+        fd.write('echo "System: `uname -a`"\n')
+        fd.write('echo "PWD: `echo $PWD`"\n')
+        fd.write('echo\n')
+        fd.write('echo "Environment:"\n')
+        fd.write('env\n')
+        fd.write('echo\n')
+        fd.write('echo "Sleeping for %s seconds."\n' % sleep_time)
+        fd.write('sleep %s\n' % sleep_time)
+        fd.write('echo "Done."\n')
+    finally:
+        fd.close()
+
+# should we ever attempt without privsep like glidein does?
+def priv_submit(username, sub_file, x509_proxy_fname, schedd_name=None):
+    cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
+    exe_env=['X509_USER_PROXY=%s'%x509_proxy_fname]
+    for var in os.environ.keys():
+                        if ((var in ('PATH','LD_LIBRARY_PATH','X509_CERT_DIR')) or
+                            (var[:8]=='_CONDOR_') or (var[:7]=='CONDOR_')):
+                            if os.environ.has_key(var):
+                                exe_env.append('%s=%s'%(var,os.environ[var]))
+
+    if schedd_name is None:
+        submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,sub_file],exe_env)
+    else:
+        submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
+    cluster,count=glideFactoryLib.extractJobId(submit_out)
+    return submit_out,cluster,count
+
+def get_proxy_dir(glide_desc, job_desc, user):
+    return "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
+        glide_desc.data['GlideinName'],job_desc.data['EntryName'])
+
+# return list of proxies
+def proxy_ls(user, proxy_dir):
+    return condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
+
+# return long list of proxies; time sorted
+def proxy_lslt(user, proxy_dir):
+    return condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
+
+# shamelessly stolen from glideinWMS/factory/tools/proxy_info exec_info
+# unfortunately couldn't import since it doesn't check for main
+def get_proxy_info(user, proxy_file):
+    try:
+        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+    except:
+        print "ERROR: voms-proxy-info not found, but needed"
+        return 1
+
+    env=[]
+    for k in os.environ.keys():
+       env.append('%s=%s'%(k,os.environ[k]))
+
+    return condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-file', proxy_file],env)
+
+def get_proxy_life(user, proxy_file):
+    try:
+        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+    except:
+        print "ERROR: voms-proxy-info not found, but needed"
+        return 1
+
+    env=[]
+    for k in os.environ.keys():
+       env.append('%s=%s'%(k,os.environ[k]))
+
+    out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-timeleft', '-file', proxy_file],env)
+    return int(out[0][:-1])
+
+def print_help():
+    print '''\
+Usage: test_entry [OPTIONS] USER ENTRY [SCRIPT] [ARGS..]
+
+OPTIONS:
+-h         prints this message
+-f         run as fork job
+-q NUM     queue NUM copies to run
+-p PROXY   use specified PROXY instead of opening interactive selection'''
+
+if __name__ == "__main__":
+    try:
+        opts,args = getopt.getopt(sys.argv[1:],'hfq:p:')
+    except getopt.GetoptError:
+        print_help()
+        sys.exit(1)
+
+    # defaults
+    fork = False
+    interact_proxy = True   
+    queue = 1
+    for opt in opts:
+        if opt[0] == '-h':
+            print_help()
+            sys.exit(0)
+        if opt[0] == '-f':
+            fork = True
+        if opt[0] == '-q':
+            queue = int(opt[1])
+            if queue < 1:
+                sys.stderr.write('queue must be >= 1. Exiting.\n')
+                sys.exit(1)
+        if opt[0] == '-p':
+            interact_proxy = False
+            proxy = opt[1]
+
+    if len(args) < 2:
+        print_help()
+        sys.exit(1)
+
+    user = args[0]
+
+    try:
+        pwd.getpwnam(user)
+    except KeyError:
+        sys.stderr.write('User "%s" not found! Exiting.\n' % user)
+        sys.exit(1)
+
+    if not interact_proxy:
+        try:
+            get_proxy_info(user, proxy)
+        except condorExe.ExeError:
+            sys.stderr.write('Could not access proxy file "%s". Exiting.\n' % proxy)
+            sys.exit(1)
+
+    entry = args[1]
+
+    # Try GLIDEIN_FACTORY_DIR env var first
+    if 'GLIDEIN_FACTORY_DIR' in os.environ:
+        gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+    else:
+        gfactory_dir="."
+
+    curdir=os.getcwd()
+    os.chdir(gfactory_dir)
+
+    try:
+        glide_desc = glideFactoryConfig.GlideinDescript()
+    except IOError:
+        sys.stderr.write('"%s" not a valid factory dir. Exiting.\n' % gfactory_dir)
+        sys.exit(1)
+
+    try:
+        job_desc = glideFactoryConfig.JobDescript(entry)
+    except IOError:
+        sys.stderr.write('Entry "%s" not found! Exiting.\n' % entry)
+        sys.exit(1)
+
+    os.chdir(curdir)
+
+    if fork:
+        grid_type = job_desc.data['GridType']
+
+        if grid_type not in ALLOWED_FORK:
+            sys.stderr.write('fork is unsupported for gridtype "%s". Exiting.\n' % grid_type)
+            sys.exit(1)
+
+    script_args = None
+
+    if len(args) > 2:
+        script_infile = args[2]
+        if not os.path.exists(script_infile):
+            sys.stderr.write('Script file "%s" does not exist! Exiting.\n' % script_infile)
+            sys.exit(1)
+        if len(args) > 3:
+            script_args = args[3:]
+        mode = "ext"
+    else:
+        mode = "int"
+
+    if interact_proxy:
+        proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
+
+        out = proxy_lslt(user, proxy_dir)
+        # strip away newline chars
+        out = [i.rstrip() for i in out]
+
+        if len(out) <= 1:
+            sys.stderr.write("Could not find pilot proxies! Exiting.\n")
+            sys.exit(1)
+
+        count = 0
+        proxies = []
+        
+        proxy_select_list = []
+        for line in out[1:]:
+            if not line.endswith('.old'):
+                proxies.append(line.split()[8])
+                proxy_select_list.append("[%s] %s" % (count,line))
+                count += 1
+
+        if len(proxies) == 0:
+            sys.stderr.write("Only found old pilot proxies! Exiting.\n")
+            sys.exit(1)
+
+        print "Select proxy from %s:" % (proxy_dir)
+        for line in proxy_select_list:
+            print line
+        
+        while True:
+            try:
+                num = int(raw_input("[0-%s]:" % (len(proxies) - 1)))
+                if num >= 0 and num < len(proxies):
+                    break
+            except ValueError:
+                print "Input must be an integer [0-%s]." % (len(proxies) - 1)
+
+        proxy = "%s/%s" % (proxy_dir, proxies[num])
+    
+    tmpdir = tempfile.mkdtemp(prefix="testpilot_")
+
+    try:
+        os.chmod(tmpdir, 0755)
+        sub_file = os.path.join(tmpdir, "job.condor")
+        if mode == "int":
+            script_file = os.path.join(tmpdir, "testpilot.sh")
+        elif mode == "ext":
+            script_file = os.path.join(tmpdir, os.path.basename(script_infile))
+        user_dir = "%s/user_%s/glidein_%s" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
+        if not os.path.exists("%s/test" % user_dir):
+            condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
+
+        if mode == "int":
+            create_script(script_file)
+        elif mode == "ext":
+            shutil.copyfile(script_infile, script_file)
+            os.chmod(script_file, 0644)
+
+        #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
+        logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args, queue, fork)
+        
+        out,cluster,count = priv_submit(user, sub_file, proxy)
+        for i in out:
+            print i,
+        
+        print "Log files:"
+        print logs[0]
+        for l in logs[1:]:
+            l = re.sub(r'\$\(Cluster\)',str(cluster),l)
+            print re.sub(r'\$\(Process\)','*',l)
+        
+    finally:
+        shutil.rmtree(tmpdir)
+    
