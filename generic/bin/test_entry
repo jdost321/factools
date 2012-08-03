@@ -188,7 +188,7 @@ if __name__ == "__main__":
         if opt[0] == '-q':
             queue = int(opt[1])
             if queue < 1:
-                sys.stderr.write('queue must be >= 1. Exiting.\n' % queue)
+                sys.stderr.write('queue must be >= 1. Exiting.\n')
                 sys.exit(1)
         if opt[0] == '-p':
             interact_proxy = False
