@@ -20,41 +20,14 @@ else:
     print '"GLIDEIN_SRC_DIR" not defined. exiting.'
     sys.exit(1)
 
-import condorManager
 import glideFactoryConfig
-import condorLogParser
 import condorPrivsep
 import condorExe
 import glideFactoryLib
 
 #globals
-# statuses of lost connections
-lost_con_stats=('020','026','022','010','029')
-verbose = False
 ALLOWED_FORK = ('gt2', 'gt5')
 ALLOWED_RSL =  ('gt2', 'gt5', 'nordugrid')
-
-'''def createSubmitFile(sfile,log_dir,
-                     script_file, timeout, grid_type, gatekeeper):
-    fd=open(sfile,"w")
-    try:
-        fd.write("universe=grid\n")
-        fd.write("grid_resource=%s %s\n" % (grid_type, gatekeeper))
-        fd.write("executable=%s\n"%script_file)
-        fd.write("copy_to_spool=True\n")
-        fd.write("output=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).out"))
-        fd.write("error=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).err"))
-        fd.write("log=%s\n"%os.path.join(log_dir,"testpilot.$(Cluster).$(Process).log"))
-        fd.write("transfer_executable=True\n")
-        fd.write("when_to_transfer_output=ON_EXIT\n")
-        fd.write("notification=Never\n")
-        #fd.write("periodic_remove=(CurrentTime>%li)\n"%(long(time.time())+timeout+30)) # karakiri after timeout+delta
-        fd.write("stream_output=False\n")
-        fd.write("stream_error=False\n")
-        fd.write("queue\n")
-    finally:
-        fd.close()
-'''
 
 def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, fork=False):
     log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
@@ -125,77 +98,6 @@ def create_script(out_file, sleep_time=300):
     finally:
         fd.close()
 
-# returns tuple (True | False,status,message) True if job does not require removal (terminated or aborted) 
-def checkFile(fname,schedd_name, timeout):
-    interval = 5
-    deadline=time.time()+timeout
-    ptime = -1 # force the file to be read the first time
-    while True:
-        mtime = os.path.getmtime(fname)
-
-        if mtime > ptime:
-            status,message = getLastLogStatus(fname)
-            if verbose:
-                print message
-            # terminated or aborted
-            if status == '005' or status == '009':
-                return (True, status, message)
-            # failed to submit, held, or connection lost
-            elif status == '018' or status == '012' or status in lost_con_stats:
-                return (False, status, message)
-
-        time.sleep(interval)
-
-        if time.time() > deadline:
-            break
-        
-        ptime = mtime
-
-    raise RuntimeError, "Command did not reply within timeout (%ss)"%timeout
-
-def printFile(fname,outfd):
-    fd=open(fname)
-    try:
-        data=fd.read()
-        outfd.write(data)
-    finally:
-        fd.close()
-
-def getLastLogStatus(fname):
-    fin = open(fname)
-    
-    lines = fin.readlines()
-    fin.close()
-
-    # could i have done a for loop with negatives instead?
-    cur = len(lines)-1
-    end = -1
-    start = -1
-    while cur >= 0:
-        if lines[cur].startswith('...'):
-            end = cur
-        elif lines[cur][:3].isdigit():
-            start = cur
-            status = lines[cur][:3]
-            break
-        cur -= 1
-
-    # if can't find status number throw error
-    if start == -1:
-        raise RuntimeError, "Error retrieving status in:%s" % fname
-
-    # if couldn't find '...' string just print to eof
-    if end == -1:
-        end = len(lines)-1
-        
-    # could i have done a for loop with negatives instead?
-    message = ""
-    for i in range(start,end+1):
-        message += lines[i]
-    
-    message = message.rstrip()
-    return status,message
-
 # should we ever attempt without privsep like glidein does?
 def priv_submit(username, sub_file, x509_proxy_fname, schedd_name=None):
     cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
@@ -212,13 +114,6 @@ def priv_submit(username, sub_file, x509_proxy_fname, schedd_name=None):
         submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
     cluster,count=glideFactoryLib.extractJobId(submit_out)
     return submit_out,cluster,count
-
-# what if user / entry create invalid path?
-'''def getLogDir(user, entry):
-    glide_conf = glideFactoryConfig.GlideinDescript()
-    return os.path.join(glide_conf.data['ClientLogBaseDir'],"user_%s/glidein_%s/entry_%s"
-        % (user, glide_conf.data['GlideinName'],entry))
-'''
 
 def get_proxy_dir(glide_desc, job_desc, user):
     return "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
@@ -322,10 +217,6 @@ if __name__ == "__main__":
         sys.stderr.write("Could not find pilot proxies! Exiting.\n")
         sys.exit(1)
 
-    #for p in proxies:
-    #    if not p.endswith('.old'):
-    #        print "%s Seconds Left: %s" % (p, get_proxy_life(user, "%s/%s" % (proxy_dir, p)))
-
     count = 0
     proxies = []
     
@@ -353,8 +244,6 @@ if __name__ == "__main__":
             print "Input must be an integer [0-%s]." % (len(proxies) - 1)
 
     proxy = "%s/%s" % (proxy_dir, proxies[num])
-    
-    #schedd_name=job_desc.data['Schedd']
     
     tmpdir = tempfile.mkdtemp(prefix="testpilot_")
 
