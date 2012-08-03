@@ -121,15 +121,26 @@ def get_proxy_dir(glide_desc, job_desc, user):
 
 # return list of proxies
 def proxy_ls(user, proxy_dir):
-    out = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
-    # strip away newline chars
-    return [i[:-1] for i in out]
+    return condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
 
 # return long list of proxies; time sorted
 def proxy_lslt(user, proxy_dir):
-    out = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
-    # strip away newline chars
-    return [i[:-1] for i in out]
+    return = condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
+
+# shamelessly stolen from glideinWMS/factory/tools/proxy_info exec_info
+# unfortunately couldn't import since it doesn't check for main
+def get_proxy_info(user, proxy_file):
+    try:
+        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+    except:
+        print "ERROR: voms-proxy-info not found, but needed"
+        return 1
+
+    env=[]
+    for k in os.environ.keys():
+       env.append('%s=%s'%(k,os.environ[k]))
+
+    return condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-file', proxy_file],env)
 
 def get_proxy_life(user, proxy_file):
     try:
@@ -157,18 +168,22 @@ if __name__ == "__main__":
     # this will fail immediately if not in correct dir for now..
     glide_desc = glideFactoryConfig.GlideinDescript()
     try:
-        opts,args = getopt.getopt(sys.argv[1:],'hf')
+        opts,args = getopt.getopt(sys.argv[1:],'hfp:')
     except getopt.GetoptError:
         print_help()
         sys.exit(1)
 
     fork = False
+    interact_proxy = True   
     for opt in opts:
         if opt[0] == '-h':
             print_help()
             sys.exit(0)
         if opt[0] == '-f':
             fork = True
+        if opt[0] == '-p':
+            interact_proxy = False
+            proxy = opt[1]
 
     if len(args) < 2:
         print_help()
@@ -181,6 +196,13 @@ if __name__ == "__main__":
     except KeyError:
         sys.stderr.write('User "%s" not found! Exiting.\n' % user)
         sys.exit(1)
+
+    if not interact_proxy:
+        try:
+            get_proxy_info(user, proxy)
+        except condorExe.ExeError:
+            sys.stderr.write('Could not access proxy file %s. Exiting.\n' % proxy)
+            sys.exit(1)
 
     entry = args[1]
 
@@ -210,40 +232,44 @@ if __name__ == "__main__":
     else:
         mode = "int"
 
-    proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
-    out = proxy_lslt(user, proxy_dir)
+    if interact_proxy:
+        proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
 
-    if len(out) <= 1:
-        sys.stderr.write("Could not find pilot proxies! Exiting.\n")
-        sys.exit(1)
+        out = proxy_lslt(user, proxy_dir)
+        # strip away newline chars
+        out = [i.strip() for i in out]
 
-    count = 0
-    proxies = []
-    
-    proxy_select_list = []
-    for line in out[1:]:
-        if not line.endswith('.old'):
-            proxies.append(line.split()[8])
-            proxy_select_list.append("[%s] %s" % (count,line))
-            count += 1
+        if len(out) <= 1:
+            sys.stderr.write("Could not find pilot proxies! Exiting.\n")
+            sys.exit(1)
 
-    if len(proxies) == 0:
-        sys.stderr.write("Only found old pilot proxies! Exiting.\n")
-        sys.exit(1)
+        count = 0
+        proxies = []
+        
+        proxy_select_list = []
+        for line in out[1:]:
+            if not line.endswith('.old'):
+                proxies.append(line.split()[8])
+                proxy_select_list.append("[%s] %s" % (count,line))
+                count += 1
 
-    print "Select proxy from %s:" % (proxy_dir)
-    for line in proxy_select_list:
-        print line
-    
-    while True:
-        try:
-            num = int(raw_input("[0-%s]:" % (len(proxies) - 1)))
-            if num >= 0 and num < len(proxies):
-                break
-        except ValueError:
-            print "Input must be an integer [0-%s]." % (len(proxies) - 1)
+        if len(proxies) == 0:
+            sys.stderr.write("Only found old pilot proxies! Exiting.\n")
+            sys.exit(1)
 
-    proxy = "%s/%s" % (proxy_dir, proxies[num])
+        print "Select proxy from %s:" % (proxy_dir)
+        for line in proxy_select_list:
+            print line
+        
+        while True:
+            try:
+                num = int(raw_input("[0-%s]:" % (len(proxies) - 1)))
+                if num >= 0 and num < len(proxies):
+                    break
+            except ValueError:
+                print "Input must be an integer [0-%s]." % (len(proxies) - 1)
+
+        proxy = "%s/%s" % (proxy_dir, proxies[num])
     
     tmpdir = tempfile.mkdtemp(prefix="testpilot_")
 
