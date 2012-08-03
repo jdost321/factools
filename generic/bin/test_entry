@@ -167,8 +167,6 @@ OPTIONS:
 -p PROXY   use specified PROXY instead of opening interactive selection'''
 
 if __name__ == "__main__":
-    # this will fail immediately if not in correct dir for now..
-    glide_desc = glideFactoryConfig.GlideinDescript()
     try:
         opts,args = getopt.getopt(sys.argv[1:],'hfq:p:')
     except getopt.GetoptError:
@@ -215,11 +213,28 @@ if __name__ == "__main__":
 
     entry = args[1]
 
+    # Try GLIDEIN_FACTORY_DIR env var first
+    if 'GLIDEIN_FACTORY_DIR' in os.environ:
+        gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+    else:
+        gfactory_dir="."
+
+    curdir=os.getcwd()
+    os.chdir(gfactory_dir)
+
+    try:
+        glide_desc = glideFactoryConfig.GlideinDescript()
+    except IOError:
+        sys.stderr.write('"%s" not a valid factory dir. Exiting.\n' % gfactory_dir)
+        sys.exit(1)
+
     try:
         job_desc = glideFactoryConfig.JobDescript(entry)
     except IOError:
         sys.stderr.write('Entry "%s" not found! Exiting.\n' % entry)
         sys.exit(1)
+
+    os.chdir(curdir)
 
     if fork:
         grid_type = job_desc.data['GridType']
