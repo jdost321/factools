@@ -79,13 +79,13 @@ if __name__ == "__main__":
         elif opt[0] == '-f':
             start_exp = "attrs['condor_started'] == 'False'"
         elif opt[0] == '-e':
-            end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) < %s" % opt[1]
+            end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) < %i" % int(opt[1])
         elif opt[0] == '-E':
-            end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) >= %s" % opt[1]
+            end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) >= %i" % int(opt[1])
         elif opt[0] == '-d':
-            dur_exp = "int(attrs['duration']) <= %s" % opt[1]
+            dur_exp = "int(attrs['duration']) <= %i" % int(opt[1])
         elif opt[0] == '-D':
-            dur_exp = "int(attrs['duration']) >= %s" % opt[1]
+            dur_exp = "int(attrs['duration']) >= %i" % int(opt[1])
             
     if start_exp is not None:
         match_exp = "%s and %s" % (match_exp, start_exp)
