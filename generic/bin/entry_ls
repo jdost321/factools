@@ -50,10 +50,6 @@ if __name__ == "__main__":
         print_help()
         sys.exit(1)
 
-    if len(opts) > 0 and opts[0][0] == '-h':
-        print_help()
-        sys.exit(0)
-
     if len(args) != 3:
         print_help()
         sys.exit(1)
