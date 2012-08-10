@@ -14,10 +14,6 @@ Ultimately the goal is to make all scripts eventually become generic and move
 away from the factory specific dirs.  Scripts in generic/ may also become
 possible candidates to be contributed back to glideinWMS.
 
-Symlinks may be set up from inside the specific dirs pointing to the scripts in
-the generic/ tree once they are migrated so that nothing has to be updated on
-the factory instance when the transition occurs.
-
 Usage
 -----
 In this document and other READMEs $FACTOOLS is used for installation location.
@@ -26,7 +22,7 @@ To install the repo and make the scripts available in a working factory:
 1. clone the repo:
 git clone git://github.com/jdost321/factools.git
 2. edit .bash_profile for factory user (likely gfactory) and add:
-export PATH=$PATH:$FACTOOLS/<factory name>/bin/
+export PATH=$PATH:$FACTOOLS/<factory name>/bin/:$FACTOOLS/generic/bin/
 export GLIDEIN_FACTORY_DIR=<location of current factory instance>
 export GLIDEIN_MAIL_REPLY_TO=<email to put in Reply-to: field of reports>
 export GLIDEIN_SRC_DIR=<path to glideinWMS source code dir>
