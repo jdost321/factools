@@ -43,70 +43,81 @@ the following OPTIONS.
 -D DURATION  show jobs that lasted at least DURATION seconds 
 ''',
 
-opts,args = getopt.getopt(sys.argv[1:],'holtfe:E:d:D:')
+if __name__ == "__main__":
+    try:
+        opts,args = getopt.getopt(sys.argv[1:],'holtfe:E:d:D:')
+    except:
+        print_help()
+        sys.exit(1)
 
-if len(opts) > 0 and opts[0][0] == '-h':
-    print_help()
-    sys.exit(0)
+    if len(opts) > 0 and opts[0][0] == '-h':
+        print_help()
+        sys.exit(0)
 
-entry,user,date = args
+    if len(args) != 3:
+        print_help()
+        sys.exit(1)
+    entry,user,date = args
 
-suffix = "err"
-match_exp = "name == 'job' and attrs['username'] == user"
-start_exp = None
-end_exp = None
-dur_exp = None
-long=False
+    suffix = "err"
+    match_exp = "name == 'job' and attrs['username'] == user"
+    start_exp = None
+    end_exp = None
+    dur_exp = None
+    long=False
 
-for opt in opts:
-    if opt[0] == '-o':
-        suffix = "out"
-    elif opt[0] == '-l':
-        long = True
-    elif opt[0] == '-t':
-        start_exp = "attrs['condor_started'] == 'True'"
-    elif opt[0] == '-f':
-        start_exp = "attrs['condor_started'] == 'False'"
-    elif opt[0] == '-e':
-        end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) < %s" % opt[1]
-    elif opt[0] == '-E':
-        end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) >= %s" % opt[1]
-    elif opt[0] == '-d':
-        dur_exp = "int(attrs['duration']) <= %s" % opt[1]
-    elif opt[0] == '-D':
-        dur_exp = "int(attrs['duration']) >= %s" % opt[1]
-        
-if start_exp is not None:
-    match_exp = "%s and %s" % (match_exp, start_exp)
-if end_exp is not None:       
-    match_exp = "%s and %s" % (match_exp, end_exp)
-if dur_exp is not None:       
-    match_exp = "%s and %s" % (match_exp, dur_exp)
+    for opt in opts:
+        if opt[0] == '-h':
+            print_help()
+            sys.exit(0)
+        elif opt[0] == '-o':
+            suffix = "out"
+        elif opt[0] == '-l':
+            long = True
+        elif opt[0] == '-t':
+            start_exp = "attrs['condor_started'] == 'True'"
+        elif opt[0] == '-f':
+            start_exp = "attrs['condor_started'] == 'False'"
+        elif opt[0] == '-e':
+            end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) < %s" % opt[1]
+        elif opt[0] == '-E':
+            end_exp = "int(attrs['terminated'].split('T')[1].split(':')[0]) >= %s" % opt[1]
+        elif opt[0] == '-d':
+            dur_exp = "int(attrs['duration']) <= %s" % opt[1]
+        elif opt[0] == '-D':
+            dur_exp = "int(attrs['duration']) >= %s" % opt[1]
+            
+    if start_exp is not None:
+        match_exp = "%s and %s" % (match_exp, start_exp)
+    if end_exp is not None:       
+        match_exp = "%s and %s" % (match_exp, end_exp)
+    if dur_exp is not None:       
+        match_exp = "%s and %s" % (match_exp, dur_exp)
 
-#print match_exp
-match_exp = compile(match_exp, '<string>', 'eval')
+    #print match_exp
+    match_exp = compile(match_exp, '<string>', 'eval')
 
-factory_dir = os.environ['GLIDEIN_FACTORY_DIR']
+    factory_dir = os.environ['GLIDEIN_FACTORY_DIR']
 
-fin = open(os.path.join(factory_dir,"log/entry_%s/completed_jobs_%s.log" % (entry, date)))
+    fin = open(os.path.join(factory_dir,"log/entry_%s/completed_jobs_%s.log" % (entry, date)))
 
-# write into a temporary xml file and add root tags to make expat happy
-tmp = tempfile.TemporaryFile()
-tmp.write("<r>")
+    # write into a temporary xml file and add root tags to make expat happy
+    tmp = tempfile.TemporaryFile()
+    tmp.write("<r>")
 
-for line in fin:
-    tmp.write(line)
-fin.close()
+    for line in fin:
+        tmp.write(line)
+    fin.close()
 
-tmp.write("</r>")
+    tmp.write("</r>")
 
-tmp.flush()
+    tmp.flush()
 
-tmp.seek(0)
+    tmp.seek(0)
 
-xmlparser = xml.parsers.expat.ParserCreate()
-xmlparser.StartElementHandler = start_element
+    xmlparser = xml.parsers.expat.ParserCreate()
+    xmlparser.StartElementHandler = start_element
 
-xmlparser.ParseFile(tmp)
+    xmlparser.ParseFile(tmp)
 
-tmp.close()
+    tmp.close()
