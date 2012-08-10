@@ -8,19 +8,23 @@ import getopt
 import stat
 import time
 
-def create_start_element_fun(match_exp, suffix, factory_dir):
-    def start_element(name, attrs):
-        if eval(match_exp):
-        #if name == 'job' and attrs['username'] == user:
-            cluster,proc = attrs['id'].split(".")
-            logname=os.path.join(factory_dir,"client_log/user_%s/entry_%s/job.%i.%i.%s" % (user,entry,int(cluster),int(proc),suffix))
-            if long:
-               s=os.stat(logname)
-               print time.ctime(s[stat.ST_MTIME]), "%10i"%s[stat.ST_SIZE], "%6o"%s[stat.ST_MODE], logname
-            else:
-               print logname
-
-    return start_element
+# assumes the following globals are defined:
+# match_exp
+# factory_dir
+# user
+# entry
+# suffix
+# long
+def start_element(name, attrs):
+    if eval(match_exp):
+    #if name == 'job' and attrs['username'] == user:
+        cluster,proc = attrs['id'].split(".")
+        logname=os.path.join(factory_dir,"client_log/user_%s/entry_%s/job.%i.%i.%s" % (user,entry,int(cluster),int(proc),suffix))
+        if long:
+            s=os.stat(logname)
+            print time.ctime(s[stat.ST_MTIME]), "%10i"%s[stat.ST_SIZE], "%6o"%s[stat.ST_MODE], logname
+        else:
+            print logname
 
 def print_help():
     print '''\
@@ -101,9 +105,8 @@ tmp.flush()
 tmp.seek(0)
 
 xmlparser = xml.parsers.expat.ParserCreate()
-xmlparser.StartElementHandler = create_start_element_fun(match_exp,suffix,factory_dir)
+xmlparser.StartElementHandler = start_element
 
 xmlparser.ParseFile(tmp)
 
 tmp.close()
-
