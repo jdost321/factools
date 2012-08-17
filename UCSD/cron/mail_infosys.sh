@@ -11,7 +11,7 @@ emails=$1
 subject="Infosys Report `date +%m-%d-%Y`"
 conf=/home/gfactory/glideinsubmit/glidein_Production_v4_3/glideinWMS.xml
 script_dir=`dirname $0`
-body=`${script_dir}/../libexec/check_infosys.py $conf`
+body=`${script_dir}/../../generic/libexec/check_infosys.py $conf`
 
 #echo "$body"
 /usr/sbin/sendmail -oi -t <<EOF
