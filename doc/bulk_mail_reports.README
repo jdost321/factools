@@ -2,7 +2,7 @@ bulk_email_reports
 ------------------
 setup:
 1. create config file, e.g.:
-$FACTOOLS/<factory name>/etc/ae_morning.conf
+$FACTOOLS/etc/ae_morning.conf
 
 The formatting for each line is:
 <mode> <target> <interval> <list of email addresses to send to>
@@ -22,4 +22,4 @@ interval (in hours):
 168
 
 2. set line in crontab, e.g. to run at 7:01 am every day:
-1 7 * * * $FACTOOLS/<factory name>/cron/bulk_mail_reports.sh $FACTOOLS/<factory name>/etc/ae_morning.conf> /dev/null 2>&1
+1 7 * * * $FACTOOLS/<factory name>/cron/bulk_mail_reports.sh $FACTOOLS/etc/ae_morning.conf> /dev/null 2>&1
