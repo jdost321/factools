@@ -11,7 +11,7 @@ emails=$1
 
 factory_name="GOC Factory"
 subject="${factory_name} Disk Warning `date +%m-%d-%Y`"
-limit=90
+limit=80
 
 out=`df -h`
 
