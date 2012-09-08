@@ -23,11 +23,62 @@ else:
 import glideFactoryConfig
 import condorPrivsep
 import condorExe
+import condorMonitor
 import glideFactoryLib
 
 #globals
 ALLOWED_FORK = ('gt2', 'gt5')
 ALLOWED_RSL =  ('gt2', 'gt5', 'nordugrid')
+
+def get_glidein_args(gfactory_dir, entry):
+    fin = open(os.path.join(gfactory_dir, "entry_%s/job.condor" % entry))
+    try:
+        for line in fin:
+            args = re.sub(r'^Arguments\s*=\s*','',line)
+            if args != line:
+                fin.close()
+                return args.split()
+    finally:
+        fin.close()
+
+def get_glidein_params(glide_desc, job_params, client_name, entry):
+    status_constraint='(Name=?="%s@%s@%s@%s")'%(entry,glide_desc.data['GlideinName'],glide_desc.data['FactoryName'],client_name)
+    status=condorMonitor.CondorStatus("any")
+    status.load(status_constraint)
+    data=status.fetchStored()
+    classad = data[data.keys()[0]]
+
+    client_web_url = classad['WebURL']
+    client_signtype = classad['WebSignType']
+    client_descript = classad['WebDescriptFile']
+    client_sign = classad['WebDescriptSign']
+    client_group = classad['GroupName']
+    client_group_web_url = classad['WebGroupURL']
+    client_group_descript = classad['WebGroupDescriptFile']
+    client_group_sign = classad['WebGroupDescriptSign']
+    client_web=glideFactoryLib.ClientWeb(client_web_url,
+        client_signtype,
+        client_descript,client_sign,
+        client_group,client_group_web_url,
+        client_group_descript,client_group_sign)
+
+    params_arr = client_web.get_glidein_args()
+
+    params = {}
+    for attr in classad:
+        if attr.startswith('GlideinParam'):
+            params[attr[12:]] = classad[attr]
+
+    # add default values if not defined
+    for k in job_params.data.keys():
+        if not (k in params.keys()):
+            params[k]=job_params.data[k]
+
+    for k in params:
+        params_arr.append("-param_%s" % k)
+        params_arr.append(glideFactoryLib.escapeParam(params[k]))
+
+    return params_arr
 
 def create_submit_file(sub_file, script_file, glide_desc, job_desc, user, args=None, queue=1, fork=False):
     log_dir = "%s/user_%s/glidein_%s/test" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
@@ -170,7 +221,7 @@ OPTIONS:
 
 if __name__ == "__main__":
     try:
-        opts,args = getopt.getopt(sys.argv[1:],'hfq:p:')
+        opts,args = getopt.getopt(sys.argv[1:],'hfq:p:g:')
     except getopt.GetoptError:
         print_help()
         sys.exit(1)
@@ -179,6 +230,7 @@ if __name__ == "__main__":
     fork = False
     interact_proxy = True   
     queue = 1
+    client_name = None
     for opt in opts:
         if opt[0] == '-h':
             print_help()
@@ -193,6 +245,8 @@ if __name__ == "__main__":
         if opt[0] == '-p':
             interact_proxy = False
             proxy = opt[1]
+        if opt[0] == '-g':
+            client_name = opt[1]
 
     if len(args) < 2:
         print_help()
@@ -229,9 +283,13 @@ if __name__ == "__main__":
     except IOError:
         sys.stderr.write('"%s" not a valid factory dir. Exiting.\n' % gfactory_dir)
         sys.exit(1)
-
     try:
         job_desc = glideFactoryConfig.JobDescript(entry)
+    except IOError:
+        sys.stderr.write('Entry "%s" not found! Exiting.\n' % entry)
+        sys.exit(1)
+    try:
+        job_params = glideFactoryConfig.JobParams(entry)
     except IOError:
         sys.stderr.write('Entry "%s" not found! Exiting.\n' % entry)
         sys.exit(1)
@@ -246,17 +304,27 @@ if __name__ == "__main__":
             sys.exit(1)
 
     script_args = None
+    env = []
 
-    if len(args) > 2:
-        script_infile = args[2]
-        if not os.path.exists(script_infile):
-            sys.stderr.write('Script file "%s" does not exist! Exiting.\n' % script_infile)
-            sys.exit(1)
-        if len(args) > 3:
-            script_args = args[3:]
-        mode = "ext"
+    if client_name is not None:
+        mode = "glide"
+        script_args = get_glidein_args(gfactory_dir, entry)
+        env.append("GLIDEIN_VERBOSITY=check")
+        env.append("GLIDEIN_CLIENT=%s" % client_name)
+        # for now just spoof the real entry schedd.. not sure how the glidein uses this info.
+        env.append("GLIDEIN_SCHEDD=%s" % job_desc.data['Schedd'])
+        env.append("GLIDEIN_PARAMS=%s" % " ".join(get_glidein_params(glide_desc, job_params, client_name, entry)))
     else:
-        mode = "int"
+        if len(args) > 2:
+            script_infile = args[2]
+            if not os.path.exists(script_infile):
+                sys.stderr.write('Script file "%s" does not exist! Exiting.\n' % script_infile)
+                sys.exit(1)
+            if len(args) > 3:
+                script_args = args[3:]
+            mode = "ext"
+        else:
+            mode = "int"
 
     if interact_proxy:
         proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
@@ -306,6 +374,9 @@ if __name__ == "__main__":
             script_file = os.path.join(tmpdir, "testpilot.sh")
         elif mode == "ext":
             script_file = os.path.join(tmpdir, os.path.basename(script_infile))
+        elif mode == "glide":
+            script_file = os.path.join(tmpdir, "glidein_startup.sh")
+
         user_dir = "%s/user_%s/glidein_%s" % (glide_desc.data['ClientLogBaseDir'],user,glide_desc.data['GlideinName'])
         if not os.path.exists("%s/test" % user_dir):
             condorPrivsep.execute(user,user_dir,'/bin/mkdir',['/bin/mkdir','test'])
@@ -315,11 +386,14 @@ if __name__ == "__main__":
         elif mode == "ext":
             shutil.copyfile(script_infile, script_file)
             os.chmod(script_file, 0644)
+        elif mode == "glide":
+            shutil.copyfile(os.path.join(gfactory_dir, "glidein_startup.sh"), script_file)
+            os.chmod(script_file, 0644)
 
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
         logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args, queue, fork)
         
-        out,cluster,count = priv_submit(user, sub_file, proxy)
+        out,cluster,count = priv_submit(user, sub_file, proxy, env)
         for i in out:
             print i,
         
