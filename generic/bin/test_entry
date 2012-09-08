@@ -99,7 +99,7 @@ def create_script(out_file, sleep_time=300):
         fd.close()
 
 # should we ever attempt without privsep like glidein does?
-def priv_submit(username, sub_file, x509_proxy_fname, env=() schedd_name=None):
+def priv_submit(username, sub_file, x509_proxy_fname, env=(), schedd_name=None):
     cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
     exe_env = []
     exe_env.extend(env)
