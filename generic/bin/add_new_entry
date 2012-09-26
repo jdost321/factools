@@ -30,27 +30,36 @@ import xmlParse
 def main(params,tmpl_params,bdii_data,bdii_srv,
          oldname,newname,
          comment,
-         new_xml):
+         new_xml,
+         site_name):
 
     bdii_name=bdii_data.keys()[0]
     bdii_el=bdii_data[bdii_name]
 
     params.data['entries'][newname]=copy.deepcopy(tmpl_params.data['entries'][oldname])
 
+    jobmanager = bdii_el['GlueCEInfoJobManager'][0]
     if bdii_el.has_key('GlueCEInfoGRAMVersion') and bdii_el['GlueCEInfoGRAMVersion'][0]=='2.0':
         gridtype='gt2'
-        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0])
+        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],jobmanager)
         rsl="(queue=%s)(jobtype=single)"%bdii_el['GlueCEName'][0]
     elif bdii_el.has_key('GlueCEInfoGRAMVersion') and bdii_el['GlueCEInfoGRAMVersion'][0]=='5.0':
         gridtype='gt5'
-        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0])
+        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],jobmanager)
         rsl="(queue=%s)(jobtype=single)"%bdii_el['GlueCEName'][0]
     elif bdii_el.has_key('GlueCEImplementationName') and bdii_el['GlueCEImplementationName'][0]=='CREAM':
         rsl = None
         gridtype='cream'
-        gatekeeper="https://%s:%s/ce-cream/services/CREAM2 %s %s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0],bdii_el['GlueCEName'][0])
+        gatekeeper="https://%s:%s/ce-cream/services/CREAM2 %s %s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],jobmanager,bdii_el['GlueCEName'][0])
     else:
         raise RuntimeError, "Not a gt2 or cream site, aborting"
+
+    if jobmanager == 'condor':
+        work_dir = 'Condor'
+    elif bdii_srv == 'is.grid.iu.edu':
+        work_dir = 'OSG'
+    else:
+        work_dir = '.'
 
     # to be improved
     max_cputime = None
@@ -74,6 +83,8 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
     entry['schedd_name']=None
     entry['infosys_refs']= [xmlParse.OrderedDict({'comment': None, u'type': u'BDII', u'ref': bdii_name, u'server': bdii_srv})]
     entry['attrs'][u'GLIDEIN_Max_Walltime']=xmlParse.OrderedDict({'comment': None, u'const': u'True', u'parameter': u'True', u'glidein_publish': u'False', u'value': u'%i'%max_walltime, u'publish': u'True', u'job_publish': u'False', u'type': u'int'})
+    entry['attrs'][u'GLIDEIN_Site']=xmlParse.OrderedDict({'comment': None, u'const': u'True', u'parameter': u'True', u'glidein_publish': u'False', u'value': u'%s'%site_name, u'publish': u'True', u'job_publish': u'True', u'type': u'string'})
+    entry['work_dir'] = work_dir
 
     print "Added %s"%newname
     params.save_into_file(new_xml)
@@ -96,13 +107,14 @@ if __name__ == '__main__':
         sys.exit(1)
 
     xml_fname=argv[1]
-    bdii_srv=argv[2]
-    bdii_id=argv[3]
-    tmpl_fname=argv[4]
-    newname=argv[5]
-    new_xml=argv[6]
-    if len(argv)>=8:
-        comment=argv[7]
+    tmpl_fname=argv[2]
+    new_xml=argv[3]
+    bdii_srv=argv[4]
+    bdii_id=argv[5]
+    newname=argv[6]
+    site_name=argv[7]
+    if len(argv)>=9:
+        comment=argv[8]
     else:
         comment=None
 
@@ -145,7 +157,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml)
+        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name)
     except RuntimeError, e:
         print params.usage()
         print ""
