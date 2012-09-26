@@ -39,16 +39,16 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
 
     if bdii_el.has_key('GlueCEInfoGRAMVersion') and bdii_el['GlueCEInfoGRAMVersion'][0]=='2.0':
         gridtype='gt2'
-        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEHostingCluster'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0])
+        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0])
         rsl="(queue=%s)(jobtype=single)"%bdii_el['GlueCEName'][0]
     elif bdii_el.has_key('GlueCEInfoGRAMVersion') and bdii_el['GlueCEInfoGRAMVersion'][0]=='5.0':
         gridtype='gt5'
-        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEHostingCluster'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0])
+        gatekeeper="%s:%s/jobmanager-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0])
         rsl="(queue=%s)(jobtype=single)"%bdii_el['GlueCEName'][0]
     elif bdii_el.has_key('GlueCEImplementationName') and bdii_el['GlueCEImplementationName'][0]=='CREAM':
         rsl = None
         gridtype='cream'
-        gatekeeper="https://%s:%s/ce-cream/services/CREAM2 %s %s"%(bdii_el['GlueCEHostingCluster'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0],bdii_el['GlueCEName'][0])
+        gatekeeper="https://%s:%s/ce-cream/services/CREAM2 %s %s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],bdii_el['GlueCEInfoJobManager'][0],bdii_el['GlueCEName'][0])
     else:
         raise RuntimeError, "Not a gt2 or cream site, aborting"
 
@@ -59,6 +59,9 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
     max_walltime=int(bdii_el['GlueCEPolicyMaxWallClockTime'][0])*60-1800
     if not max_cputime is None and max_cputime < max_walltime:
         max_walltime = max_cputime
+
+    if max_walltime > 171000:
+        max_walltime = 171000
     
     entry=params.data['entries'][newname]
     entry['gridtype']=gridtype
