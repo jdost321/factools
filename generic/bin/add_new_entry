@@ -24,6 +24,7 @@ else:
 import cgWParams
 import ldapMonitor
 import xmlParse
+import getopt
     
 ################################################################################
 
@@ -105,41 +106,43 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
 ############################################################
 
 if __name__ == '__main__':
-    usage_prefix="add_entry xml bdii_srv bdii_id oldname newname new_xml [comment]"
-    argv=sys.argv
-    if len(argv)<7:
+    usage_prefix="add_entry [-p plugin] xml tmpl_xml new_xml bdii_srv bdii_id entry_name GLIDEIN_Site vo_name comment [plugin_arg]..."
+
+    try:
+        opts,args = getopt.getopt(sys.argv[1:], 'hp:')
+    except getopt.GetoptError:
         print usage_prefix
         sys.exit(1)
+    
+    plugin = None
 
-    xml_fname=argv[1]
-    tmpl_fname=argv[2]
-    new_xml=argv[3]
-    bdii_srv=argv[4]
-    bdii_id=argv[5]
-    newname=argv[6]
-    site_name=argv[7]
-    vo_name=argv[8]
-    comment=argv[9]
-    '''if len(argv)>=9:
-        comment=argv[8]
-    else:
-        comment=None
-    '''
-    if len(argv) >= 11:
-        plugin = argv[10]
-    else:
-        plugin = none
+    for opt in opts:
+        if opt[0] == '-h':
+            print usage_prefix
+            sys.exit(0)
+        if opt[0] == '-p':
+            plugin = opt[1]
+    
+    xml_fname=args[0]
+    tmpl_fname=args[1]
+    new_xml=args[2]
+    bdii_srv=args[3]
+    bdii_id=args[4]
+    newname=args[5]
+    site_name=args[6]
+    vo_name=args[7]
+    comment=args[8]
 
     oldname="template"
             
     try:
         tmpl_params=cgWParams.GlideinParams("",os.path.join(STARTUP_DIR,"web_base"),["",tmpl_fname])
     except RuntimeError,e:
-        print "Failed to load the file: %s"%xml_fname
+        print "Failed to load the file: %s"%tmpl_fname
         print e
         sys.exit(1)
     try:
-        params=cgWParams.GlideinParams(usage_prefix,os.path.join(STARTUP_DIR,"web_base"),argv)
+        params=cgWParams.GlideinParams(usage_prefix,os.path.join(STARTUP_DIR,"web_base"),["",xml_fname])
     except RuntimeError,e:
         print "Failed to load the file: %s"%xml_fname
         print e
@@ -169,7 +172,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name, vo_name, plugin, argv[11:])
+        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name, vo_name, plugin, [plugin] + args[9:])
     except RuntimeError, e:
         print params.usage()
         print ""
