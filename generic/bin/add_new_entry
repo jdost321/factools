@@ -31,7 +31,8 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
          oldname,newname,
          comment,
          new_xml,
-         site_name):
+         site_name, vo_name,
+         plugin, argv):
 
     bdii_name=bdii_data.keys()[0]
     bdii_el=bdii_data[bdii_name]
@@ -83,8 +84,12 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
     entry['schedd_name']=None
     entry['infosys_refs']= [xmlParse.OrderedDict({'comment': None, u'type': u'BDII', u'ref': bdii_name, u'server': bdii_srv})]
     entry['attrs'][u'GLIDEIN_Max_Walltime']=xmlParse.OrderedDict({'comment': None, u'const': u'True', u'parameter': u'True', u'glidein_publish': u'False', u'value': u'%i'%max_walltime, u'publish': u'True', u'job_publish': u'False', u'type': u'int'})
-    entry['attrs'][u'GLIDEIN_Site']=xmlParse.OrderedDict({'comment': None, u'const': u'True', u'parameter': u'True', u'glidein_publish': u'False', u'value': u'%s'%site_name, u'publish': u'True', u'job_publish': u'True', u'type': u'string'})
+    entry['attrs'][u'GLIDEIN_Site']=xmlParse.OrderedDict({'comment': None, u'const': u'True', u'glidein_publish': u'True', u'job_publish': u'True', u'parameter': u'True', u'publish': u'True', u'type': u'string', u'value': unicode(site_name)})
+    entry['attrs'][u'GLIDEIN_Supported_VOs']=xmlParse.OrderedDict({'comment': None, u'const': u'True', u'glidein_publish': u'False', u'job_publish': u'False', u'parameter': u'True', u'publish': u'True', u'type': u'string', u'value': unicode(vo_name)})
     entry['work_dir'] = work_dir
+
+    if plugin is not None:
+        execfile(plugin)
 
     print "Added %s"%newname
     params.save_into_file(new_xml)
@@ -113,10 +118,17 @@ if __name__ == '__main__':
     bdii_id=argv[5]
     newname=argv[6]
     site_name=argv[7]
-    if len(argv)>=9:
+    vo_name=argv[8]
+    comment=argv[9]
+    '''if len(argv)>=9:
         comment=argv[8]
     else:
         comment=None
+    '''
+    if len(argv) >= 11:
+        plugin = argv[10]
+    else:
+        plugin = none
 
     oldname="template"
             
@@ -157,7 +169,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name)
+        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name, vo_name, plugin, argv[11:])
     except RuntimeError, e:
         print params.usage()
         print ""
