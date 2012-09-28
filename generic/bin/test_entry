@@ -76,7 +76,7 @@ def get_glidein_params(glide_desc, job_params, client_name, entry):
 
     for k in params:
         params_arr.append("-param_%s" % k)
-        params_arr.append(glideFactoryLib.escapeParam(params[k]))
+        params_arr.append(glideFactoryLib.escapeParam(str(params[k])))
 
     return params_arr
 
