@@ -150,7 +150,7 @@ def create_script(out_file, sleep_time=300):
         fd.close()
 
 # should we ever attempt without privsep like glidein does?
-def priv_submit(username, sub_file, x509_proxy_fname, env=(), schedd_name=None):
+def priv_submit(username, sub_file, x509_proxy_fname, env=(), init_dir=".", schedd_name=None):
     cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
     exe_env = []
     exe_env.extend(env)
@@ -162,9 +162,9 @@ def priv_submit(username, sub_file, x509_proxy_fname, env=(), schedd_name=None):
                                 exe_env.append('%s=%s'%(var,os.environ[var]))
 
     if schedd_name is None:
-        submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,sub_file],exe_env)
+        submit_out=condorPrivsep.execute(username,init_dir,cond_sub_path,[cond_sub_path,sub_file],exe_env)
     else:
-        submit_out=condorPrivsep.execute(username,".",cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
+        submit_out=condorPrivsep.execute(username,init_dir,cond_sub_path,[cond_sub_path,'-name',schedd_name,sub_file],exe_env)
     cluster,count=glideFactoryLib.extractJobId(submit_out)
     return submit_out,cluster,count
 
@@ -172,13 +172,9 @@ def get_proxy_dir(glide_desc, job_desc, user):
     return "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
         glide_desc.data['GlideinName'],job_desc.data['EntryName'])
 
-# return list of proxies
-def proxy_ls(user, proxy_dir):
-    return condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls',proxy_dir])
-
 # return long list of proxies; time sorted
 def proxy_lslt(user, proxy_dir):
-    return condorPrivsep.execute(user,'.','/bin/ls',['/bin/ls', '-lt', proxy_dir])
+    return condorPrivsep.execute(user,proxy_dir,'/bin/ls',['/bin/ls', '-lt', proxy_dir])
 
 # shamelessly stolen from glideinWMS/factory/tools/proxy_info exec_info
 # unfortunately couldn't import since it doesn't check for main
@@ -189,25 +185,12 @@ def get_proxy_info(user, proxy_file):
         print "ERROR: voms-proxy-info not found, but needed"
         return 1
 
+    dirname = os.path.dirname(proxy_file)
     env=[]
     for k in os.environ.keys():
        env.append('%s=%s'%(k,os.environ[k]))
 
-    return condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-file', proxy_file],env)
-
-def get_proxy_life(user, proxy_file):
-    try:
-        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
-    except:
-        print "ERROR: voms-proxy-info not found, but needed"
-        return 1
-
-    env=[]
-    for k in os.environ.keys():
-       env.append('%s=%s'%(k,os.environ[k]))
-
-    out = condorPrivsep.execute(user,'.',voms_path,[voms_path, '-dont-verify-ac', '-timeleft', '-file', proxy_file],env)
-    return int(out[0][:-1])
+    return condorPrivsep.execute(user,dirname,voms_path,[voms_path, '-dont-verify-ac', '-file', proxy_file],env)
 
 def print_help():
     print '''\
@@ -393,7 +376,7 @@ if __name__ == "__main__":
         #createSubmitFile(sub_file, log_dir, script_file, timeout, grid_type, gatekeeper)
         logs = create_submit_file(sub_file, script_file, glide_desc, job_desc, user, script_args, queue, fork)
         
-        out,cluster,count = priv_submit(user, sub_file, proxy, env)
+        out,cluster,count = priv_submit(user, sub_file, proxy, env, "%s/test" % user_dir)
         for i in out:
             print i,
         
