@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+import sys
+import xml.dom.minidom
+
+if __name__ == "__main__":
+    match_str = sys.argv[1]
+
+    fin = sys.stdin
+    if len(sys.argv) > 2:
+        fin = open(sys.argv[2])
+
+    dom = xml.dom.minidom.parse(fin)
+
+    if fin != sys.stdin:
+        fin.close()
+
+    test_results = dom.getElementsByTagName('OSGTestResult')
+
+    for res in test_results:
+        if match_str not in res.getElementsByTagName('detail')[0].firstChild.data:
+            # assume previous sibling is the newline text node
+            res.parentNode.removeChild(res.previousSibling)
+            res.parentNode.removeChild(res)
+
+    print dom.toxml()
