@@ -1,0 +1,39 @@
+#!/usr/bin/python
+
+import sys
+import xml.parsers.expat
+
+def start_element(name, attrs):
+    global at_host
+    if name == 'env' and attrs['name'] == 'hostname':
+        at_host = True
+
+def end_element(name):
+    global at_host
+    global data_buf
+    if name == 'env' and at_host:
+        print ''.join(data_buf)
+        data_buf = []
+        at_host = False
+
+def char_data(data):
+    if at_host:
+        data_buf.append(data) 
+
+if __name__ == "__main__":
+    fin = sys.stdin
+    if len(sys.argv) > 1:
+        fin = open(sys.argv[1])
+
+    at_host = False
+    data_buf = []
+
+    xmlparser = xml.parsers.expat.ParserCreate()
+    xmlparser.StartElementHandler = start_element
+    xmlparser.CharacterDataHandler = char_data
+    xmlparser.EndElementHandler = end_element
+
+    xmlparser.ParseFile(fin)
+
+    if fin != sys.stdin:
+        fin.close()
