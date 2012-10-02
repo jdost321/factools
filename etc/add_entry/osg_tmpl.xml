@@ -2,7 +2,7 @@
    <entries>
       <entry name="template" enabled="True" verbosity="std">
          <config>
-            <max_jobs held="1000" idle="4000" running="10000">
+            <max_jobs held="1000" idle="2000" running="10000">
                <default_max_jobs_frontend held="50" idle="100" running="5000"/>
                <max_job_frontends>
                </max_job_frontends>
