@@ -28,6 +28,8 @@ import getopt
     
 ################################################################################
 
+CONF_DIR = os.path.join(STARTUP_DIR, "../../etc/add_entry")
+
 def main(params,tmpl_params,bdii_data,bdii_srv,
          oldname,newname,
          comment,
@@ -106,36 +108,39 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
 ############################################################
 
 if __name__ == '__main__':
-    usage_prefix="add_new_entry [-p plugin] xml tmpl_xml new_xml bdii_srv bdii_id entry_name GLIDEIN_Site vo_name comment [plugin_arg]..."
+    usage_prefix="add_new_entry [-t template] [-p plugin] xml new_xml bdii_srv bdii_id entry_name GLIDEIN_Site vo_name comment [plugin_arg]..."
 
     try:
-        opts,args = getopt.getopt(sys.argv[1:], 'hp:')
+        opts,args = getopt.getopt(sys.argv[1:], 'hp:t:')
     except getopt.GetoptError:
         print usage_prefix
         sys.exit(1)
     
-    plugin = None
+    # for now enforce osg plugin if none specified
+    plugin = "%s/osg_plugin.py" % CONF_DIR
+    tmpl_fname = "%s/osg_tmpl.xml" % CONF_DIR
 
     for opt in opts:
         if opt[0] == '-h':
             print usage_prefix
             sys.exit(0)
         if opt[0] == '-p':
-            plugin = opt[1]
+            plugin = "%s/%s" % (CONF_DIR, opt[1])
+        if opt[0] == '-t':
+            tmpl_fname = "%s/%s" % (CONF_DIR, opt[1])
 
-    if len(args) < 9:
+    if len(args) < 8:
         print usage_prefix
         sys.exit(1)
     
     xml_fname=args[0]
-    tmpl_fname=args[1]
-    new_xml=args[2]
-    bdii_srv=args[3]
-    bdii_id=args[4]
-    newname=args[5]
-    site_name=args[6]
-    vo_name=args[7]
-    comment=args[8]
+    new_xml=args[1]
+    bdii_srv=args[2]
+    bdii_id=args[3]
+    newname=args[4]
+    site_name=args[5]
+    vo_name=args[6]
+    comment=args[7]
 
     oldname="template"
             
@@ -176,7 +181,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name, vo_name, plugin, [plugin] + args[9:])
+        main(params,tmpl_params,bdii_data,bdii_srv,oldname,newname,comment,new_xml,site_name, vo_name, plugin, [plugin] + args[8:])
     except RuntimeError, e:
         print params.usage()
         print ""
