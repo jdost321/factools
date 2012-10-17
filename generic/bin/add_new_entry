@@ -106,7 +106,7 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
 ############################################################
 
 if __name__ == '__main__':
-    usage_prefix="add_entry [-p plugin] xml tmpl_xml new_xml bdii_srv bdii_id entry_name GLIDEIN_Site vo_name comment [plugin_arg]..."
+    usage_prefix="add_new_entry [-p plugin] xml tmpl_xml new_xml bdii_srv bdii_id entry_name GLIDEIN_Site vo_name comment [plugin_arg]..."
 
     try:
         opts,args = getopt.getopt(sys.argv[1:], 'hp:')
@@ -122,6 +122,10 @@ if __name__ == '__main__':
             sys.exit(0)
         if opt[0] == '-p':
             plugin = opt[1]
+
+    if len(args) < 9:
+        print usage_prefix
+        sys.exit(1)
     
     xml_fname=args[0]
     tmpl_fname=args[1]
