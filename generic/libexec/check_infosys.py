@@ -122,12 +122,21 @@ for entry in cparams.entries.keys():
         # for now skip cream and nordugrid
         if cparams.entries[entry]['gridtype'] == 'cream':
             gk = cparams.entries[entry]['gatekeeper'].split()
-            contact = gk[0]
-            if 'https' in contact:
-                contact = contact[8:]
-            host = contact.split(':')[0]
-            jm = gk[-2]
-            queue = gk[-1]
+            
+            # handle new format
+            if len(gk) == 1:
+                # this assumes there is no valid '-' in queue name
+                gk = gk[0].split('-')
+                host = gk[0]
+                jm = gk[1]
+                queue = gk[2]
+            else:
+                contact = gk[0]
+                if 'https' in contact:
+                    contact = contact[8:]
+                host = contact.split(':')[0]
+                jm = gk[-2]
+                queue = gk[-1]
             key = "%s,%s,%s" % (host,jm,queue)
         else:
             host = cparams.entries[entry]['gatekeeper'].split(':')[0]
