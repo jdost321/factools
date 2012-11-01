@@ -66,6 +66,10 @@ def is_real_dn(unique_ids, key, dn):
 def parse_bdii(bdii_data, other_bdii_data, server, unique_ids):
     errors = 0
     for b_entry in bdii_data.keys():
+        # basic error handling, should be improved
+        if not 'GlueCEInfoHostName' in bdii_data[b_entry]:
+            continue
+
         host = bdii_data[b_entry]['GlueCEInfoHostName'][0]
         jm = bdii_data[b_entry]['GlueCEInfoJobManager'][0]
 
