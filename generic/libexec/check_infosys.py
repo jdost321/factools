@@ -104,6 +104,31 @@ def parse_bdii(bdii_data, other_bdii_data, server, unique_ids):
 
     return errors
 
+if 'GLIDEIN_FACTORY_DIR' in os.environ:
+    gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+else:
+    gfactory_dir="."
+
+down_file_path = os.path.join(gfactory_dir, "glideinWMS.downtimes")
+
+try:
+    down_file = open(down_file_path)
+except IOError:
+   sys.stderr.write('"%s" not a valid factory dir. Exiting.\n' % gfactory_dir)
+   sys.exit(1)    
+
+try:
+    down_entries = set()
+    for line in down_file:
+        line = line.split()
+        end = line[1]
+        entry = line[2]
+        if end == "None":
+            down_entries.add(entry)
+
+finally:
+    down_file.close()
+
 conf = sys.argv[1]
 cparams=cgWParams.GlideinParams("dummy",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["dummy",conf])
 server_osg="is.grid.iu.edu"
@@ -206,6 +231,7 @@ for key in unique_ids:
                     print '"%s" %s' % dn
                 print
         
+down_results = []
 tot_found = 0
 tot_missing = 0
 print "Entries not found in bdii"
@@ -220,6 +246,16 @@ for key in unique_ids:
                 ent_dn = None
             else:
                 ent_dn = unique_ids[key]['entries'][ent][0]
-            print '%s "%s"' % (ent, ent_dn)
+           
+            if ent in down_entries:
+                down_results.append((ent, ent_dn))
+            else:
+                print '%s "%s"' % (ent, ent_dn)
+
+print "\nEntries in downtime not found in bdii"
+print "-------------------------------------\n"
+
+for res in down_results:
+    print '%s "%s"' % (res[0], res[1])
 
 print "\ntotal unique: %s\nfound: %s\nmissing: %s\nincorrect: %s" % (len(unique_ids),tot_found,tot_missing,errors)
