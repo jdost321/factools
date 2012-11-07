@@ -54,7 +54,7 @@ def main(params,tmpl_params,bdii_data,bdii_srv,
     elif bdii_el.has_key('GlueCEImplementationName') and bdii_el['GlueCEImplementationName'][0]=='CREAM':
         rsl = None
         gridtype='cream'
-        gatekeeper="https://%s:%s/ce-cream/services/CREAM2 %s %s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],jobmanager,bdii_el['GlueCEName'][0])
+        gatekeeper="%s:%s/cream-%s-%s"%(bdii_el['GlueCEInfoHostName'][0],bdii_el['GlueCEInfoGatekeeperPort'][0],jobmanager,bdii_el['GlueCEName'][0])
     else:
         raise RuntimeError, "Not a gt2 or cream site, aborting"
 
