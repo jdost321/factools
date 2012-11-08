@@ -154,11 +154,8 @@ for entry in cparams.entries.keys():
             
             # handle new format
             if len(gk) == 1:
-                # this assumes there is no valid '-' in queue name
-                gk = gk[0].split('-')
-                host = gk[0]
-                jm = gk[1]
-                queue = gk[2]
+                host, rest = gk[0].split(':8443/cream-')
+                jm, queue = rest.split('-')
             else:
                 contact = gk[0]
                 if 'https' in contact:
@@ -232,6 +229,7 @@ for key in unique_ids:
                 print
         
 down_results = []
+verified_results = []
 tot_found = 0
 tot_missing = 0
 print "Entries not found in bdii"
@@ -249,12 +247,18 @@ for key in unique_ids:
            
             if ent in down_entries:
                 down_results.append((ent, ent_dn))
+            elif ent_dn is not None and 'verified' in ent_dn.lower():
+                verified_results.append((ent, ent_dn))
             else:
                 print '%s "%s"' % (ent, ent_dn)
 
+print "\nEntries not in bdii but verified to work"
+print "----------------------------------------\n"
+for res in verified_results:
+    print '%s "%s"' % (res[0], res[1])
+
 print "\nEntries in downtime not found in bdii"
 print "-------------------------------------\n"
-
 for res in down_results:
     print '%s "%s"' % (res[0], res[1])
 
