@@ -204,12 +204,17 @@ for entry in cparams.entries.keys():
 #for e in entries:
 #    print "%s %s %s" % (e, entries[e]['name'], entries[e]['dn'])
 
-print "Entries with incorrect infosys"
-print "------------------------------\n"
 # first is.grid
 errors = parse_bdii(bdii_data, bdii_data2, server_osg, unique_ids)
 # next cern
 errors = errors + parse_bdii(bdii_data2, bdii_data, server_cern, unique_ids)
+
+incorrect = []
+missing = []
+down = []
+verified = []
+tot_found = 0
+tot_missing = 0
 
 for key in unique_ids:
     if 'real_dn' in unique_ids[key]:
@@ -222,19 +227,14 @@ for key in unique_ids:
 
             # not all entries with this key are wrong so check
             if not is_real_dn(unique_ids, key, ent_dn):
-                print '%s\ncurrent:\n"%s"' % (ent, ent_dn)
+                incorrect.append((ent, ent_dn, unique_ids[key]['real_dn']))
+                '''print '%s\ncurrent:\n"%s"' % (ent, ent_dn)
                 print 'correct:'
                 for dn in unique_ids[key]['real_dn']:
                     print '"%s" %s' % dn
                 print
+                '''
         
-down_results = []
-verified_results = []
-tot_found = 0
-tot_missing = 0
-print "Entries not found in bdii"
-print "-------------------------\n"
-for key in unique_ids:
     if unique_ids[key]['found']:
         tot_found += len(unique_ids[key]['entries'])
     else:
@@ -246,20 +246,40 @@ for key in unique_ids:
                 ent_dn = unique_ids[key]['entries'][ent][0]
            
             if ent in down_entries:
-                down_results.append((ent, ent_dn))
+                down.append((ent, ent_dn))
             elif ent_dn is not None and 'verified' in ent_dn.lower():
-                verified_results.append((ent, ent_dn))
+                verified.append((ent, ent_dn))
             else:
-                print '%s "%s"' % (ent, ent_dn)
+                missing.append((ent, ent_dn))
+                #print '%s "%s"' % (ent, ent_dn)
+
+incorrect.sort()
+missing.sort()
+verified.sort()
+down.sort()
+
+print "Entries with incorrect infosys"
+print "------------------------------\n"
+for res in incorrect:
+    print '%s\ncurrent:\n"%s"' % (res[0], res[1])
+    print 'correct:'
+    for dn in res[2]:
+        print '"%s" %s' % dn
+    print
+
+print "Entries not found in bdii"
+print "-------------------------\n"
+for res in missing:
+    print '%s "%s"' % (res[0], res[1])
 
 print "\nEntries not in bdii but verified to work"
 print "----------------------------------------\n"
-for res in verified_results:
+for res in verified:
     print '%s "%s"' % (res[0], res[1])
 
 print "\nEntries in downtime not found in bdii"
 print "-------------------------------------\n"
-for res in down_results:
+for res in down:
     print '%s "%s"' % (res[0], res[1])
 
 print "\ntotal unique: %s\nfound: %s\nmissing: %s\nincorrect: %s" % (len(unique_ids),tot_found,tot_missing,errors)
