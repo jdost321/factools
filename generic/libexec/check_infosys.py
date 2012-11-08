@@ -63,7 +63,7 @@ def is_real_dn(unique_ids, key, dn):
 
 # other_bdii_data - still need to check against all db's if condor..maybe it should be
 # made an optional list to be more reusable later
-def parse_bdii(bdii_data, other_bdii_data, server, unique_ids):
+def parse_bdii(bdii_data, other_bdii_data, server, unique_ids, bad_bdii_entries):
     errors = 0
     for b_entry in bdii_data.keys():
         # basic error handling, should be improved
@@ -74,9 +74,15 @@ def parse_bdii(bdii_data, other_bdii_data, server, unique_ids):
         jm = bdii_data[b_entry]['GlueCEInfoJobManager'][0]
 
         if jm == 'condor':
+            if host not in b_entry or jm not in b_entry:
+                bad_bdii_entries[b_entry] = (host, jm)
+                continue
             key = "%s,%s" % (host, jm)
         else:
             queue = bdii_data[b_entry]['GlueCEName'][0]
+            if jm != 'arc' and (host not in b_entry or jm not in b_entry or queue not in b_entry):
+                bad_bdii_entries[b_entry] = (host, jm, queue)
+                continue
             key = "%s,%s,%s" % (host, jm, queue)
 
         if key in unique_ids:
@@ -204,15 +210,17 @@ for entry in cparams.entries.keys():
 #for e in entries:
 #    print "%s %s %s" % (e, entries[e]['name'], entries[e]['dn'])
 
+bad_bdii_entries = {}
 # first is.grid
-errors = parse_bdii(bdii_data, bdii_data2, server_osg, unique_ids)
+errors = parse_bdii(bdii_data, bdii_data2, server_osg, unique_ids, bad_bdii_entries)
 # next cern
-errors = errors + parse_bdii(bdii_data2, bdii_data, server_cern, unique_ids)
+errors = errors + parse_bdii(bdii_data2, bdii_data, server_cern, unique_ids, bad_bdii_entries)
 
 incorrect = []
 missing = []
 down = []
 verified = []
+corrupt_bdii = []
 tot_found = 0
 tot_missing = 0
 
@@ -245,7 +253,12 @@ for key in unique_ids:
             else:
                 ent_dn = unique_ids[key]['entries'][ent][0]
            
-            if ent in down_entries:
+            # if bdii had bad info, the script was confused. just recount as found
+            if ent_dn in bad_bdii_entries:
+                corrupt_bdii.append((ent, ent_dn, bad_bdii_entries[ent_dn]))
+                tot_found += 1
+                tot_missing -= 1
+            elif ent in down_entries:
                 down.append((ent, ent_dn))
             elif ent_dn is not None and 'verified' in ent_dn.lower():
                 verified.append((ent, ent_dn))
@@ -257,6 +270,7 @@ incorrect.sort()
 missing.sort()
 verified.sort()
 down.sort()
+corrupt_bdii.sort()
 
 print "Entries with incorrect infosys"
 print "------------------------------\n"
@@ -281,5 +295,15 @@ print "\nEntries in downtime not found in bdii"
 print "-------------------------------------\n"
 for res in down:
     print '%s "%s"' % (res[0], res[1])
+
+print "\nEntries with valid bdii dn but corrupt bdii info"
+print "------------------------------------------------\n"
+for res in corrupt_bdii:
+    print '%s "%s"' % (res[0], res[1])
+    print "GlueCEInfoHostName: %s" % res[2][0]
+    print "GlueCEInfoJobManager: %s" % res[2][1]
+    if len(res[2]) == 3:
+        print "GlueCEName: %s" % res[2][2]    
+    print
 
 print "\ntotal unique: %s\nfound: %s\nmissing: %s\nincorrect: %s" % (len(unique_ids),tot_found,tot_missing,errors)
