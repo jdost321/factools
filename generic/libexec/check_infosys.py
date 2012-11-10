@@ -57,8 +57,8 @@ def get_bad_condor_entries(unique_ids, key, bdii_data_list):
 
 def is_real_dn(unique_ids, key, dn):
     real = False
-    for rd in unique_ids[key]['real_dn'][0]:
-        if dn == rd:
+    for rd in unique_ids[key]['real_dn']:
+        if dn == rd[0]:
             real = True
             break
     return real
