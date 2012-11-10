@@ -53,6 +53,8 @@ def get_bad_condor_entries(unique_ids, key, bdii_data_list):
                     bad_entries = []
                 bad_entries.append(e)
 
+    return bad_entries
+
 def is_real_dn(unique_ids, key, dn):
     real = False
     for rd in unique_ids[key]['real_dn'][0]:
