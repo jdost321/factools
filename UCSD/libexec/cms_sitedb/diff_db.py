@@ -1,1 +1,0 @@
-../../../generic/libexec/cms_sitedb/diff_db.py
