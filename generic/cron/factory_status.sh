@@ -1,10 +1,15 @@
 #!/bin/bash
 source ~/.bash_profile
-cd $GLIDEIN_FACTORY_DIR
+
+# Fail if factory dir is not set
+if [ -z "$GLIDEIN_FACTORY_DIR" ]; then
+    exit 1
+fi
 if [ -n "GLIDEIN_FACTORY_NAME" ];then
     factory_name="$GLIDEIN_FACTORY_NAME "
 fi
 
+cd $GLIDEIN_FACTORY_DIR
 STATUS=`./factory_startup status`
 DESIRED="Running"
 RETEST="10m"
@@ -18,7 +23,7 @@ if [ "$STATUS" != "$DESIRED" ]; then
     STATUS=`./factory_startup status`
     if [ "$STATUS" != "$DESIRED" ]; then
 	DATE="on `date +%D` at `date +%T`"
-	echo -e "WARNING: ${factory_name}Glidein Factory is not running.\nStatus: $STATUS\nLocation: $FACTORY_DIR\nPlease investigate.\n$DATE" | mail -s "WARNING: ${factory_name}Glidein Factory not running" $EMAIL
+	echo -e "WARNING: ${factory_name}Glidein Factory is not running.\nStatus: $STATUS\nLocation: $GLIDEIN_FACTORY_DIR\nPlease investigate.\n$DATE" | mail -s "WARNING: ${factory_name}Glidein Factory not running" $EMAIL
     fi
 fi
 
