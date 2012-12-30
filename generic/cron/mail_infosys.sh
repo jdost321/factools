@@ -10,9 +10,12 @@ fi
 if [ -z "$GLIDEIN_FACTORY_DIR" ]; then
     exit 1
 fi
+if [ -n "GLIDEIN_FACTORY_NAME" ];then
+    factory_name="$GLIDEIN_FACTORY_NAME "
+fi
 
 emails=$1
-subject="Infosys Report `date +%m-%d-%Y`"
+subject="${factory_name}Infosys Report `date +%m-%d-%Y`"
 conf=${GLIDEIN_FACTORY_DIR}/glideinWMS.xml
 script_dir=`dirname $0`
 body=`${script_dir}/../libexec/check_infosys.py $conf`
