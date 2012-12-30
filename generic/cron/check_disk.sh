@@ -8,12 +8,12 @@ if [ -z "$GLIDEIN_MAIL_REPLY_TO" ]; then
 fi
 
 if [ -n "GLIDEIN_FACTORY_NAME" ];then
-    name="$GLIDEIN_FACTORY_NAME "
+    factory_name="$GLIDEIN_FACTORY_NAME "
 fi
 
 emails=$1
 
-subject="${name}Factory Disk Warning `date +%m-%d-%Y`"
+subject="${factory_name}Factory Disk Warning `date +%m-%d-%Y`"
 limit=${2:-80}
 
 out=`df -h`
