@@ -26,4 +26,6 @@ export PATH=$PATH:$FACTOOLS/<factory name>/bin/:$FACTOOLS/generic/bin/
 export GLIDEIN_FACTORY_DIR=<location of current factory instance>
 export GLIDEIN_MAIL_REPLY_TO=<email to put in Reply-to: field of reports>
 export GLIDEIN_SRC_DIR=<path to glideinWMS source code dir>
+export GLIDEIN_MON_URL=<url of current factory instance monitor dir>
+export GLIDEIN_FACTORY_NAME=<factory name to appear in reports> # optional
 3. check doc/ dir for tool specific READMEs and follow further instructions
