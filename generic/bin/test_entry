@@ -29,6 +29,8 @@ import glideFactoryLib
 #globals
 ALLOWED_FORK = ('gt2', 'gt5')
 ALLOWED_RSL =  ('gt2', 'gt5', 'nordugrid')
+# hardcode this to get around cern setting TMPDIR env var
+TMPDIR = "/tmp"
 
 def get_glidein_args(gfactory_dir, entry):
     fin = open(os.path.join(gfactory_dir, "entry_%s/job.condor" % entry))
@@ -348,7 +350,7 @@ if __name__ == "__main__":
 
         proxy = "%s/%s" % (proxy_dir, proxies[num])
     
-    tmpdir = tempfile.mkdtemp(prefix="testpilot_")
+    tmpdir = tempfile.mkdtemp(prefix="testpilot_", dir=TMPDIR)
 
     try:
         os.chmod(tmpdir, 0755)
