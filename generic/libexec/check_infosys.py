@@ -183,7 +183,7 @@ for entry in cparams.entries.keys():
                 key = "%s,%s" % (host,jm)
             else:
                 if rsl is not None and "queue" in rsl:
-                    queue = re.search(r"queue=(\w+)\)", rsl).group(1)
+                    queue = re.search(r"queue=([^)]+)", rsl).group(1)
                 # try pulling queue from infosys if there
                 elif len(cparams.entries[entry]['infosys_refs']) > 0:
                     dn = cparams.entries[entry]['infosys_refs'][0]['ref']
