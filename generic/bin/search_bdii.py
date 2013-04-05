@@ -2,13 +2,16 @@
 
 import os, sys, getopt
 
+#sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
+
+# get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
 else:
     print '"GLIDEIN_SRC_DIR" not defined. exiting.'
     sys.exit(1)
 
-import ldapMonitor
+from glideinwms.lib import ldapMonitor
 
 def search(bdii_url, bdii_port=None, infosysref=None, vo=None, ce=None, ldap_search=None, search_string=None):
     SearchBDII=ldapMonitor.SearchBDII(bdii_url, bdii_port, vo, ce, infosysref, ldap_search, search_string)
