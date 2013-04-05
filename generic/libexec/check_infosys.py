@@ -5,15 +5,17 @@ import sys
 import os
 import re
 
+#sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
+
+# get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "creation/lib"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
 else:
     print '"GLIDEIN_SRC_DIR" not defined. exiting.'
     sys.exit(1)
 
-import cgWParams
-import ldapMonitor
+from glideinwms.creation.lib import cgWParams
+from glideinwms.lib import ldapMonitor
 
 def get_bad_entries(unique_ids, key, b_entry):
     bad_entries = None
