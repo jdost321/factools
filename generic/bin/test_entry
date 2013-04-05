@@ -10,21 +10,20 @@ import pwd
 
 STARTUP_DIR=sys.path[0]
 
-#sys.path.append(os.path.join(STARTUP_DIR,".."))
-#sys.path.append(os.path.join(STARTUP_DIR,"../../lib"))
+#sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
+
 # get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "factory"))
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
 else:
     print '"GLIDEIN_SRC_DIR" not defined. exiting.'
     sys.exit(1)
 
-import glideFactoryConfig
-import condorPrivsep
-import condorExe
-import condorMonitor
-import glideFactoryLib
+from glideinwms.factory import glideFactoryConfig
+from glideinwms.lib import condorPrivsep
+from glideinwms.lib import condorExe
+from glideinwms.lib import condorMonitor
+from glideinwms.factory import glideFactoryLib
 
 #globals
 ALLOWED_FORK = ('gt2', 'gt5')
