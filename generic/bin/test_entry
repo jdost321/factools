@@ -152,7 +152,7 @@ def create_script(out_file, sleep_time=300):
 
 # should we ever attempt without privsep like glidein does?
 def priv_submit(username, sub_file, x509_proxy_fname, env=(), init_dir=".", schedd_name=None):
-    cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0][:-1]
+    cond_sub_path = condorExe.iexe_cmd("which condor_submit")[0]
     exe_env = []
     exe_env.extend(env)
     exe_env.append('X509_USER_PROXY=%s'%x509_proxy_fname)
@@ -181,7 +181,7 @@ def proxy_lslt(user, proxy_dir):
 # unfortunately couldn't import since it doesn't check for main
 def get_proxy_info(user, proxy_file):
     try:
-        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0][:-1]
+        voms_path=condorExe.iexe_cmd("which voms-proxy-info")[0]
     except:
         print "ERROR: voms-proxy-info not found, but needed"
         return 1
@@ -314,8 +314,6 @@ if __name__ == "__main__":
         proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
 
         out = proxy_lslt(user, proxy_dir)
-        # strip away newline chars
-        out = [i.rstrip() for i in out]
 
         if len(out) <= 1:
             sys.stderr.write("Could not find pilot proxies! Exiting.\n")
