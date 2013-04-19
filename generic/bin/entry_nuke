@@ -1,0 +1,13 @@
+#!/bin/bash
+entry=$1; shift
+hold_subcode=$1
+
+const_1="jobstatus==5"
+const_2="jobstatus==3"
+if [ ! -z "${hold_subcode}" ]; then
+    subconst="holdreasonsubcode==${hold_subcode}"
+    const_1="(${const_1} && ${subconst})"
+    const_2="(${const_1}) || ${const_2}"
+fi
+
+entry_rm ${entry} -const "'""${const_1}""'" ;entry_rm ${entry} -const "'""${const_2}""'" -forcex
