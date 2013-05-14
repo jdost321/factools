@@ -159,19 +159,6 @@ if [ $rc -ne 0 ]; then
 fi
 
 if [ "$uselsb" -eq 1 ]; then
-  echo "procd-executable = $INSTDIR/sbin/condor_procd" > /etc/condor/privsep_config
-  echo "Created basic /etc/condor/privsep_config"
-  echo "You have to finish the config based on gfactory needs"
-  echo 
-
-  chmod 04755 $INSTDIR/sbin/condor_root_switchboard
-  rc=$?
-  if [ $rc -ne 0 ]; then 
-    echo "Failed setting sticky bit to the switchboard"
-    rm -fr "$INSTDIR"
-    exit 2
-  fi
-
   echo "Putting Condor in LSB locations"
   echo
 
@@ -183,6 +170,19 @@ if [ "$uselsb" -eq 1 ]; then
     echo "Failed to create LSB links" 1>&2
     echo "You may need to wipe $INSTDIR" 1>&2
     exit 1
+  fi
+
+  echo "procd-executable = $INSTDIR/sbin/condor_procd" > /etc/condor/privsep_config
+  echo "Created basic /etc/condor/privsep_config"
+  echo "You have to finish the config based on gfactory needs"
+  echo 
+
+  chmod 04755 $INSTDIR/sbin/condor_root_switchboard
+  rc=$?
+  if [ $rc -ne 0 ]; then 
+    echo "Failed setting sticky bit to the switchboard"
+    rm -fr "$INSTDIR"
+    exit 2
   fi
 
   source /etc/profile.d/condor.sh
