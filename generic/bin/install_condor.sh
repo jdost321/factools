@@ -186,16 +186,6 @@ if [ "$uselsb" -eq 1 ]; then
   fi
 
   source /etc/profile.d/condor.sh
-
-  $GWMS/install/glidecondor_addDN \
-    -daemon My_hostcert_distinguished_name \
-    /etc/grid-security/hostcert.pem condor
-  rc=$?
-  if [ $rc -ne 0 ]; then 
-    echo "Failed to setup our own hostcert security"
-    rm -fr "$INSTDIR"
-    exit 2
-  fi
 else
   echo "Patching configs to allow for non-LSB setup"
   echo
@@ -208,16 +198,6 @@ else
   fi
 
   source $INSTDIR/condor.sh
-
-  $GWMS/install/glidecondor_addDN \
-    -daemon My_hostcert_distinguished_name \
-    ~/.globus/hostcert.pem condor
-  rc=$?
-  if [ $rc -ne 0 ]; then 
-    echo "Failed to setup our own hostcert security"
-    rm -fr "$INSTDIR"
-    exit 2
-  fi
 fi
 
 "$FTOOLS/generic/bin/config_condor.sh" "$GWMS"
@@ -229,13 +209,33 @@ if [ $rc -ne 0 ]; then
   exit 1
 fi
 
-if [ "$uselsb" -ne 1 ]; then
-    echo "Note: Condor not in the path"
-    echo "      You may need to source $INSTDIR/condor.sh"
+if [ "$uselsb" -eq 1 ]; then
+  $GWMS/install/glidecondor_addDN \
+    -daemon My_hostcert_distinguished_name \
+    /etc/grid-security/hostcert.pem condor
+  rc=$?
+  if [ $rc -ne 0 ]; then 
+    echo "Failed to setup our own hostcert security"
+    echo "Condor is likely misconfigured now"
+    exit 2
+  fi
+
+  echo "Condor will be in the path next time you log back in"
+  echo "You can control the daemons with"
+  echo "  /etc/init.d/condor start|stop"
 else
-    echo "Condor will be in the path next time you log back in"
-    echo "You can control the daemons with"
-    echo "  /etc/init.d/condor start|stop"
+  $GWMS/install/glidecondor_addDN \
+    -daemon My_hostcert_distinguished_name \
+    ~/.globus/hostcert.pem condor
+  rc=$?
+  if [ $rc -ne 0 ]; then 
+    echo "Failed to setup our own hostcert security"
+    echo "Condor is likely misconfigured now"
+    exit 2
+  fi
+
+  echo "Note: Condor not in the path"
+  echo "      You may need to source $INSTDIR/condor.sh"
 fi
 
 exit 0
