@@ -223,6 +223,9 @@ if [ "$uselsb" -eq 1 ]; then
   echo "Condor will be in the path next time you log back in"
   echo "You can control the daemons with"
   echo "  /etc/init.d/condor start|stop"
+  echo
+  echo "REMINDER: You have to finish configuring"
+  echo "            /etc/condor/privsep_config"
 else
   $GWMS/install/glidecondor_addDN \
     -daemon My_hostcert_distinguished_name \
