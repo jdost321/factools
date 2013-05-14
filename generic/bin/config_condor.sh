@@ -110,8 +110,7 @@ if [ $? -ne 0 ]; then
 fi
 
 $GWMS/install/glidecondor_createSecSched \
-  schedd_glideins1,schedd_glideins2,schedd_glideins3,schedd_glideins4,schedd_glideins5,\
-  schedd_glideins6,schedd_glideins7,schedd_glideins8,schedd_glideins9
+  schedd_glideins1,schedd_glideins2,schedd_glideins3,schedd_glideins4,schedd_glideins5,schedd_glideins6,schedd_glideins7,schedd_glideins8,schedd_glideins9
 rc=$?
 if [ $rc -ne 0 ]; then 
     usage
