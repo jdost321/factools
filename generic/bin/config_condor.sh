@@ -64,22 +64,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# gwms templates will undefine a few attributes too many
-# put local config after them
-lclink="$cdir/09_condor_local.config"
-lcfile=`condor_config_val LOCAL_CONFIG_FILE`
-if [ $? -ne 0 ]; then
-  if [ -e "$lclink" ]; then
-   rm -f "$lclink"
-  fi
-else
-  if  [ -e "$lclink" ]; then
-   true
-  else
-   ln -s "$lcfile" "$lclink"
-  fi
-fi
-
 twfile="$cdir/99_local_tweaks.config"
 if [ -e "$twfile" ]; then
   true
