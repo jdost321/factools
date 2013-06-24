@@ -38,7 +38,7 @@ case "$mode" in
     ae)
         script=analyze_entries
         if [ "$target" = factory ]; then
-            cmd="${tools_path}/${script} --source $source -x $interval -s waste  -l strt,10 --nb;${tools_path}/${script} --source $source -x $interval -s waste -m;${tools_path}/${script} --source $source -x $interval -s waste"
+            cmd="${tools_path}/${script} --source $source -x $interval -s strt  -l strt,10 --nb;${tools_path}/${script} --source $source -x $interval -s strt -m;${tools_path}/${script} --source $source -x $interval -s strt"
         else
             cmd="${tools_path}/${script} --source $source -x $interval -s waste -f $target"
         fi
@@ -50,6 +50,14 @@ case "$mode" in
         else
             cmd="${tools_path}/${script} --source $source -x $interval -s rundiff -f $target -z"
         fi
+    ;;
+    aqw)
+        script=analyze_queues
+        cmd="${tools_path}/${script} --source $source -x $interval -s wait -z -m;${tools_path}/${script} --source $source -x $interval -s wait -z"
+    ;;
+    aqr)
+        script=analyze_queues
+        cmd="${tools_path}/${script} --source $source -x $interval -s %rundiff -z -m;${tools_path}/${script} --source $source -x $interval -s %rundiff -z"
     ;;
     af)
         script=analyze_frontends
@@ -66,6 +74,13 @@ retval=$?
 # for now only suppress emailing if error occurs for frontend
 if [ $target != "factory" -a $retval -ne 0 ]; then
     exit $retval
+fi
+
+# hack to get more specific subjects for aq reports
+if [ "$mode" = "aqw" ];then
+    script="Idle Wait"
+elif [ "$mode" = "aqr" ];then
+    script="Rundiff"
 fi
 
 if [ "$interval" = 2 ]; then
