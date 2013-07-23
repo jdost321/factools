@@ -285,7 +285,7 @@ class JiraManager:
         postData['jql'] = jql_query
         #postData['expand'] = "comment"  
 
-        full_url = self.jiraURL + self.restURL + '/search' + '&expand=comment'
+        full_url = self.jiraURL + self.restURL + '/search' #+ '&expand=comment'
         self.browser.postData = postData
         try:
             result = self.browser.post (full_url)
