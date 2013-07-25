@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python2.6 
 
 import base64
 import cookielib
@@ -6,23 +6,22 @@ import datetime
 import getpass
 import httplib
 import json
-import logging 
 import os 
 import pickle
 import re
 import smtplib
 import sys
-import urllib
 import urllib2
 from email.mime.text import MIMEText
-
-log = logging.getLogger(__name__)
+from dateutil.tz import tzutc, tzlocal
 
 # Remove buffering from stdout
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-debugging = True
+debugging = False
 
+now = datetime.datetime.now (tzlocal())
+timeframe = datetime.timedelta (hours=24)
 
 def main ():
 
@@ -88,12 +87,14 @@ def get_activity_last_24h ():
                            'comments':[]}
 
         for comment in comments:
-                    
-            comment_text = comment['body']
-            comment_auth = comment['author']['displayName']
-            comment_info = {'text':comment_text, 
-                            'author':comment_auth}
-            day_events[key]['comments'].append (comment_info)
+
+            comment_update_time = parse_timestamp (comment['updated'], tzlocal())
+            if now - comment_update_time <= timeframe: 
+                comment_text = comment['body']
+                comment_auth = comment['author']['displayName']
+                comment_info = {'text':comment_text, 
+                                'author':comment_auth}
+                day_events[key]['comments'].append (comment_info)
 
     return day_events
 
@@ -147,16 +148,18 @@ def send_activity_report (report_text, date):
 
     if debugging:
         sender = 'luis.linares@cern.ch'
-        receivers = ['jdost@ucsd.edu', 'luis.linares@cern.ch']
+        receivers = ['luis.linares@cern.ch']
     else:
         sender = 'luis.linares@cern.ch'
         receivers = ['osg-gfactory-support@physics.ucsd.edu']
 
-    salutation = '\nBest regards,\nLuis\nCERN Factory Ops'
+    msg = MIMEText (report_text)
 
-    msg = MIMEText (report_text + salutation)
+    before = now - timeframe
+    now_str = now.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
+    before_str = before.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
+    subject = '[Osg-gfactory-support] GWMS Factory Ops Activity Report (%s - %s)(UTC)' % (before_str, now_str)
 
-    subject = '[Osg-gfactory-support] CERN Activity Report ' + str(date)
     msg['Subject'] = subject 
     msg['From'] = sender
     msg['To'] = ", ".join(receivers)
@@ -283,9 +286,8 @@ class JiraManager:
 
         postData = {}
         postData['jql'] = jql_query
-        #postData['expand'] = "comment"  
 
-        full_url = self.jiraURL + self.restURL + '/search' #+ '&expand=comment'
+        full_url = self.jiraURL + self.restURL + '/search'
         self.browser.postData = postData
         try:
             result = self.browser.post (full_url)
@@ -298,8 +300,9 @@ class JiraManager:
         return output
 
 
-def parse_timestamp (timestamp):
-    return datetime.datetime.strptime (timestamp[:-9], "%Y-%m-%dT%H:%M:%S")
+def parse_timestamp (timestamp, tz=None):
+    dt_obj = datetime.datetime.strptime (timestamp[:-9], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=tz)
+    return dt_obj
 
 def strip_html (text):
     tag_filter = '<[^<]+?>'
