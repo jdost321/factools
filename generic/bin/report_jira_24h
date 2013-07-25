@@ -4,8 +4,8 @@ import base64
 import cookielib
 import datetime
 import getpass
-import httplib
 import json
+import optparse
 import os 
 import pickle
 import re
@@ -21,11 +21,21 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 debugging = False
 
 now = datetime.datetime.now (tzlocal())
-timeframe = datetime.timedelta (hours=24)
 
 def main ():
 
-    print "Downloading activity data for the last 24 hours...",
+    parser = optparse.OptionParser (description="Loads issues from OSG Jira for the GFACTOPS project for the last N hours.")
+    parser.add_option ('-t', '--timeframe', choices=[str(x) for x in range(1,25)],
+                       help="Specifies the time range in hours to check for Jira activity.")  
+    parser.add_option ('-s', '--send', action='store_true', default=False, 
+                       help="If present, sends the report without asking.")
+    (options, args) = parser.parse_args()
+
+    global timeframe, timeframe_val
+    timeframe_val = int (options.timeframe)
+    timeframe = datetime.timedelta (hours=timeframe_val)
+
+    print "Downloading activity data for the last %d hours..." % timeframe_val,
     day_events = get_activity_last_24h ()
     print "done."
 
@@ -33,22 +43,18 @@ def main ():
         date = datetime.datetime.now().date()
         activity_text = format_activity (day_events, date)
 
-        add_manual = raw_input ("Insert path to manual text file to be appended (to be ignored if incorrect): ")
-        try:
-            manual_text = open(add_manual).read()
-        except IOError:
-            manual_text = ''
-        finally:
-            activity_text += manual_text
-
         print "Report:"
         print activity_text
 
-        do_send = raw_input ("Do you want to send the report? ")
-        if do_send.lower() in ("y", "ye", "yes", "ok"):
+        if options.send:
             send_activity_report (activity_text, date)
+
         else:
-            print "Report not sent."
+            do_send = raw_input ("Do you want to send the report? ")
+            if do_send.lower() in ("y", "ye", "yes", "ok"):
+                send_activity_report (activity_text, date)
+            else:
+                print "Report not sent."
 
     else:
         print "No activity today. No email issued."
@@ -56,14 +62,14 @@ def main ():
 
 def get_activity_last_24h ():
 
-    JQL_string = "project = GFACTOPS AND updated >= -24h ORDER BY updated DESC"
+    JQL_string = "project = GFACTOPS AND updated >= -%dh ORDER BY updated DESC" % timeframe_val
 
     jira = JiraManager()
     info = jira.get_activity (JQL_string)
 
     day_events = {}
     for i, issue in enumerate (info['issues']):
-    
+   
         key = issue['key']
         self_url = issue['self']
         user_url = "https://jira.opensciencegrid.org/browse/" + key
@@ -108,22 +114,28 @@ def format_activity (day_activity, date):
 
         indent = 0
 
-        title = '- ' + event['summary']
-        line = indent_multilines (title, indent)
+        if event['status'] not in ["Resolved", "Closed", "Fixed"]:
+            status = "Open"
+        else:
+            status = "Closed"
 
+        title = '- %s (%s)' % (event['summary'], status)
+        line = indent_multilines (title, indent)
+        lines.append(line)
+
+        indent += indentation_step
+        issue_info = "(JIRA: {url})".format (url=event['url'])
+        line = indent_multilines (issue_info, indent)
         lines.append(line)
 
         indent += indentation_step
         line = indent_multilines (event['description'], indent)
-
-        issue_info = "  (JIRA: {url})".format (url=event['url'])
-        line = indent_multilines (issue_info, indent)
         lines.append(line)
    
         comments = event['comments']
         if len(comments) > 0:
 
-            indent += indentation_step
+            indent = indentation_step
             line = indent_multilines ("Updates:", indent) 
             lines.append(line)
 
