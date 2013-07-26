@@ -118,7 +118,7 @@ def format_activity (day_activity, date):
         else:
             status = "Closed"
 
-        title = '- %s (%s)' % (event['summary'], status)
+        title = '- %s [%s]' % (event['summary'], status)
         line = indent_multilines (title, indent)
         lines.append(line)
 
