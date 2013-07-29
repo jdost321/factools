@@ -10,6 +10,7 @@ import os
 import pickle
 import re
 import smtplib
+import socket
 import sys
 import urllib2
 from email.mime.text import MIMEText
@@ -171,13 +172,21 @@ def send_activity_report (report_text, timeframe):
     send_email_plain(subject, report_text)
     
 
+def get_user_and_host_names():
+
+    user = getpass.getuser()
+    host = socket.gethostname()
+    return user, host
+
+
 def send_email_plain (subject, message):
 
     if debugging:
         sender = 'luis.linares@cern.ch'
         receivers = ['luis.linares@cern.ch']
     else:
-        sender = '_gfactory@vocms32.cern.ch'
+        user, host = get_user_and_host_names()
+        sender = '%s@%s' % (user, host)
         receivers = ['osg-gfactory-support@physics.ucsd.edu']
 
     msg = MIMEText (message)
