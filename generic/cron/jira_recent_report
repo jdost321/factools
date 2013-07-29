@@ -1,0 +1,360 @@
+#!/usr/bin/env python2.6 
+
+import base64
+import cookielib
+import datetime
+import getpass
+import json
+import optparse
+import os 
+import pickle
+import re
+import smtplib
+import socket
+import sys
+import urllib2
+from email.mime.text import MIMEText
+from dateutil.tz import tzutc, tzlocal
+
+# Remove buffering from stdout
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
+debugging = False
+
+now = datetime.datetime.now (tzlocal())
+
+
+def main ():
+
+    parser = optparse.OptionParser (description="Loads issues from OSG Jira for the GFACTOPS project for the last N hours.")
+    parser.add_option ('-t', '--timeframe', choices=[str(x) for x in range(1,25)], default="24",
+                       help="Specifies the time range in hours to check for Jira activity.")  
+    parser.add_option ('-s', '--send', action='store_true', default=False, 
+                       help="If present, sends the report without asking.")
+    (options, args) = parser.parse_args()
+
+    timeframe_val = int (options.timeframe)
+    timeframe = datetime.timedelta (hours=timeframe_val)
+
+    try:
+        print "Downloading activity data for the last %d hours..." % timeframe_val,
+        day_events = get_recent_activity (timeframe, timeframe_val)
+        print "done."
+
+        if len(day_events) > 0:
+            date = datetime.datetime.now().date()
+            activity_text = format_activity (day_events, date)
+
+            print "Report:"
+            print activity_text
+
+            if options.send:
+                send_activity_report (activity_text, timeframe)
+
+            else:
+                do_send = raw_input ("Do you want to send the report? ")
+                if do_send.lower() in ("y", "ye", "yes", "ok"):
+                    send_activity_report (activity_text, timeframe)
+                else:
+                    print "Report not sent."
+
+        else:
+            print "No new activity for the last %d hours. No email issued." % timeframe_val
+
+    except urllib2.URLError:
+        message = "The OSG Jira server isn't responding at this moment. Please run this script again later."
+        send_activity_report (message, timeframe)
+        
+
+def get_recent_activity (timeframe, timeframe_val):
+
+    JQL_string = "project = GFACTOPS AND updated >= -%dh ORDER BY updated DESC" % timeframe_val
+
+    jira = JiraManager()
+    info = jira.get_activity (JQL_string)
+
+    day_events = {}
+    for i, issue in enumerate (info['issues']):
+   
+        key = issue['key']
+        self_url = issue['self']
+        user_url = "https://jira.opensciencegrid.org/browse/" + key
+        fields = issue['fields']
+
+        summary = fields['summary']
+
+        status = fields['status']['name']
+        description = fields['description']
+        create_date = parse_timestamp (fields['created']).date()
+        update_date = parse_timestamp (fields['updated']).date()
+        comments_data = json.loads (jira.browser.get (self_url))['fields']['comment']
+        comments = comments_data['comments']
+
+        day_events[key] = {'summary':summary,
+                           'description':description,
+                           'update_date':update_date,
+                           'create_date':create_date,
+                           'status':status,
+                           'url':user_url,
+                           'comments':[]}
+
+        for comment in comments:
+
+            comment_update_time = parse_timestamp (comment['updated'], tzlocal())
+            if now - comment_update_time <= timeframe: 
+                comment_text = comment['body']
+                comment_auth = comment['author']['displayName']
+                comment_info = {'text':comment_text, 
+                                'author':comment_auth}
+                day_events[key]['comments'].append (comment_info)
+
+    return day_events
+
+
+def format_activity (day_activity, date):
+
+    indentation_step = 2
+
+    lines = []
+    for key, event in day_activity.items():
+
+        indent = 0
+
+        if event['status'] not in ["Resolved", "Closed", "Fixed"]:
+            status = "Open"
+        else:
+            status = "Closed"
+
+        title = '- %s [%s]' % (event['summary'], status)
+        line = indent_multilines (title, indent)
+        lines.append(line)
+
+        indent += indentation_step
+        issue_info = "(JIRA: {url})".format (url=event['url'])
+        line = indent_multilines (issue_info, indent)
+        lines.append(line)
+
+        indent += indentation_step
+        line = indent_multilines (event['description'], indent)
+        lines.append(line)
+   
+        comments = event['comments']
+        if len(comments) > 0:
+
+            indent = indentation_step
+            line = indent_multilines ("Updates:", indent) 
+            lines.append(line)
+
+            indent += indentation_step
+            for comment in comments:
+                body = comment['text']
+                author = comment['author'].split()[0]
+
+                text = "%s: %s" % (author, body)
+                sub_indent = len(author) + 2
+
+                item = '* ' + text
+                line = indent_multilines (item, indent, sub_indent) 
+                lines.append(line)
+
+        lines.append('\n')
+
+    return '\n'.join(lines)
+
+
+def send_activity_report (report_text, timeframe):
+
+    before = now - timeframe
+    now_str = now.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
+    before_str = before.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
+    subject = '[Osg-gfactory-support] GWMS Factory Ops Activity Report (%s - %s)(UTC)' % (before_str, now_str)
+
+    send_email_plain(subject, report_text)
+    
+
+def get_user_and_host_names():
+
+    user = getpass.getuser()
+    host = socket.gethostname()
+    return user, host
+
+
+def send_email_plain (subject, message):
+
+    if debugging:
+        sender = 'luis.linares@cern.ch'
+        receivers = ['luis.linares@cern.ch']
+    else:
+        user, host = get_user_and_host_names()
+        sender = '%s@%s' % (user, host)
+        receivers = ['osg-gfactory-support@physics.ucsd.edu']
+
+    msg = MIMEText (message)
+
+    msg['Subject'] = subject 
+    msg['From'] = sender 
+    msg['To'] = ", ".join(receivers)
+
+    try:
+       smtpObj = smtplib.SMTP('localhost')
+       smtpObj.sendmail (sender, receivers, msg.as_string())         
+       print "Successfully sent email"
+
+    except smtplib.SMTPException:
+       print "Error: unable to send email"
+
+    
+
+
+class Browser(dict):
+    """ Simple browser with cookies"""
+    urlopen = None
+    Request = None
+    cookieJar = None
+    postData = None
+     
+    def __init__(self):
+
+        self.txHeaders = {}
+        self.txHeaders['User-agent'] = 'curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.13.6.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2'
+        self.txHeaders['Content-Type'] = 'application/json'
+        self.txHeaders['Accept'] = 'application/json'
+
+        """setup browser, init cookie lib"""
+        self.cookieJar = cookielib.LWPCookieJar ()
+        opener = urllib2.build_opener (urllib2.HTTPCookieProcessor (self.cookieJar))
+        urllib2.install_opener (opener)
+
+    def post (self, url):
+
+        if isinstance (self.postData, dict):
+            #data = urllib.urlencode (self.postData)
+            data = json.dumps(self.postData).encode('utf-8')
+        else:
+            data = self.postData
+
+        post_headers = self.txHeaders
+        post_headers['Content-Length'] = len (data)
+
+        req = urllib2.Request (url, data, post_headers)
+        handle = urllib2.urlopen (req)
+
+        return handle.read().strip()
+
+    def get (self, url):
+
+        req = urllib2.Request (url, None, self.txHeaders)
+        handle = urllib2.urlopen (req)
+        return handle.read().strip()
+
+     
+class JiraManager:
+ 
+    def __init__(self):
+         
+        self.jiraURL = "http://jira.opensciencegrid.org"
+
+        self.get_user_secrets()
+        authString = "%s:%s" % (self.jiraUserName, self.jiraPassword)
+        loginBase64 = base64.b64encode (authString)
+         
+        #JIRA ROUTES
+        self.restURL = '/rest/api/2'
+        self.versionURL = '/version'
+        self.queryURL = '/search?jql='
+         
+        #instantiate the browser and make it login
+        self.browser = Browser()
+        self.browser.txHeaders['Authorization'] = 'Basic %s' % loginBase64
+        self.login()
+
+
+    def get_user_secrets (self):
+
+        secrets_file = os.path.expanduser("~/.jira.secrets")
+        try:
+            file_in = open (secrets_file, 'rb')
+            secrets = pickle.load(file_in) 
+            file_in.close()
+            username = secrets['user']
+            passwd = secrets['pass']
+
+        except IOError:
+            print "It seems there's no secrets file. Please enter your JIRA login:"
+            username = raw_input("Username: ")
+
+            passwd = 'a'
+            passwd_conf = ''
+            while passwd != passwd_conf:
+                passwd = getpass.getpass("Password: ")
+                passwd_conf = getpass.getpass("Confirm password: ")
+            
+            file_out = open (secrets_file, 'wb')
+            pickle.dump ({'user':username, 'pass':passwd},
+                         file_out)
+            file_out.close()
+
+        self.jiraUserName = username
+        self.jiraPassword = passwd
+
+
+    def login (self):
+
+        postData = {}
+        postData['os_username'] = self.jiraUserName
+        postData['os_password'] = self.jiraPassword
+        postData['os_cookie'] = 'true'
+         
+        #perform the login so our cookies get set properly
+        self.browser.postData = postData
+        self.browser.post (self.jiraURL)
+
+
+    def get_activity (self, query=''):
+
+        if query:
+            jql_query = query 
+        else:
+            jql_query = "assignee=" + self.jiraUserName
+
+        postData = {}
+        postData['jql'] = jql_query
+
+        full_url = self.jiraURL + self.restURL + '/search'
+        self.browser.postData = postData
+        try:
+            result = self.browser.post (full_url)
+            output = json.loads (result)
+             
+        except urllib2.HTTPError, e:
+            log.error('Jira failed with errorcode %d' % e.code)
+            raise e
+
+        return output
+
+
+def parse_timestamp (timestamp, tz=None):
+    dt_obj = datetime.datetime.strptime (timestamp[:-9], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=tz)
+    return dt_obj
+
+def strip_html (text):
+    tag_filter = '<[^<]+?>'
+    #tag_filter = '<.*?>'
+    return re.sub (tag_filter, '', text)
+    
+def indent_multilines (the_string, indent=0, sub_indent=0):
+    # splitlines() takes care of all types of EOL
+    lines = the_string.splitlines() 
+    full_indent = indent + sub_indent
+
+    if sub_indent > 0 and len(lines) > 1:
+        line_list = [(' '*indent + lines[0])]
+        line_list.extend ([ (' '*full_indent + line) for line in lines[1:] ])
+    else:
+        line_list = [ (' '*indent + line) for line in lines ]
+        
+    return '\n'.join(line_list)
+
+            
+if __name__ == '__main__':
+    main()
