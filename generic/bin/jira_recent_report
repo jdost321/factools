@@ -22,6 +22,7 @@ debugging = False
 
 now = datetime.datetime.now (tzlocal())
 
+
 def main ():
 
     parser = optparse.OptionParser (description="Loads issues from OSG Jira for the GFACTOPS project for the last N hours.")
@@ -34,30 +35,35 @@ def main ():
     timeframe_val = int (options.timeframe)
     timeframe = datetime.timedelta (hours=timeframe_val)
 
-    print "Downloading activity data for the last %d hours..." % timeframe_val,
-    day_events = get_recent_activity (timeframe, timeframe_val)
-    print "done."
+    try:
+        print "Downloading activity data for the last %d hours..." % timeframe_val,
+        day_events = get_recent_activity (timeframe, timeframe_val)
+        print "done."
 
-    if len(day_events) > 0:
-        date = datetime.datetime.now().date()
-        activity_text = format_activity (day_events, date)
+        if len(day_events) > 0:
+            date = datetime.datetime.now().date()
+            activity_text = format_activity (day_events, date)
 
-        print "Report:"
-        print activity_text
+            print "Report:"
+            print activity_text
 
-        if options.send:
-            send_activity_report (activity_text, timeframe)
+            if options.send:
+                send_activity_report (activity_text, timeframe)
+
+            else:
+                do_send = raw_input ("Do you want to send the report? ")
+                if do_send.lower() in ("y", "ye", "yes", "ok"):
+                    send_activity_report (activity_text, timeframe)
+                else:
+                    print "Report not sent."
 
         else:
-            do_send = raw_input ("Do you want to send the report? ")
-            if do_send.lower() in ("y", "ye", "yes", "ok"):
-                send_activity_report (activity_text, timeframe)
-            else:
-                print "Report not sent."
+            print "No new activity for the last %d hours. No email issued." % timeframe_val
 
-    else:
-        print "No new activity for the last %d hours. No email issued." % timeframe_val
-
+    except urllib2.URLError:
+        message = "The OSG Jira server isn't responding at this moment. Please run this script again later."
+        send_activity_report (message, timeframe)
+        
 
 def get_recent_activity (timeframe, timeframe_val):
 
@@ -157,22 +163,27 @@ def format_activity (day_activity, date):
 
 def send_activity_report (report_text, timeframe):
 
-    if debugging:
-        sender = 'luis.linares@cern.ch'
-        receivers = ['luis.linares@cern.ch']
-    else:
-        sender = 'luis.linares@cern.ch'
-        receivers = ['osg-gfactory-support@physics.ucsd.edu']
-
-    msg = MIMEText (report_text)
-
     before = now - timeframe
     now_str = now.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
     before_str = before.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
     subject = '[Osg-gfactory-support] GWMS Factory Ops Activity Report (%s - %s)(UTC)' % (before_str, now_str)
 
+    send_email_plain(subject, report_text)
+    
+
+def send_email_plain (subject, message):
+
+    if debugging:
+        sender = 'luis.linares@cern.ch'
+        receivers = ['luis.linares@cern.ch']
+    else:
+        sender = '_gfactory@vocms32.cern.ch'
+        receivers = ['osg-gfactory-support@physics.ucsd.edu']
+
+    msg = MIMEText (message)
+
     msg['Subject'] = subject 
-    msg['From'] = sender
+    msg['From'] = sender 
     msg['To'] = ", ".join(receivers)
 
     try:
@@ -182,6 +193,8 @@ def send_activity_report (report_text, timeframe):
 
     except smtplib.SMTPException:
        print "Error: unable to send email"
+
+    
 
 
 class Browser(dict):
