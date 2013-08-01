@@ -13,8 +13,9 @@ import smtplib
 import socket
 import sys
 import urllib2
-from email.mime.text import MIMEText
 from dateutil.tz import tzutc, tzlocal
+from email.mime.text import MIMEText
+from itertools import ifilter, ifilterfalse
 
 # Remove buffering from stdout
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -42,28 +43,24 @@ def main ():
         print "done."
 
         if len(day_events) > 0:
-            date = datetime.datetime.now().date()
-            activity_text = format_activity (day_events, date)
-
-            print "Report:"
-            print activity_text
-
-            if options.send:
-                send_activity_report (activity_text, timeframe)
-
-            else:
-                do_send = raw_input ("Do you want to send the report? ")
-                if do_send.lower() in ("y", "ye", "yes", "ok"):
-                    send_activity_report (activity_text, timeframe)
-                else:
-                    print "Report not sent."
-
+            message = format_activity (day_events, timeframe)
         else:
-            print "No new activity for the last %d hours. No email issued." % timeframe_val
+            message = "There has been no new activity reported in OSG Jira for the last %d hours." % timeframe_val
 
     except urllib2.URLError:
         message = "The OSG Jira server isn't responding at this moment. Please run this script again later."
+
+    print "Report:"
+    print message
+
+    if options.send:
         send_activity_report (message, timeframe)
+    else:
+        do_send = raw_input ("Do you want to send the report? ")
+        if do_send.lower() in ("y", "ye", "yes", "ok"):
+            send_activity_report (message, timeframe)
+        else:
+            print "Report not sent."
         
 
 def get_recent_activity (timeframe, timeframe_val):
@@ -111,53 +108,71 @@ def get_recent_activity (timeframe, timeframe_val):
     return day_events
 
 
-def format_activity (day_activity, date):
+def format_activity (day_activity, timeframe):
+
+    cms_filter = lambda e: 'cms' in e['summary'].lower()
+    for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) ) 
+    not_cms = dict( (key, val) for key, val in day_activity.iteritems() if not cms_filter(val) )
 
     indentation_step = 2
-
     lines = []
-    for key, event in day_activity.items():
+
+    for group, events in zip(("CMS related:", "Non-CMS related:"), (for_cms, not_cms)):
+
+        if len(events) == 0: continue
 
         indent = 0
 
-        if event['status'] not in ["Resolved", "Closed", "Fixed"]:
-            status = "Open"
-        else:
-            status = "Closed"
+        lines.append (group)
+        lines.append ('-' * len(group))
+        lines.append ('')
 
-        title = '- %s [%s]' % (event['summary'], status)
-        line = indent_multilines (title, indent)
-        lines.append(line)
-
-        indent += indentation_step
-        issue_info = "(JIRA: {url})".format (url=event['url'])
-        line = indent_multilines (issue_info, indent)
-        lines.append(line)
-
-        indent += indentation_step
-        line = indent_multilines (event['description'], indent)
-        lines.append(line)
-   
-        comments = event['comments']
-        if len(comments) > 0:
+        for key, event in events.items():
 
             indent = indentation_step
-            line = indent_multilines ("Updates:", indent) 
+
+            if event['status'] not in ["Resolved", "Closed", "Fixed"]:
+                if event['create_date'] >= (now - timeframe).date():
+                    status = "New"
+                else: 
+                    status = "Open"
+            else:
+                status = "Closed"
+
+            title = '- %s [%s]' % (event['summary'], status)
+            line = indent_multilines (title, indent)
             lines.append(line)
 
             indent += indentation_step
-            for comment in comments:
-                body = comment['text']
-                author = comment['author'].split()[0]
+            issue_info = "(JIRA: {url})".format (url=event['url'])
+            line = indent_multilines (issue_info, indent)
+            lines.append(line)
 
-                text = "%s: %s" % (author, body)
-                sub_indent = len(author) + 2
+            if status == "New":
+                indent += indentation_step
+                line = indent_multilines (event['description'], indent)
+                lines.append(line)
+       
+            comments = event['comments']
+            if len(comments) > 0:
 
-                item = '* ' + text
-                line = indent_multilines (item, indent, sub_indent) 
+                indent = 2 * indentation_step
+                line = indent_multilines ("Updates:", indent) 
                 lines.append(line)
 
-        lines.append('\n')
+                indent += indentation_step
+                for comment in comments:
+                    body = comment['text']
+                    author = comment['author'].split()[0]
+
+                    text = "%s: %s" % (author, body)
+                    sub_indent = len(author) + 2
+
+                    item = '* ' + text
+                    line = indent_multilines (item, indent, sub_indent) 
+                    lines.append(line)
+
+            lines.append('')
 
     return '\n'.join(lines)
 
@@ -167,9 +182,9 @@ def send_activity_report (report_text, timeframe):
     before = now - timeframe
     now_str = now.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
     before_str = before.astimezone(tzutc()).strftime("%Y-%m-%d %H:%M")
-    subject = '[Osg-gfactory-support] GWMS Factory Ops Activity Report (%s - %s)(UTC)' % (before_str, now_str)
+    subject = 'Glidein Factory Jira Activity Report (%s => %s)(UTC)' % (before_str, now_str)
 
-    send_email_plain(subject, report_text)
+    send_email_plain (subject, report_text)
     
 
 def get_user_and_host_names():
@@ -181,13 +196,9 @@ def get_user_and_host_names():
 
 def send_email_plain (subject, message):
 
-    if debugging:
-        sender = 'luis.linares@cern.ch'
-        receivers = ['luis.linares@cern.ch']
-    else:
-        user, host = get_user_and_host_names()
-        sender = '%s@%s' % (user, host)
-        receivers = ['osg-gfactory-support@physics.ucsd.edu']
+    user, host = get_user_and_host_names()
+    sender = '%s@%s' % (user, host)
+    receivers = ['osg-gfactory-support@physics.ucsd.edu']
 
     msg = MIMEText (message)
 
@@ -204,8 +215,6 @@ def send_email_plain (subject, message):
        print "Error: unable to send email"
 
     
-
-
 class Browser(dict):
     """ Simple browser with cookies"""
     urlopen = None
