@@ -94,8 +94,6 @@ def get_recent_activity (timeframe, timeframe_val):
         comments_data = json.loads (jira.browser.get (self_url))['fields']['comment']
         comments = comments_data['comments']
 
-        if debugging: print key, 'cr:', create_date, 'up:', update_date
-
         day_events[key] = {'summary': summary,
                            'description': description,
                            'reporter': reporter,
@@ -143,9 +141,9 @@ def format_activity (day_activity, timeframe):
 
             if event['status'] not in ["Resolved", "Closed", "Fixed"]:
                 if event['create_date'] >= (now - timeframe).date():
-                    status = "New"
+                    tag = "[New, by %s]" % event['reporter'].split()[0]
                 else:
-                    status = "Open"
+                    tag = "[Open]"
             else:
                 tag = "[Closed]"
 
@@ -159,8 +157,6 @@ def format_activity (day_activity, timeframe):
             lines.append(line)
 
             if "New" in tag:
-                indent += indentation_step
-                line = indent_multilines ("Description:", indent)
                 indent += indentation_step
                 line = indent_multilines (event['description'], indent)
                 lines.append(line)
