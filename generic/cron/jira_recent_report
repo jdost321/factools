@@ -12,6 +12,7 @@ import re
 import smtplib
 import socket
 import sys
+import time
 import urllib2
 from dateutil.tz import tzutc, tzlocal
 from email.mime.text import MIMEText
@@ -36,18 +37,26 @@ def main ():
     timeframe_val = int (options.timeframe)
     timeframe = datetime.timedelta (hours=timeframe_val)
 
-    try:
-        print "Downloading activity data for the last %d hours..." % timeframe_val,
-        day_events = get_recent_activity (timeframe, timeframe_val)
-        print "done."
+    retry = True
+    while retry:
+        try:
+            print "Downloading activity data for the last %d hours..." % timeframe_val,
+            day_events = get_recent_activity (timeframe, timeframe_val)
+            print "done."
 
-        if len(day_events) > 0:
-            message = format_activity (day_events, timeframe)
-        else:
-            message = "There has been no new activity reported in OSG Jira for the last %d hours." % timeframe_val
+            if len(day_events) > 0:
+                message = format_activity (day_events, timeframe)
+            else:
+                message = "There has been no new activity reported in OSG Jira for the last %d hours." % timeframe_val
 
-    except urllib2.URLError:
-        message = "The OSG Jira server isn't responding at this moment. Please run this script again later."
+            retry = False
+
+        except urllib2.URLError:
+            retry_period_min = 2
+            message = "The OSG Jira server isn't responding at this moment. Trying again in %d minutes..." % retry_period_min
+
+            retry = True
+            time.sleep (retry_period_min*60)
 
     print "Report:"
     print message
@@ -86,6 +95,8 @@ def get_recent_activity (timeframe, timeframe_val):
         comments_data = json.loads (jira.browser.get (self_url))['fields']['comment']
         comments = comments_data['comments']
 
+        if debugging: print key, 'cr:', create_date, 'up:', update_date
+
         day_events[key] = {'summary': summary,
                            'description': description,
                            'reporter': reporter,
@@ -110,7 +121,9 @@ def get_recent_activity (timeframe, timeframe_val):
 
 def format_activity (day_activity, timeframe):
 
-    cms_filter = lambda e: 'cms' in e['summary'].lower()
+    cms_keywords = ['cms', 'egi', 'cern']
+    cms_filter = lambda e: any (name in e['summary'].lower() for name in cms_keywords) or \
+                           any (name in e['description'].lower() for name in cms_keywords)
     for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) ) 
     not_cms = dict( (key, val) for key, val in day_activity.iteritems() if not cms_filter(val) )
 
@@ -133,7 +146,8 @@ def format_activity (day_activity, timeframe):
 
             if event['status'] not in ["Resolved", "Closed", "Fixed"]:
                 if event['create_date'] >= (now - timeframe).date():
-                    tag = "[New, by %s]" % event['reporter'].split()[0] 
+                    reporter_name = event['reporter'].split()[0]
+                    tag = "[New, by %s]" % reporter_name
                 else: 
                     tag = "[Open]"
             else:
@@ -149,6 +163,8 @@ def format_activity (day_activity, timeframe):
             lines.append(line)
 
             if "New" in tag:
+                indent += indentation_step
+                line = indent_multilines ("Description:", indent)
                 indent += indentation_step
                 line = indent_multilines (event['description'], indent)
                 lines.append(line)
