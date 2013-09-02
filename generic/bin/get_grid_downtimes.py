@@ -11,8 +11,6 @@ def main():
 
     egi = get_egi()
     osg = get_osg()
-    print "EGI:\n", egi 
-    print "OSG:\n", osg
 
     all = egi.copy()
     all.update(osg)
