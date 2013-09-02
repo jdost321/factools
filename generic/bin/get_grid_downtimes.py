@@ -41,22 +41,6 @@ def get_egi():
         start = datetime.fromtimestamp (int (record['START_DATE']), tzutc())
         end = datetime.fromtimestamp (int (record['END_DATE']), tzutc())
 
-        # Repeated declaration of downtimes is always identical, and hence irrelevant                            
-        """
-        if host not in downtimes_out:
-            new = {'start': start, 'end': end,
-                    'description':description}
-            downtimes_out[host] = new
-        else:
-            print "WARNING: host %s has more than one downtime record" % host
-
-            if isinstance (downtimes_out[host], list):
-                downtimes_out[host].append(new)
-            else:
-                multi = [ downtimes_out[host] ]
-                multi.append(new)
-                downtimes_out[host] = multi
-        """
         downtimes_out[host] = {'start': start, 'end': end,
                                'description':description}
 
@@ -77,22 +61,6 @@ def get_osg():
         start = datetime.strptime (record['StartTime'].replace(" UTC",''), "%b %d, %Y %H:%M:%S").replace(tzinfo=tzutc())
         end = datetime.strptime (record['EndTime'].replace(" UTC",''), "%b %d, %Y %H:%M:%S").replace(tzinfo=tzutc())
 
-        # Repeated declaration of downtimes is always identical, and hence irrelevant                            
-        """
-        if host not in downtimes_out:
-            new = {'start': start, 'end': end,
-                    'description':description}
-            downtimes_out[host] = new
-        else:
-            print "WARNING: host %s has more than one downtime record" % host
-
-            if isinstance (downtimes_out[host], list):
-                downtimes_out[host].append(new)
-            else:
-                multi = [ downtimes_out[host] ]
-                multi.append(new)
-                downtimes_out[host] = multi
-        """
         downtimes_out[host] = {'start': start, 'end': end,
                                'description':description}
 

@@ -25,14 +25,22 @@ def main():
         entry = the_entry[0]
         hostname = entry['@gatekeeper'].split(':')[0]
 
-        current_downtimes = get_egi()
-        current_downtimes.update(get_osg())
+        entry_type = ''
+        record = None
 
+        current_downtimes = get_egi()
         if hostname in current_downtimes:
+            entry_type = "EGI"
+            record = current_downtimes[hostname]
+
+        current_downtimes = get_osg()
+        if hostname in current_downtimes:
+            entry_type = "OSG"
+            record = current_downtimes[hostname]
+
+        if record:
             print "This entry IS under downtime:"
-            print '  Description:', current_downtimes[hostname]['description'] 
-            print '   Start time:', current_downtimes[hostname]['start'].strftime("%B %d, %Y %H:%M UTC")
-            print '     End time:', current_downtimes[hostname]['end'].strftime("%B %d, %Y %H:%M UTC")
+            print gen_downtime_message(record, entry_type)
             return 0
         else:
             print "This entry IS NOT under downtime"
@@ -42,6 +50,15 @@ def main():
         print "Error: There is no configured entry with the specified name"
         return 2
 
+def gen_downtime_message (record, entry_type):
+    
+    message =  "   Entry type: " + entry_type
+    message += "  Description: " + record['description'] 
+    message += "   Start time: " + record['start'].strftime("%B %d, %Y %H:%M UTC")
+    message += "     End time: " + record['end'].strftime("%B %d, %Y %H:%M UTC")
+    print "dbg:", record.keys()
+
+    return message
 
 if __name__ == "__main__":
     sys.exit (main()) 
