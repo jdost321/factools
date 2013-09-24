@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 "Makes working with XML feel like you are working with JSON"
 
 from xml.parsers import expat

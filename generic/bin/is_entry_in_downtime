@@ -8,58 +8,54 @@ from get_grid_downtimes import get_egi, get_osg
 
 def main():
 
-    if len(sys.argv) != 2:
-        print "Usage: %s entry_name"
+    if len(sys.argv) < 2:
+        print "Usage: %s entry_name [entry_name, ...]"
         return 1
 
-    entry_name = sys.argv[1]
- 
+    entry_names = sys.argv[1:]
+
     factory_config_file = os.path.join (os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
     factory_config = xml_to_dict (open (factory_config_file))
     factory_entries = factory_config['glidein']['entries']['entry']
-    the_entry = filter (lambda e: e['@name'] == entry_name, 
-                        factory_entries)
+    the_entries = filter (lambda e: e['@name'] in entry_names,
+                          factory_entries)
 
-    if the_entry:
-        entry = the_entry[0]
-        hostname = entry['@gatekeeper'].split(':')[0]
-
-        entry_type = ''
-        record = None
-
-        current_downtimes = get_egi()
-        if hostname in current_downtimes:
-            entry_type = "EGI"
-            record = current_downtimes[hostname]
-
-        current_downtimes = get_osg()
-        if hostname in current_downtimes:
-            entry_type = "OSG"
-            record = current_downtimes[hostname]
-
-        if record:
-            print "This entry IS under downtime:"
-            print gen_downtime_message(record, entry_type)
-            return 0
-        else:
-            print "This entry IS NOT under downtime"
-            return 1
-
-    else:
-        print "Error: There is no configured entry with the specified name"
+    if not the_entries:
+        print "Error: There are no configured entries with the specified name"
         return 2
 
+    current_downtimes = {'EGI': get_egi(),
+                         'OSG': get_osg()}
+
+    for entry in the_entries:
+        hostname = entry['@gatekeeper'].split(':')[0]
+
+        record = None
+
+        for entry_type, records in current_downtimes.iteritems():
+            if hostname in records:
+                record = records[hostname]
+                break
+
+        print '\n'
+        if record:
+            print entry + ": This entry IS under downtime:"
+            print gen_downtime_message (record, entry_type)
+        else:
+            print entry + ": This entry IS NOT under downtime"
+
+    return 0
+
 def gen_downtime_message (record, entry_type):
-    
-    message =  "   Entry type: " + entry_type
-    message += "  Description: " + record['description'] 
-    message += "   Start time: " + record['start'].strftime("%B %d, %Y %H:%M UTC")
-    message += "     End time: " + record['end'].strftime("%B %d, %Y %H:%M UTC")
-    print "dbg:", record.keys()
+
+    message += "  Federation: " + entry_type
+    message += " Description: " + record['description']
+    message += "  Start time: " + record['start'].strftime("%B %d, %Y %H:%M UTC")
+    message += "    End time: " + record['end'].strftime("%B %d, %Y %H:%M UTC")
 
     return message
 
 if __name__ == "__main__":
-    sys.exit (main()) 
+    sys.exit (main())
 
