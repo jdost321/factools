@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.6
 
+import copy
 import os
 import sys
 
@@ -14,19 +15,19 @@ def main():
 
     entry_names = sys.argv[1:]
 
-    factory_config_file = os.path.join (os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
+    factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
-    factory_config = xml_to_dict (open (factory_config_file))
+    factory_config = xml_to_dict( open( factory_config_file))
     factory_entries = factory_config['glidein']['entries']['entry']
-    the_entries = filter (lambda e: e['@name'] in entry_names,
-                          factory_entries)
+    the_entries = filter( lambda e: e['@name'] in entry_names,
+                          factory_entries )
 
     if not the_entries:
         print "Error: There are no configured entries with the specified name"
         return 2
 
-    current_downtimes = {'EGI': get_egi(),
-                         'OSG': get_osg()}
+    current_downtimes = {"EGI": get_egi(),
+                         "OSG": get_osg()}
 
     for entry in the_entries:
         hostname = entry['@gatekeeper'].split(':')[0]
@@ -34,27 +35,33 @@ def main():
         record = None
 
         for entry_type, records in current_downtimes.iteritems():
-            if hostname in records:
-                record = records[hostname]
+            record = filter_dict( lambda key, val: hostname in key, records)
+            print '\n'
+            if record:
+                print entry + ": This entry IS under downtime:"
+                print gen_downtime_message( record[hostname], entry_type)
                 break
 
-        print '\n'
-        if record:
-            print entry + ": This entry IS under downtime:"
-            print gen_downtime_message (record, entry_type)
-        else:
+        if not record:
             print entry + ": This entry IS NOT under downtime"
 
     return 0
 
 def gen_downtime_message (record, entry_type):
 
-    message += "  Federation: " + entry_type
+    message = "  Federation: " + entry_type
     message += " Description: " + record['description']
     message += "  Start time: " + record['start'].strftime("%B %d, %Y %H:%M UTC")
     message += "    End time: " + record['end'].strftime("%B %d, %Y %H:%M UTC")
 
     return message
+
+import copy
+
+def filter_dict (test_function, dictionary):
+   key_function = lambda e: test_function(e[0], e[1])
+   return copy.deepcopy (dict (filter (key_function, dictionary.iteritems())))
+
 
 if __name__ == "__main__":
     sys.exit (main())
