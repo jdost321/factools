@@ -29,31 +29,19 @@ def main():
     current_downtimes = {"EGI": get_egi(),
                          "OSG": get_osg()}
     entries_to_report = {}
+
     for entry in the_entries:
 
         entry_name = entry['@name']
-
         compute_element = entry['@gatekeeper'].split(':')[0]
-        storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs', 
+        storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs',
                                   entry['attrs']['attr'] )[0]['@value']
-        record = None
+        target_hosts = {"CE": compute_element, "SE": storage_element}
 
-        for federation, records in current_downtimes.iteritems():
-
-            record = filter_dict( lambda key, val: key == compute_element, records)
-            if record:
-                report_str = gen_downtime_message( record, entry_name, federation, 'CE')
-                entries_to_report[entry_name] = report_str
-                break
-
-            record = filter_dict( lambda key, val: key == storage_element, records)
-            if record:
-                report_str = gen_downtime_message( record, entry_name, federation, 'SE')
-                entries_to_report[entry_name] = report_str
-                break
+        record = add_to_report (entries_to_report, entry_name, target_hosts, current_downtimes)
 
         if not record:
-            report_str = "%s : This entry is NOT under downtime:\n" % entry_name 
+            report_str = "%s : This entry is NOT under downtime:\n" % entry_name
             if entry_name not in entries_to_report:
                 entries_to_report[entry_name] = report_str
 
@@ -61,6 +49,21 @@ def main():
         print report
 
     return 0
+
+def add_to_report (entries_to_report, entry_name, target_hosts, current_downtimes):
+
+    record = None
+
+    for federation, records in current_downtimes.iteritems():
+        for host_type, host_name in target_hosts.iteritems():
+
+            record = filter_dict( lambda key, val: key == host_name, records)
+            if record:
+                report_str = gen_downtime_message( record, entry_name, federation, host_type)
+                entries_to_report[entry_name] = report_str
+                return record
+
+    return record
 
 def gen_downtime_message (record, entry_name, federation, host_type):
 
