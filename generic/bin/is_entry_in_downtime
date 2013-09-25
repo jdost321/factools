@@ -28,35 +28,51 @@ def main():
 
     current_downtimes = {"EGI": get_egi(),
                          "OSG": get_osg()}
-
+    entries_to_report = {}
     for entry in the_entries:
-        hostname = entry['@gatekeeper'].split(':')[0]
 
+        entry_name = entry['@name']
+
+        compute_element = entry['@gatekeeper'].split(':')[0]
+        storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs', 
+                                  entry['attrs']['attr'] )[0]['@value']
         record = None
 
-        for entry_type, records in current_downtimes.iteritems():
-            record = filter_dict( lambda key, val: hostname in key, records)
-            print '\n'
+        for federation, records in current_downtimes.iteritems():
+
+            record = filter_dict( lambda key, val: key == compute_element, records)
             if record:
-                print entry + ": This entry IS under downtime:"
-                print gen_downtime_message( record[hostname], entry_type)
+                report_str = gen_downtime_message( record, entry_name, federation, 'CE')
+                entries_to_report[entry_name] = report_str
+                break
+
+            record = filter_dict( lambda key, val: key == storage_element, records)
+            if record:
+                report_str = gen_downtime_message( record, entry_name, federation, 'SE')
+                entries_to_report[entry_name] = report_str
                 break
 
         if not record:
-            print entry + ": This entry IS NOT under downtime"
+            report_str = "%s : This entry is NOT under downtime:\n" % entry_name 
+            if entry_name not in entries_to_report:
+                entries_to_report[entry_name] = report_str
+
+    for entry_name, report in sorted(entries_to_report.iteritems()):
+        print report
 
     return 0
 
-def gen_downtime_message (record, entry_type):
+def gen_downtime_message (record, entry_name, federation, host_type):
 
-    message = "  Federation: " + entry_type
-    message += " Description: " + record['description']
-    message += "  Start time: " + record['start'].strftime("%B %d, %Y %H:%M UTC")
-    message += "    End time: " + record['end'].strftime("%B %d, %Y %H:%M UTC")
+    hostname, downtime_record = record.popitem()
+    message = "%s : This entry IS under downtime:\n" % entry_name
+    message += "    Federation: " + federation + '\n'
+    message += " Affected Host: %s (%s)\n" % (hostname, host_type)
+    message += "   Description: " + downtime_record['description'] + '\n'
+    message += "    Start time: " + downtime_record['start'].strftime("%B %d, %Y %H:%M UTC") + '\n'
+    message += "      End time: " + downtime_record['end'].strftime("%B %d, %Y %H:%M UTC") + '\n'
 
     return message
-
-import copy
 
 def filter_dict (test_function, dictionary):
    key_function = lambda e: test_function(e[0], e[1])
