@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 
+import copy
 import os
 import sys
 
@@ -8,41 +9,76 @@ from get_grid_downtimes import get_egi, get_osg
 
 def main():
 
-    if len(sys.argv) != 2:
-        print "Usage: %s entry_name"
+    if len(sys.argv) < 2:
+        print "Usage: %s entry_name [entry_name, ...]"
         return 1
 
-    entry_name = sys.argv[1]
- 
-    factory_config_file = os.path.join (os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
+    entry_names = sys.argv[1:]
 
-    factory_config = xml_to_dict (open (factory_config_file))
+    factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
+
+    factory_config = xml_to_dict( open( factory_config_file))
     factory_entries = factory_config['glidein']['entries']['entry']
-    the_entry = filter (lambda e: e['@name'] == entry_name, 
-                        factory_entries)
+    the_entries = filter( lambda e: e['@name'] in entry_names,
+                          factory_entries )
 
-    if the_entry:
-        entry = the_entry[0]
-        hostname = entry['@gatekeeper'].split(':')[0]
-
-        current_downtimes = get_egi()
-        current_downtimes.update(get_osg())
-
-        if hostname in current_downtimes:
-            print "This entry IS under downtime:"
-            print '  Description:', current_downtimes[hostname]['description'] 
-            print '   Start time:', current_downtimes[hostname]['start'].strftime("%B %d, %Y %H:%M UTC")
-            print '     End time:', current_downtimes[hostname]['end'].strftime("%B %d, %Y %H:%M UTC")
-            return 0
-        else:
-            print "This entry IS NOT under downtime"
-            return 1
-
-    else:
-        print "Error: There is no configured entry with the specified name"
+    if not the_entries:
+        print "Error: There are no configured entries with the specified name"
         return 2
+
+    current_downtimes = {"EGI": get_egi(),
+                         "OSG": get_osg()}
+    entries_to_report = {}
+    for entry in the_entries:
+
+        entry_name = entry['@name']
+
+        compute_element = entry['@gatekeeper'].split(':')[0]
+        storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs', 
+                                  entry['attrs']['attr'] )[0]['@value']
+        record = None
+
+        for federation, records in current_downtimes.iteritems():
+
+            record = filter_dict( lambda key, val: key == compute_element, records)
+            if record:
+                report_str = gen_downtime_message( record, entry_name, federation, 'CE')
+                entries_to_report[entry_name] = report_str
+                break
+
+            record = filter_dict( lambda key, val: key == storage_element, records)
+            if record:
+                report_str = gen_downtime_message( record, entry_name, federation, 'SE')
+                entries_to_report[entry_name] = report_str
+                break
+
+        if not record:
+            report_str = "%s : This entry is NOT under downtime:\n" % entry_name 
+            if entry_name not in entries_to_report:
+                entries_to_report[entry_name] = report_str
+
+    for entry_name, report in sorted(entries_to_report.iteritems()):
+        print report
+
+    return 0
+
+def gen_downtime_message (record, entry_name, federation, host_type):
+
+    hostname, downtime_record = record.popitem()
+    message = "%s : This entry IS under downtime:\n" % entry_name
+    message += "    Federation: " + federation + '\n'
+    message += " Affected Host: %s (%s)\n" % (hostname, host_type)
+    message += "   Description: " + downtime_record['description'] + '\n'
+    message += "    Start time: " + downtime_record['start'].strftime("%B %d, %Y %H:%M UTC") + '\n'
+    message += "      End time: " + downtime_record['end'].strftime("%B %d, %Y %H:%M UTC") + '\n'
+
+    return message
+
+def filter_dict (test_function, dictionary):
+   key_function = lambda e: test_function(e[0], e[1])
+   return copy.deepcopy (dict (filter (key_function, dictionary.iteritems())))
 
 
 if __name__ == "__main__":
-    sys.exit (main()) 
+    sys.exit (main())
 
