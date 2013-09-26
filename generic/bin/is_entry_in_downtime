@@ -3,6 +3,9 @@
 import copy
 import os
 import sys
+import pytz
+from datetime import datetime
+import tzlocal as tzl
 
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
@@ -50,7 +53,7 @@ def main():
 
     return 0
 
-def add_to_report (entries_to_report, entry_name, target_hosts, current_downtimes):
+def add_to_report (report, entry_name, target_hosts, current_downtimes):
 
     record = None
 
@@ -59,8 +62,7 @@ def add_to_report (entries_to_report, entry_name, target_hosts, current_downtime
 
             record = filter_dict( lambda key, val: key == host_name, records)
             if record:
-                report_str = gen_downtime_message( record, entry_name, federation, host_type)
-                entries_to_report[entry_name] = report_str
+                report[entry_name] = gen_downtime_message( record, entry_name, federation, host_type)
                 return record
 
     return record
@@ -72,10 +74,17 @@ def gen_downtime_message (record, entry_name, federation, host_type):
     message += "    Federation: " + federation + '\n'
     message += " Affected Host: %s (%s)\n" % (hostname, host_type)
     message += "   Description: " + downtime_record['description'] + '\n'
-    message += "    Start time: " + downtime_record['start'].strftime("%B %d, %Y %H:%M UTC") + '\n'
-    message += "      End time: " + downtime_record['end'].strftime("%B %d, %Y %H:%M UTC") + '\n'
+    message += "    Start time: " + print_local_dt( downtime_record['start']) + '\n'
+    message += "      End time: " + print_local_dt( downtime_record['end']) + '\n'
 
     return message
+
+def print_local_dt (utc_dt):
+
+    local_tz = tzl.get_localzone()
+
+    local_dt = local_tz.normalize( utc_dt.astimezone( local_tz))
+    return local_dt.strftime("%B %d, %Y %H:%M %Z%z")
 
 def filter_dict (test_function, dictionary):
    key_function = lambda e: test_function(e[0], e[1])

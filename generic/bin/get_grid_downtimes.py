@@ -6,7 +6,6 @@ import urllib2
 
 import xmltodict
 
-
 def main():
 
     egi = get_egi()
@@ -30,7 +29,7 @@ def get_egi():
     data = get_data(source_url)
 
     downtimes_in = data['results']['DOWNTIME']
-    downtimes_out = {} 
+    downtimes_out = {}
 
     for record in downtimes_in:
 
@@ -67,3 +66,4 @@ def get_osg():
 
 if __name__ == "__main__":
     main()
+
