@@ -41,7 +41,7 @@ def main():
                                   entry['attrs']['attr'] )[0]['@value']
         target_hosts = {"CE": compute_element, "SE": storage_element}
 
-        record = get_downtime( report, entry_name, target_hosts, downtimes )
+        record = get_downtime( entry_name, target_hosts, downtimes )
 
         if record or entry_name not in report:
             report[entry_name] = gen_downtime_message( record, entry_name)
@@ -51,15 +51,15 @@ def main():
 
     return 0
 
-def get_downtime (report, entry_name, target_hosts, downtimes):
+def get_downtime (entry_name, target_hosts, downtimes):
 
     for federation, records in downtimes.iteritems():
         for host_type, host_name in target_hosts.iteritems():
 
             record = filter_dict( lambda key, val: key == host_name, records)
             if record:
-                record['federation'] = federation
-                record['host_type'] = host_type
+                record[0][host_name]['federation'] = federation
+                record[0][host_name]['host_type'] = host_type
                 return record
 
     return None
