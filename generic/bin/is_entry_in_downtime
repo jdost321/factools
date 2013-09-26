@@ -5,8 +5,8 @@ import os
 import sys
 import pytz
 from datetime import datetime
-import tzlocal as tzl
 
+import tzlocal as tzl
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 
@@ -16,22 +16,22 @@ def main():
         print "Usage: %s entry_name [entry_name, ...]"
         return 1
 
-    entry_names = sys.argv[1:]
+    entry_names_specs = sys.argv[1:]
 
     factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
     factory_config = xml_to_dict( open( factory_config_file))
-    factory_entries = factory_config['glidein']['entries']['entry']
-    the_entries = filter( lambda e: e['@name'] in entry_names,
-                          factory_entries )
+    factory_entries = filter( lambda e: e['@enabled'] == 'True',
+                              factory_config['glidein']['entries']['entry'] )
+    the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
+                         for spec in entry_names_specs ], [] )
 
     if not the_entries:
         print "Error: There are no configured entries with the specified name"
         return 2
 
-    current_downtimes = {"EGI": get_egi(),
-                         "OSG": get_osg()}
-    entries_to_report = {}
+    downtimes = {"EGI": get_egi(), "OSG": get_osg()}
+    report = {}
 
     for entry in the_entries:
 
@@ -41,41 +41,43 @@ def main():
                                   entry['attrs']['attr'] )[0]['@value']
         target_hosts = {"CE": compute_element, "SE": storage_element}
 
-        record = add_to_report (entries_to_report, entry_name, target_hosts, current_downtimes)
+        record = get_downtime( report, entry_name, target_hosts, downtimes )
 
-        if not record:
-            report_str = "%s : This entry is NOT under downtime:\n" % entry_name
-            if entry_name not in entries_to_report:
-                entries_to_report[entry_name] = report_str
+        if record or entry_name not in report:
+            report[entry_name] = gen_downtime_message( record, entry_name)
 
-    for entry_name, report in sorted(entries_to_report.iteritems()):
+    for entry_name, report in sorted(report.iteritems()):
         print report
 
     return 0
 
-def add_to_report (report, entry_name, target_hosts, current_downtimes):
+def get_downtime (report, entry_name, target_hosts, downtimes):
 
-    record = None
-
-    for federation, records in current_downtimes.iteritems():
+    for federation, records in downtimes.iteritems():
         for host_type, host_name in target_hosts.iteritems():
 
             record = filter_dict( lambda key, val: key == host_name, records)
             if record:
-                report[entry_name] = gen_downtime_message( record, entry_name, federation, host_type)
+                record['federation'] = federation
+                record['host_type'] = host_type
                 return record
 
-    return record
+    return None
 
-def gen_downtime_message (record, entry_name, federation, host_type):
+def gen_downtime_message (downtime_record, entry_name):
 
-    hostname, downtime_record = record.popitem()
-    message = "%s : This entry IS under downtime:\n" % entry_name
-    message += "    Federation: " + federation + '\n'
-    message += " Affected Host: %s (%s)\n" % (hostname, host_type)
-    message += "   Description: " + downtime_record['description'] + '\n'
-    message += "    Start time: " + print_local_dt( downtime_record['start']) + '\n'
-    message += "      End time: " + print_local_dt( downtime_record['end']) + '\n'
+    if downtime_record:
+        hostname, record = downtime_record.popitem()
+
+        message = "%s : This entry IS under downtime:\n" % entry_name
+        message += "    Federation: " + record['federation'] + '\n'
+        message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
+        message += "   Description: " + record['description'] + '\n'
+        message += "    Start time: " + print_local_dt( record['start']) + '\n'
+        message += "      End time: " + print_local_dt( record['end']) + '\n'
+
+    else:
+        message = "%s : This entry is NOT under downtime:\n" % entry_name
 
     return message
 
@@ -87,6 +89,7 @@ def print_local_dt (utc_dt):
     return local_dt.strftime("%B %d, %Y %H:%M %Z%z")
 
 def filter_dict (test_function, dictionary):
+
    key_function = lambda e: test_function(e[0], e[1])
    return copy.deepcopy (dict (filter (key_function, dictionary.iteritems())))
 
