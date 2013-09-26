@@ -58,8 +58,8 @@ def get_downtime (entry_name, target_hosts, downtimes):
 
             record = filter_dict( lambda key, val: key == host_name, records)
             if record:
-                record[0][host_name]['federation'] = federation
-                record[0][host_name]['host_type'] = host_type
+                record[host_name]['federation'] = federation
+                record[host_name]['host_type'] = host_type
                 return record
 
     return None
