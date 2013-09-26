@@ -77,9 +77,7 @@ def get_glidein_params(glide_desc, job_params, client_name, entry):
 
     for k in params:
         params_arr.append("-param_%s" % k)
-        # gwms v3 doesn't seems to escape params anymore
-        #params_arr.append(glideFactoryLib.escapeParam(str(params[k])))
-        params_arr.append(str(params[k]))
+        params_arr.append(glideFactoryLib.escapeParam(str(params[k])))
 
     return params_arr
 
