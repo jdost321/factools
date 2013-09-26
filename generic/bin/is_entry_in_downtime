@@ -13,7 +13,7 @@ from get_grid_downtimes import get_egi, get_osg
 def main():
 
     if len(sys.argv) < 2:
-        print "Usage: %s entry_name [entry_name, ...]"
+        print "Usage: %s entry_name [entry_name, ...]" % os.path.basename(sys.argv[0])
         return 1
 
     entry_names_specs = sys.argv[1:]
