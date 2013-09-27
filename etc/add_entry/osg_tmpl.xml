@@ -1,18 +1,18 @@
 <glidein glidein_name="v1_1">
    <entries>
-      <entry name="template" enabled="True" verbosity="std">
+      <entry name="template" auth_method="grid_proxy" enabled="True" trust_domain="grid" verbosity="std">
          <config>
-            <max_jobs held="1000" idle="2000" running="10000">
-               <default_max_jobs_frontend held="50" idle="100" running="5000"/>
-               <max_job_frontends>
-               </max_job_frontends>
+            <max_jobs>
+               <default_per_frontend glideins="5000" held="50" idle="100"/>
+               <per_entry glideins="10000" held="1000" idle="4000"/>
+               <per_frontends>
+               </per_frontends>
             </max_jobs>
             <release max_per_cycle="20" sleep="0.2"/>
             <remove max_per_cycle="5" sleep="0.2"/>
             <restrictions require_glidein_glexec_use="False" require_voms_proxy="False"/>
-            <submit cluster_size="10" max_per_cycle="10" sleep="2"/>
+            <submit cluster_size="10" max_per_cycle="10" sleep="2" slots_layout="fixed"/>
          </config>
-         <downtimes/>
          <allow_frontends>
          </allow_frontends>
          <attrs>
