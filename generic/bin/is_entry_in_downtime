@@ -36,13 +36,15 @@ def main():
     for entry in the_entries:
 
         entry_name = entry['@name']
+
         compute_element = entry['@gatekeeper'].split(':')[0]
-        if entry_name.startswith("CMS"):
-            storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs',
-                                    entry['attrs']['attr'] )[0]['@value']
-            target_hosts = {"CE": compute_element, "SE": storage_element}
-        else:
-            target_hosts = {"CE": compute_element}
+        target_hosts = {"CE": compute_element}
+
+        storage_element_attrs = filter( lambda e: e['@name'] == 'GLIDEIN_SEs',
+                                        entry['attrs']['attr'] )
+        if storage_element_attrs:
+            storage_element = storage_element_attrs[0]['@value']
+            target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
 
