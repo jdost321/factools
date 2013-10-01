@@ -13,7 +13,7 @@ from get_grid_downtimes import get_egi, get_osg
 def main():
 
     if len(sys.argv) < 2:
-        print "Usage: %s entry_name [entry_name, ...]"
+        print "Usage: %s entry_name [entry_name, ...]" % os.path.basename(sys.argv[0])
         return 1
 
     entry_names_specs = sys.argv[1:]
@@ -37,9 +37,12 @@ def main():
 
         entry_name = entry['@name']
         compute_element = entry['@gatekeeper'].split(':')[0]
-        storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs',
-                                  entry['attrs']['attr'] )[0]['@value']
-        target_hosts = {"CE": compute_element, "SE": storage_element}
+        if entry_name.startswith("CMS"):
+            storage_element = filter( lambda e: e['@name'] == 'GLIDEIN_SEs',
+                                    entry['attrs']['attr'] )[0]['@value']
+            target_hosts = {"CE": compute_element, "SE": storage_element}
+        else:
+            target_hosts = {"CE": compute_element}
 
         record = get_downtime( entry_name, target_hosts, downtimes )
 
