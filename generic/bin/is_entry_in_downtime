@@ -31,7 +31,7 @@ def main():
         return 2
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {}
+    report = {'downtimes':{}, 'no downtimes':{}}
 
     for entry in the_entries:
 
@@ -49,10 +49,17 @@ def main():
         record = get_downtime( entry_name, target_hosts, downtimes )
 
         if record or entry_name not in report:
-            report[entry_name] = gen_downtime_message( record, entry_name)
+            text = gen_downtime_message( record, entry_name)
+            if 'is NOT' in text.splitlines()[0]:
+                report['no downtimes'][entry_name] = text
+            else:
+                report['downtimes'][entry_name] = text
 
-    for entry_name, report in sorted(report.iteritems()):
-        print report
+    for entry_name, record in sorted(report['downtimes'].iteritems()):
+        print record
+
+    for entry_name, record in sorted(report['no downtimes'].iteritems()):
+        print record
 
     return 0
 
