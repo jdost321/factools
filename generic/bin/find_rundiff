@@ -1,0 +1,86 @@
+#!/usr/bin/python
+
+import os
+import sys
+import subprocess
+import time
+
+# get source dir from env var until we push upstream to glideinWMS
+if 'GLIDEIN_SRC_DIR' in os.environ:
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
+else:
+    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
+    sys.exit(1)
+
+from glideinwms.factory import glideFactoryConfig
+from glideinwms.creation.lib import cgWParams
+
+# Try GLIDEIN_FACTORY_DIR env var first
+if 'GLIDEIN_FACTORY_DIR' in os.environ:
+    gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+else:
+    gfactory_dir="."
+
+mode = "print"
+scale = 2.0
+
+if '-k' in sys.argv:
+    mode = "kill"
+    sys.argv.remove('-k')
+if len(sys.argv) > 1:
+    scale = float(sys.argv[1])
+    if scale < 1.0:
+        print "scale factor must be > 1.0"
+        sys.exit(1)
+    
+conf_file=os.path.join(gfactory_dir,"glideinWMS.xml")
+cparams=cgWParams.GlideinParams("",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["",conf_file])
+
+schedds = {}
+entries = {}
+
+for entry in cparams.entries.keys():
+    if eval(cparams.entries[entry]['enabled']):
+        schedd = cparams.entries[entry]['schedd_name']
+        max_wall = cparams.entries[entry]['attrs']['GLIDEIN_Max_Walltime']['value']
+        if not schedd in schedds:
+            schedds[schedd] = []
+
+        schedds[schedd].append((entry,max_wall))
+
+schedd = schedds[schedds.keys()[0]]
+
+for schedd in schedds:
+    ent_exp_arr = ['(glideinentryname=?="%s"&&currenttime-enteredcurrentstatus>%i)' % (e[0],scale * float(e[1])) for e in schedds[schedd]]
+    #print ent_exp
+
+    #print "querying %s..." % schedd
+    if mode == "print":
+        ent_exp = "jobstatus==2&&(%s)" % "||".join(ent_exp_arr)
+        p = subprocess.Popen(['condor_q','-name',schedd,'-const',ent_exp,'-format','%s\n','glideinentryname'], stdout=subprocess.PIPE)
+
+        out = p.communicate()[0]
+        for e in out.split():
+            if not e in entries:
+                entries[e] = 0
+            entries[e] += 1
+    else:
+        print "\nClearing rundiff from %s:" % schedd
+        ent_exp = "jobstatus==2&&(%s)" % "||".join(ent_exp_arr)
+        p = subprocess.Popen(['condor_rm','-name',schedd,'-const',ent_exp])
+        p.communicate()
+        # fake rundiff always stays in X forever so remove again with -forcex to take care of those
+        ent_exp = "jobstatus==3&&(%s)" % "||".join(ent_exp_arr)
+        p = subprocess.Popen(['condor_rm','-name',schedd,'-forcex','-const',ent_exp])
+        p.communicate()
+        time.sleep(5)
+
+if mode == "kill":
+    sys.exit(0)
+
+tot = 0
+for e in sorted(entries):
+    tot += entries[e]
+    print "%-42s%4s" % (e,entries[e])
+
+print "\nTotal: %s" % tot
