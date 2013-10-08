@@ -16,7 +16,6 @@ from dateutil.tz import tzutc
 from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
-from jira_recent_report import send_email_plain
 
 def main():
 
@@ -182,12 +181,11 @@ def get_user_and_host_names():
     host = socket.gethostname()
     return user, host
 
-
 def send_email_plain (subject, message):
 
     user, host = get_user_and_host_names()
     sender = '%s@%s' % (user, host)
-    receivers = ['osg-gfactory-support@physics.ucsd.edu']
+    receivers = ['osg-gfactory-reports@physics.ucsd.edu']
 
     msg = MIMEText (message)
 
