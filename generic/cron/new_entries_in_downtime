@@ -52,7 +52,6 @@ def main():
            not is_entry_in_factory_downtime(entry_name):
             text = gen_downtime_message( record, entry_name)
             command = gen_downtime_command( record, entry_name)
-            print entry_name, text, command
             new_ads[entry_name] = {'text': text,
                                    'command': command}
 
