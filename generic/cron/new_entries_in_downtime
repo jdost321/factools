@@ -48,10 +48,11 @@ def main():
 
         record = get_downtime( entry_name, target_hosts, downtimes )
 
-        if (record or entry_name not in new_ads) and \
+        if record and entry_name not in new_ads and \
            not is_entry_in_factory_downtime(entry_name):
             text = gen_downtime_message( record, entry_name)
             command = gen_downtime_command( record, entry_name)
+            print entry_name, text, command
             new_ads[entry_name] = {'text': text,
                                    'command': command}
 
