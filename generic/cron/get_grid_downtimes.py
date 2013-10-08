@@ -1,0 +1,1 @@
+../bin/get_grid_downtimes.py
