@@ -53,7 +53,7 @@ def main():
             if 'is NOT' in text.splitlines()[0]:
                 report['no downtimes'][entry_name] = text
             else:
-                report['downtimes'][entry_name]['text'] = text
+                report['downtimes'][entry_name] = {'text': text}
 
                 #TODO: Check if those entries are not currently in factory downtime
                 command = gen_downtime_command( record, entry_name)
