@@ -119,6 +119,7 @@ def gen_downtime_command (downtime_record, entry_name):
     command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
     factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
     hostname, record = downtime_record.popitem()
+    downtime_record[hostname] = record
 
     end_time = get_local_dt( record['end'])
     end_time_str = end_time.strftime( "%H:%M %b %d %Y")
