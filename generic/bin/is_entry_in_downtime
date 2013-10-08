@@ -7,6 +7,8 @@ import pytz
 from datetime import datetime
 
 import tzlocal as tzl
+from dateutil.tz import tzutc
+from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 
@@ -53,11 +55,11 @@ def main():
             if 'is NOT' in text.splitlines()[0]:
                 report['no downtimes'][entry_name] = text
             else:
-                report['downtimes'][entry_name] = {'text': text}
+                if not is_entry_in_factory_downtime(entry_name):
+                    report['downtimes'][entry_name] = {'text': text}
 
-                #TODO: Check if those entries are not currently in factory downtime
-                command = gen_downtime_command( record, entry_name)
-                report['downtimes'][entry_name]['command'] = command
+                    command = gen_downtime_command( record, entry_name)
+                    report['downtimes'][entry_name]['command'] = command
 
     for entry_name, record in sorted(report['no downtimes'].iteritems()):
         print record
@@ -65,7 +67,8 @@ def main():
     for entry_name, record in sorted(report['downtimes'].iteritems()):
         print record['text']
 
-    print "Suggested list of downtime commands:"
+    print "---- ---- ----"
+    print "Suggested list of downtime commands:", '\n'
     for entry_name, record in sorted(report['downtimes'].iteritems()):
         print record['command']
 
@@ -114,6 +117,36 @@ def gen_downtime_command (downtime_record, entry_name):
 
     return command_body.format( facdir = factory_dir, entry = entry_name,
                                 comment = comment, endtime = end_time_str )
+
+def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
+
+    downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+
+    record_lines = []
+    with open(downtimes_file) as fd:
+        for line in fd:
+            if entry_name in line and not line.startswith('#'):
+                record_lines.append(line.strip())
+
+    for line in record_lines:
+        fields = line.split()
+
+        start = parse_timestamp(fields[0])
+
+        if fields[1] != 'None':
+            end = parse_timestamp(fields[1])
+        else:
+            end = None
+
+        entry = fields[2] # It's equal to entry_name by construction
+        frontend = fields[3]
+        sec_clas = fields[4]
+        comment = ' '.join(fields[5:])
+
+        if when >= start and (end is None or end > when):
+            return True
+
+    return False
 
 def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()
