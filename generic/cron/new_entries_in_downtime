@@ -53,7 +53,7 @@ def main():
             text = gen_downtime_message( record, entry_name)
             command = gen_downtime_command( record, entry_name)
             new_ads[entry_name] = {'text': text,
-                                  'command': command}
+                                   'command': command}
 
     if new_ads:
 
@@ -96,11 +96,11 @@ def get_downtime (entry_name, target_hosts, downtimes):
 
     return None
 
-def gen_downtime_message (downtime_record, entry_name):
+def gen_downtime_message (in_record, entry_name):
 
+    downtime_record = copy.deepcopy(in_record)
     if downtime_record:
         hostname, record = downtime_record.popitem()
-        downtime_record[hostname] = record
 
         message = "%s :\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
@@ -114,19 +114,22 @@ def gen_downtime_message (downtime_record, entry_name):
 
     return message
 
-def gen_downtime_command (downtime_record, entry_name):
+def gen_downtime_command (in_record, entry_name):
 
     command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
     factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
-    hostname, record = downtime_record.popitem()
-    downtime_record[hostname] = record
 
-    end_time = get_local_dt( record['end'])
-    end_time_str = end_time.strftime( "%H:%M %b %d %Y")
-    comment = record['description']
+    downtime_record = copy.deepcopy(in_record)
+    if downtime_record:
+        hostname, record = downtime_record.popitem()
 
-    return command_body.format( facdir = factory_dir, entry = entry_name,
-                                comment = comment, endtime = end_time_str )
+        end_time = get_local_dt( record['end'])
+        end_time_str = end_time.strftime( "%H:%M %b %d %Y")
+        comment = record['description']
+
+        return command_body.format( facdir = factory_dir, entry = entry_name,
+                                    comment = comment, endtime = end_time_str )
+    return ''
 
 def is_entry_in_factory_downtime (entry_name, when=None):
 
