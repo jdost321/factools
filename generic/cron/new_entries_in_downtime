@@ -2,8 +2,13 @@
 
 import copy
 import os
+import optparse
 import sys
 import pytz
+import getpass
+import smtplib
+import socket
+from email.mime.text import MIMEText
 from datetime import datetime
 
 import tzlocal as tzl
@@ -14,28 +19,21 @@ from get_grid_downtimes import get_egi, get_osg
 
 def main():
 
-    if len(sys.argv) < 2:
-        print "Usage: %s entry_name [entry_name, ...]" % os.path.basename(sys.argv[0])
-        return 1
-
-    entry_names_specs = sys.argv[1:]
+    parser = optparse.OptionParser (description="Checks GOCDB and OIM for advertised downtimes that are currently not registered on this GlideinWMS factory.")
+    parser.add_option ('-s', '--send', action='store_true', default=False,
+                       help="If present, sends the report without asking.")
+    (options, args) = parser.parse_args()
 
     factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
     factory_config = xml_to_dict( open( factory_config_file))
     factory_entries = filter( lambda e: e['@enabled'] == 'True',
                               factory_config['glidein']['entries']['entry'] )
-    the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
-                         for spec in entry_names_specs ], [] )
-
-    if not the_entries:
-        print "Error: There are no configured entries with the specified name"
-        return 2
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {'downtimes':{}, 'no downtimes':{}}
+    new_ads = {}
 
-    for entry in the_entries:
+    for entry in factory_entries:
 
         entry_name = entry['@name']
 
@@ -50,28 +48,38 @@ def main():
 
         record = get_downtime( entry_name, target_hosts, downtimes )
 
-        if record or (entry_name not in report['no downtimes'] and entry_name not in report['downtimes']):
+        if record and entry_name not in new_ads and \
+           not is_entry_in_factory_downtime(entry_name):
             text = gen_downtime_message( record, entry_name)
-            if 'is NOT' in text.splitlines()[0]:
-                report['no downtimes'][entry_name] = text
+            command = gen_downtime_command( record, entry_name)
+            new_ads[entry_name] = {'text': text,
+                                   'command': command}
+
+    if new_ads:
+
+        report = []
+        for entry_name, record in sorted(new_ads.iteritems()):
+            report.append(record['text'])
+
+        report.append("---- ---- ----")
+        report.append("Suggested list of downtime commands:\n")
+        for entry_name, record in sorted(new_ads.iteritems()):
+            report.append(record['command'])
+
+        message = '\n'.join(report)
+
+        print "Report:"
+        print message
+
+        subject = "New entry downtimes advertised."
+        if options.send:
+            send_email_plain( subject, message)
+        else:
+            do_send = raw_input ("Do you want to send the report? ")
+            if do_send.lower() in ("y", "ye", "yes", "ok"):
+                send_email_plain( subject, message)
             else:
-                if not is_entry_in_factory_downtime(entry_name):
-                    report['downtimes'][entry_name] = {'text': text}
-
-                    command = gen_downtime_command( record, entry_name)
-                    report['downtimes'][entry_name]['command'] = command
-
-    for entry_name, record in sorted(report['no downtimes'].iteritems()):
-        print record
-
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        print record['text']
-
-    if report['downtimes']:
-        print "---- ---- ----"
-        print "Suggested list of downtime commands:", '\n'
-        for entry_name, record in sorted(report['downtimes'].iteritems()):
-            print record['command']
+                print "Report not sent."
 
     return 0
 
@@ -88,13 +96,13 @@ def get_downtime (entry_name, target_hosts, downtimes):
 
     return None
 
-def gen_downtime_message (downtime_record, entry_name):
+def gen_downtime_message (in_record, entry_name):
 
+    downtime_record = copy.deepcopy(in_record)
     if downtime_record:
         hostname, record = downtime_record.popitem()
-        downtime_record[hostname] = record
 
-        message = "%s : This entry IS under downtime:\n" % entry_name
+        message = "%s :\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
         message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
         message += "   Description: " + record['description'] + '\n'
@@ -106,22 +114,29 @@ def gen_downtime_message (downtime_record, entry_name):
 
     return message
 
-def gen_downtime_command (downtime_record, entry_name):
+def gen_downtime_command (in_record, entry_name):
 
     command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
     factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
-    hostname, record = downtime_record.popitem()
 
-    end_time = get_local_dt( record['end'])
-    end_time_str = end_time.strftime( "%H:%M %b %d %Y")
-    comment = record['description']
+    downtime_record = copy.deepcopy(in_record)
+    if downtime_record:
+        hostname, record = downtime_record.popitem()
 
-    return command_body.format( facdir = factory_dir, entry = entry_name,
-                                comment = comment, endtime = end_time_str )
+        end_time = get_local_dt( record['end'])
+        end_time_str = end_time.strftime( "%H:%M %b %d %Y")
+        comment = record['description']
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
+        return command_body.format( facdir = factory_dir, entry = entry_name,
+                                    comment = comment, endtime = end_time_str )
+    return ''
+
+def is_entry_in_factory_downtime (entry_name, when=None):
 
     downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+
+    if when is None:
+        when = datetime.now(tzutc())
 
     record_lines = []
     with open(downtimes_file) as fd:
@@ -163,6 +178,32 @@ def filter_dict (test_function, dictionary):
 
    key_function = lambda e: test_function(e[0], e[1])
    return copy.deepcopy (dict (filter (key_function, dictionary.iteritems())))
+
+def get_user_and_host_names():
+
+    user = getpass.getuser()
+    host = socket.gethostname()
+    return user, host
+
+def send_email_plain (subject, message):
+
+    user, host = get_user_and_host_names()
+    sender = '%s@%s' % (user, host)
+    receivers = ['osg-gfactory-reports@physics.ucsd.edu']
+
+    msg = MIMEText (message)
+
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ", ".join(receivers)
+
+    try:
+       smtpObj = smtplib.SMTP('localhost')
+       smtpObj.sendmail (sender, receivers, msg.as_string())
+       print "Successfully sent email"
+
+    except smtplib.SMTPException:
+       print "Error: unable to send email"
 
 
 if __name__ == "__main__":
