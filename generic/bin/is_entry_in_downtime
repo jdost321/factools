@@ -109,7 +109,7 @@ def gen_downtime_command (downtime_record, entry_name):
     hostname, record = downtime_record.popitem()
 
     end_time = get_local_dt( record['end'])
-    end_time_str = end_time.strftime( "%H%M %m %d, %Y")
+    end_time_str = end_time.strftime( "%H:%M %b %d %Y")
     comment = record['description']
 
     return command_body.format( facdir = factory_dir, entry = entry_name,
