@@ -1,1 +1,1 @@
-generic/bin/tzlocal.py
+../bin/tzlocal.py
