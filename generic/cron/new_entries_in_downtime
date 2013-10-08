@@ -2,6 +2,7 @@
 
 import copy
 import os
+import optparse
 import sys
 import pytz
 from datetime import datetime
@@ -11,8 +12,14 @@ from dateutil.tz import tzutc
 from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
+from jira_recent_report import send_email_plain
 
 def main():
+
+    parser = optparse.OptionParser (description="Checks GOCDB and OIM for advertised downtimes that are currently not registered on this GlideinWMS factory.")
+    parser.add_option ('-s', '--send', action='store_true', default=False,
+                       help="If present, sends the report without asking.")
+    (options, args) = parser.parse_args()
 
     factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
@@ -21,7 +28,7 @@ def main():
                               factory_config['glidein']['entries']['entry'] )
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {'downtimes':{}, 'no downtimes':{}}
+    new_ads = {}
 
     for entry in factory_entries:
 
@@ -38,27 +45,38 @@ def main():
 
         record = get_downtime( entry_name, target_hosts, downtimes )
 
-        if record or entry_name not in report:
+        if (record or entry_name not in new_ads) and \
+           not is_entry_in_factory_downtime(entry_name):
             text = gen_downtime_message( record, entry_name)
-            if 'is NOT' in text.splitlines()[0]:
-                report['no downtimes'][entry_name] = text
+            command = gen_downtime_command( record, entry_name)
+            new_ads[entry_name] = {'text': text,
+                                  'command': command}
+
+    if new_ads:
+
+        report = []
+        for entry_name, record in sorted(new_ads.iteritems()):
+            report.append(record['text'])
+
+        report.append("---- ---- ----")
+        report.append("Suggested list of downtime commands:\n")
+        for entry_name, record in sorted(new_ads.iteritems()):
+            report.append(record['command'])
+
+        message = '\n'.join(report)
+
+        print "Report:"
+        print message
+
+        subject = "New entry downtimes advertised."
+        if options.send:
+            send_email_plain( subject, message)
+        else:
+            do_send = raw_input ("Do you want to send the report? ")
+            if do_send.lower() in ("y", "ye", "yes", "ok"):
+                send_email_plain( subject, message)
             else:
-                if not is_entry_in_factory_downtime(entry_name):
-                    report['downtimes'][entry_name] = {'text': text}
-
-                    command = gen_downtime_command( record, entry_name)
-                    report['downtimes'][entry_name]['command'] = command
-
-    for entry_name, record in sorted(report['no downtimes'].iteritems()):
-        print record
-
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        print record['text']
-
-    print "---- ---- ----"
-    print "Suggested list of downtime commands:", '\n'
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        print record['command']
+                print "Report not sent."
 
     return 0
 
@@ -81,7 +99,7 @@ def gen_downtime_message (downtime_record, entry_name):
         hostname, record = downtime_record.popitem()
         downtime_record[hostname] = record
 
-        message = "%s : This entry IS under downtime:\n" % entry_name
+        message = "%s :\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
         message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
         message += "   Description: " + record['description'] + '\n'
@@ -106,9 +124,12 @@ def gen_downtime_command (downtime_record, entry_name):
     return command_body.format( facdir = factory_dir, entry = entry_name,
                                 comment = comment, endtime = end_time_str )
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
+def is_entry_in_factory_downtime (entry_name, when=None):
 
     downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+
+    if when is None:
+        when = datetime.now(tzutc())
 
     record_lines = []
     with open(downtimes_file) as fd:

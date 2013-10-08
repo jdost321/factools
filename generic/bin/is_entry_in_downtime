@@ -50,7 +50,7 @@ def main():
 
         record = get_downtime( entry_name, target_hosts, downtimes )
 
-        if record or entry_name not in report:
+        if record or (entry_name not in report['no downtimes'] and entry_name not in report['downtimes']):
             text = gen_downtime_message( record, entry_name)
             if 'is NOT' in text.splitlines()[0]:
                 report['no downtimes'][entry_name] = text
@@ -67,10 +67,11 @@ def main():
     for entry_name, record in sorted(report['downtimes'].iteritems()):
         print record['text']
 
-    print "---- ---- ----"
-    print "Suggested list of downtime commands:", '\n'
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        print record['command']
+    if report['downtimes']:
+        print "---- ---- ----"
+        print "Suggested list of downtime commands:", '\n'
+        for entry_name, record in sorted(report['downtimes'].iteritems()):
+            print record['command']
 
     return 0
 
