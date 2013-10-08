@@ -88,6 +88,7 @@ def gen_downtime_message (downtime_record, entry_name):
 
     if downtime_record:
         hostname, record = downtime_record.popitem()
+        downtime_record[hostname] = record
 
         message = "%s : This entry IS under downtime:\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
