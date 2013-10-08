@@ -104,7 +104,7 @@ def gen_downtime_message (downtime_record, entry_name):
 
 def gen_downtime_command (downtime_record, entry_name):
 
-    command_body = """{facdir}/factory_startup down -entry {entry} -comment {comment}; echo 'wall "check {entry} downtime"' | at {endtime} """
+    command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
     factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
     hostname, record = downtime_record.popitem()
 
