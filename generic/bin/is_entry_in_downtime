@@ -31,7 +31,7 @@ def main():
         return 2
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {}
+    report = {'downtimes':{}, 'no downtimes':{}}
 
     for entry in the_entries:
 
@@ -49,10 +49,25 @@ def main():
         record = get_downtime( entry_name, target_hosts, downtimes )
 
         if record or entry_name not in report:
-            report[entry_name] = gen_downtime_message( record, entry_name)
+            text = gen_downtime_message( record, entry_name)
+            if 'is NOT' in text.splitlines()[0]:
+                report['no downtimes'][entry_name] = text
+            else:
+                report['downtimes'][entry_name] = {'text': text}
 
-    for entry_name, report in sorted(report.iteritems()):
-        print report
+                #TODO: Check if those entries are not currently in factory downtime
+                command = gen_downtime_command( record, entry_name)
+                report['downtimes'][entry_name]['command'] = command
+
+    for entry_name, record in sorted(report['no downtimes'].iteritems()):
+        print record
+
+    for entry_name, record in sorted(report['downtimes'].iteritems()):
+        print record['text']
+
+    print "Suggested list of downtime commands:"
+    for entry_name, record in sorted(report['downtimes'].iteritems()):
+        print record['command']
 
     return 0
 
@@ -73,6 +88,7 @@ def gen_downtime_message (downtime_record, entry_name):
 
     if downtime_record:
         hostname, record = downtime_record.popitem()
+        downtime_record[hostname] = record
 
         message = "%s : This entry IS under downtime:\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
@@ -86,12 +102,28 @@ def gen_downtime_message (downtime_record, entry_name):
 
     return message
 
-def print_local_dt (utc_dt):
+def gen_downtime_command (downtime_record, entry_name):
 
+    command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
+    factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
+    hostname, record = downtime_record.popitem()
+
+    end_time = get_local_dt( record['end'])
+    end_time_str = end_time.strftime( "%H:%M %b %d %Y")
+    comment = record['description']
+
+    return command_body.format( facdir = factory_dir, entry = entry_name,
+                                comment = comment, endtime = end_time_str )
+
+def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()
 
-    local_dt = local_tz.normalize( utc_dt.astimezone( local_tz))
-    return local_dt.strftime("%B %d, %Y %H:%M %Z%z")
+    return local_tz.normalize( utc_dt.astimezone( local_tz))
+
+def print_local_dt (utc_dt):
+
+    local_dt = get_local_dt( utc_dt)
+    return local_dt.strftime( "%B %d, %Y %H:%M %Z%z")
 
 def filter_dict (test_function, dictionary):
 
