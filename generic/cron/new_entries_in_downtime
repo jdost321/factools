@@ -5,6 +5,10 @@ import os
 import optparse
 import sys
 import pytz
+import getpass
+import smtplib
+import socket
+from email.mime.text import MIMEText
 from datetime import datetime
 
 import tzlocal as tzl
@@ -171,6 +175,33 @@ def filter_dict (test_function, dictionary):
 
    key_function = lambda e: test_function(e[0], e[1])
    return copy.deepcopy (dict (filter (key_function, dictionary.iteritems())))
+
+def get_user_and_host_names():
+
+    user = getpass.getuser()
+    host = socket.gethostname()
+    return user, host
+
+
+def send_email_plain (subject, message):
+
+    user, host = get_user_and_host_names()
+    sender = '%s@%s' % (user, host)
+    receivers = ['osg-gfactory-support@physics.ucsd.edu']
+
+    msg = MIMEText (message)
+
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ", ".join(receivers)
+
+    try:
+       smtpObj = smtplib.SMTP('localhost')
+       smtpObj.sendmail (sender, receivers, msg.as_string())
+       print "Successfully sent email"
+
+    except smtplib.SMTPException:
+       print "Error: unable to send email"
 
 
 if __name__ == "__main__":
