@@ -79,13 +79,13 @@ def main():
     print "Suggested list of downtime commands:", '\n'
 
     for entry_name, record in sorted(report['downtimes'].iteritems()):
-        if record['command']:
+        if 'command' in record:
             print record['command']
 
     print '\n'
 
     for entry_name, record in sorted(report['no downtimes'].iteritems()):
-        if record['command']:
+        if 'command' in record:
             print record['command']
 
     return 0
