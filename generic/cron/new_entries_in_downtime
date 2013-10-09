@@ -151,7 +151,7 @@ def group_commands_by_endtime (report_dict):
     registers = []
     for end_time, group in sorted(grouped.iteritems()):
         reminder_cmd = reminder_tpl.format( entry_spec = ', '.join(group['entries']),
-                                            endtime = end_time )
+                                           endtime = end_time.strftime( "%H:%M %b %d %Y") )
         register_cmds = '\n'.join(group['registrars'])
 
         reminders.append(reminder_cmd)
