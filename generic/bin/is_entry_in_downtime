@@ -50,30 +50,42 @@ def main():
 
         record = get_downtime( entry_name, target_hosts, downtimes )
         text = gen_downtime_message( record, entry_name)
+        registered = is_entry_in_factory_downtime(entry_name)
 
-        if 'is NOT' in text.splitlines()[0]:
-            report['no downtimes'][entry_name] = text
-        else:
-            if not is_entry_in_factory_downtime(entry_name):
-                report['downtimes'][entry_name] = {'text': text}
-
-                command = gen_downtime_command( record, entry_name)
-                report['downtimes'][entry_name]['command'] = command
+        if record:
+            if registered:
+                text = "Ongoing {0} downtime is already registered in this factory."
+                report['no downtimes'][entry_name]['text'] = text.format(entry_name)
             else:
-                text = "Entry {0} downtime is already registered in this factory."
-                report['no downtimes'][entry_name] = text.format(entry_name)
+                command = gen_downtime_command( record, entry_name)
+                report['downtimes'][entry_name] = {'text': text,
+                                                   'command': command}
+        else:
+            if registered:
+                text = "Finished {0} factory downtime can be removed."
+                command = gen_downtime_command( record, entry_name)
+                report['no downtimes'][entry_name] = {'text': text.format(entry_name),
+                                                      'command': command}
+            else:
+                report['no downtimes'][entry_name]['text'] = text
 
     for entry_name, record in sorted(report['no downtimes'].iteritems()):
-        print record
+        print record['text']
 
-    if report['downtimes']:
+    for entry_name, record in sorted(report['downtimes'].iteritems()):
+        print record['text']
 
-        for entry_name, record in sorted(report['downtimes'].iteritems()):
-            print record['text']
+    print "\n---- ---- ----"
+    print "Suggested list of downtime commands:", '\n'
 
-        print "---- ---- ----"
-        print "Suggested list of downtime commands:", '\n'
-        for entry_name, record in sorted(report['downtimes'].iteritems()):
+    for entry_name, record in sorted(report['downtimes'].iteritems()):
+        if record['command']:
+            print record['command']
+
+    print '\n'
+
+    for entry_name, record in sorted(report['no downtimes'].iteritems()):
+        if record['command']:
             print record['command']
 
     return 0
@@ -111,16 +123,21 @@ def gen_downtime_message (downtime_record, entry_name):
 
 def gen_downtime_command (downtime_record, entry_name):
 
-    command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
-    factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
-    hostname, record = downtime_record.popitem()
+    if downtime_record:
+        command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
+        factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
+        hostname, record = downtime_record.popitem()
 
-    end_time = get_local_dt( record['end'])
-    end_time_str = end_time.strftime( "%H:%M %b %d %Y")
-    comment = record['description']
+        end_time = get_local_dt( record['end'])
+        end_time_str = end_time.strftime( "%H:%M %b %d %Y")
+        comment = record['description']
 
-    return command_body.format( facdir = factory_dir, entry = entry_name,
-                                comment = comment, endtime = end_time_str )
+        command = command_body.format( facdir = factory_dir, entry = entry_name,
+                                       comment = comment, endtime = end_time_str )
+    else:
+        command = "$GLIDEIN_FACTORY_DIR/factory_startup up -entry " + entry_name
+
+    return command
 
 def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
