@@ -56,7 +56,6 @@ def main():
                                    'command': command}
 
     if new_ads:
-
         report = []
         for entry_name, record in sorted(new_ads.iteritems()):
             report.append(record['text'])
@@ -67,19 +66,23 @@ def main():
             report.append(record['command'])
 
         message = '\n'.join(report)
-
-        print "Report:"
-        print message
-
         subject = "New entry downtimes advertised."
-        if options.send:
+
+    else:
+        message = "Debug/Test message."
+        subject = "NO new entry downtimes advertised."
+
+    print "Report:"
+    print message
+
+    if options.send:
+        send_email_plain( subject, message)
+    else:
+        do_send = raw_input ("Do you want to send the report? ")
+        if do_send.lower() in ("y", "ye", "yes", "ok"):
             send_email_plain( subject, message)
         else:
-            do_send = raw_input ("Do you want to send the report? ")
-            if do_send.lower() in ("y", "ye", "yes", "ok"):
-                send_email_plain( subject, message)
-            else:
-                print "Report not sent."
+            print "Report not sent."
 
     return 0
 
