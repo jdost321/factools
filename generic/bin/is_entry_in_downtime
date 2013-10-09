@@ -49,25 +49,28 @@ def main():
             target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
+        text = gen_downtime_message( record, entry_name)
 
-        if record or (entry_name not in report['no downtimes'] and entry_name not in report['downtimes']):
-            text = gen_downtime_message( record, entry_name)
-            if 'is NOT' in text.splitlines()[0]:
-                report['no downtimes'][entry_name] = text
+        if 'is NOT' in text.splitlines()[0]:
+            report['no downtimes'][entry_name] = text
+        else:
+            if not is_entry_in_factory_downtime(entry_name):
+                report['downtimes'][entry_name] = {'text': text}
+
+                command = gen_downtime_command( record, entry_name)
+                report['downtimes'][entry_name]['command'] = command
             else:
-                if not is_entry_in_factory_downtime(entry_name):
-                    report['downtimes'][entry_name] = {'text': text}
-
-                    command = gen_downtime_command( record, entry_name)
-                    report['downtimes'][entry_name]['command'] = command
+                text = "Entry {0} downtime is already registered in this factory."
+                report['no downtimes'][entry_name] = text.format(entry_name)
 
     for entry_name, record in sorted(report['no downtimes'].iteritems()):
         print record
 
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        print record['text']
-
     if report['downtimes']:
+
+        for entry_name, record in sorted(report['downtimes'].iteritems()):
+            print record['text']
+
         print "---- ---- ----"
         print "Suggested list of downtime commands:", '\n'
         for entry_name, record in sorted(report['downtimes'].iteritems()):
