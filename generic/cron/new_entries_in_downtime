@@ -61,12 +61,10 @@ def main():
             report.append(record['text'])
 
         reminders, registers = group_commands_by_endtime(new_ads)
-        print reminders
-        print registers
         report.append("---- ---- ----")
         report.append("Suggested list of downtime commands:\n")
-        report.append(registers)
-        report.append(reminders)
+        report.extend(registers)
+        report.extend(reminders)
 
         message = '\n'.join(report)
         subject = "New entry downtimes advertised."
