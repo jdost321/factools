@@ -55,7 +55,7 @@ def main():
         if record:
             if registered:
                 text = "Ongoing {0} downtime is already registered in this factory."
-                report['no downtimes'][entry_name]['text'] = text.format(entry_name)
+                report['no downtimes'][entry_name] = {'text': text.format(entry_name)}
             else:
                 command = gen_downtime_command( record, entry_name)
                 report['downtimes'][entry_name] = {'text': text,
@@ -67,7 +67,7 @@ def main():
                 report['no downtimes'][entry_name] = {'text': text.format(entry_name),
                                                       'command': command}
             else:
-                report['no downtimes'][entry_name]['text'] = text
+                report['no downtimes'][entry_name] = {'text': text}
 
     for entry_name, record in sorted(report['no downtimes'].iteritems()):
         print record['text']
