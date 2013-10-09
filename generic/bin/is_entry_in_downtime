@@ -34,6 +34,7 @@ def main():
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
     report = {'downtimes':{}, 'no downtimes':{}}
+    suggested_commands = False
 
     for entry in the_entries:
 
@@ -60,12 +61,14 @@ def main():
                 command = gen_downtime_command( record, entry_name)
                 report['downtimes'][entry_name] = {'text': text,
                                                    'command': command}
+                suggested_commands = True
         else:
             if registered:
                 text = "Finished {0} factory downtime can be removed."
                 command = gen_downtime_command( record, entry_name)
                 report['no downtimes'][entry_name] = {'text': text.format(entry_name),
                                                       'command': command}
+                suggested_commands = True
             else:
                 report['no downtimes'][entry_name] = {'text': text}
 
@@ -75,18 +78,19 @@ def main():
     for entry_name, record in sorted(report['downtimes'].iteritems()):
         print record['text']
 
-    print "\n---- ---- ----"
-    print "Suggested list of downtime commands:", '\n'
+    if suggested_commands:
+        print "\n---- ---- ----"
+        print "Suggested list of downtime commands:", '\n'
 
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        if 'command' in record:
-            print record['command']
+        for entry_name, record in sorted(report['downtimes'].iteritems()):
+            if 'command' in record:
+                print record['command']
 
-    print '\n'
+        print '\n'
 
-    for entry_name, record in sorted(report['no downtimes'].iteritems()):
-        if 'command' in record:
-            print record['command']
+        for entry_name, record in sorted(report['no downtimes'].iteritems()):
+            if 'command' in record:
+                print record['command']
 
     return 0
 
