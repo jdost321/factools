@@ -60,10 +60,11 @@ def main():
         for entry_name, record in sorted(new_ads.iteritems()):
             report.append(record['text'])
 
+        reminders, registers = group_commands_by_endtime(new_ads)
         report.append("---- ---- ----")
         report.append("Suggested list of downtime commands:\n")
-        for entry_name, record in sorted(new_ads.iteritems()):
-            report.append(record['command'])
+        report.append(registers)
+        report.append(reminders)
 
         message = '\n'.join(report)
         subject = "New entry downtimes advertised."
@@ -119,19 +120,44 @@ def gen_downtime_message (in_record, entry_name):
 
 def gen_downtime_command (in_record, entry_name):
 
-    command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
+    command_body = '$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment "{comment}"'
 
     downtime_record = copy.deepcopy(in_record)
     if downtime_record:
         hostname, record = downtime_record.popitem()
 
         end_time = get_local_dt( record['end'])
-        end_time_str = end_time.strftime( "%H:%M %b %d %Y")
         comment = record['description']
 
-        return command_body.format( entry = entry_name,
-                                    comment = comment, endtime = end_time_str )
-    return ''
+        return [command_body.format( entry = entry_name, comment = comment),
+                end_time]
+    return []
+
+def group_commands_by_endtime (report_dict):
+
+    reminder_tpl = """echo 'wall "Check {entry_spec} downtime"' | at {endtime}"""
+
+    grouped = {}
+    for entry_name, record in sorted(report_dict.iteritems()):
+        command_spec = record['command']
+        if command_spec:
+            register_dt, end_time = command_spec
+            if end_time not in grouped:
+                grouped[end_time] = {'registrars': [], 'entries': []}
+            grouped[end_time]['registrars'].append( register_dt)
+            grouped[end_time]['entries'].append( entry_name)
+
+    reminders = []
+    registers = []
+    for end_time, group in sorted(grouped.iteritems()):
+        reminder_cmd = reminder_tpl.format( entry_spec = ', '.join(group['entries']),
+                                            endtime = end_time )
+        register_cmds = '\n'.join(group['registrars'])
+
+        reminders.append(reminder_cmd)
+        registers.append(register_cmds)
+
+    return reminders, registers
 
 def is_entry_in_factory_downtime (entry_name, when=None):
 
