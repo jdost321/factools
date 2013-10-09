@@ -116,8 +116,8 @@ def gen_downtime_message (in_record, entry_name):
 
 def gen_downtime_command (in_record, entry_name):
 
-    command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
-    factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
+    command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
+    #factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
 
     downtime_record = copy.deepcopy(in_record)
     if downtime_record:
@@ -127,7 +127,7 @@ def gen_downtime_command (in_record, entry_name):
         end_time_str = end_time.strftime( "%H:%M %b %d %Y")
         comment = record['description']
 
-        return command_body.format( facdir = factory_dir, entry = entry_name,
+        return command_body.format( entry = entry_name,
                                     comment = comment, endtime = end_time_str )
     return ''
 
