@@ -69,21 +69,17 @@ def main():
         message = '\n'.join(report)
         subject = "New entry downtimes advertised."
 
-    else:
-        message = "Debug/Test message."
-        subject = "NO new entry downtimes advertised."
+        print "Report:"
+        print message
 
-    print "Report:"
-    print message
-
-    if options.send:
-        send_email_plain( subject, message)
-    else:
-        do_send = raw_input ("Do you want to send the report? ")
-        if do_send.lower() in ("y", "ye", "yes", "ok"):
+        if options.send:
             send_email_plain( subject, message)
         else:
-            print "Report not sent."
+            do_send = raw_input ("Do you want to send the report? ")
+            if do_send.lower() in ("y", "ye", "yes", "ok"):
+                send_email_plain( subject, message)
+            else:
+                print "Report not sent."
 
     return 0
 

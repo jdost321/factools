@@ -25,8 +25,12 @@ def main():
     factory_config = xml_to_dict( open( factory_config_file))
     factory_entries = filter( lambda e: e['@enabled'] == 'True',
                               factory_config['glidein']['entries']['entry'] )
-    the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
-                         for spec in entry_names_specs ], [] )
+
+    if entry_names_specs[0].lower() in ('*', 'all'):
+        the_entries = factory_entries
+    else:
+        the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
+                            for spec in entry_names_specs ], [] )
 
     if not the_entries:
         print "Error: There are no configured entries with the specified name"
@@ -121,7 +125,7 @@ def gen_downtime_message (downtime_record, entry_name):
         message += "      End time: " + print_local_dt( record['end']) + '\n'
 
     else:
-        message = "%s : This entry is NOT under downtime:\n" % entry_name
+        message = "%s : This entry is NOT under downtime." % entry_name
 
     return message
 
