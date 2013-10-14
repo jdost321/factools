@@ -50,9 +50,8 @@ def parse_command_line():
     parser = optparse.OptionParser (description=desc)
     parser.add_option ('-s', '--send', action='store_true', default=False,
                        help="If present, sends the report without asking.")
-    parser.add_option ('-a', '--dont-ask', dest='do_ask',
-                       action='store_true', default=True,
-                       help="If present, does not ask whether to send email.")
+    parser.add_option ('-a', '--ask', action='store_true', default=False,
+                       help="If present, does whether to send email.")
 
     return parser.parse_args()
 
@@ -78,7 +77,6 @@ def build_records (entries_config):
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
     report = {'downtimes':{}, 'no downtimes':{}}
-    suggested_commands = False
 
     for entry in entries_config:
 
@@ -98,7 +96,7 @@ def build_records (entries_config):
         key, data = assign_record( record, entry_name, registered, enforced)
         report[key][entry_name] = data
 
-    return report, suggested_commands
+    return report
 
 def assign_record (record, entry_name, registered, enforced):
 
@@ -111,7 +109,6 @@ def assign_record (record, entry_name, registered, enforced):
             data = {'text': text.format(entry_name)}
         else:
             command = gen_downtime_command( record, entry_name)
-            suggested_commands = True
             key = 'downtimes'
             data = {'text': text, 'command': command}
     else:
@@ -120,7 +117,6 @@ def assign_record (record, entry_name, registered, enforced):
             if not enforced:
                 text = "Finished {0} factory downtime can be removed."
                 command = gen_downtime_command( record, entry_name)
-                suggested_commands = True
                 data = {'text': text.format(entry_name), 'command': command}
             else:
                 text = "Ongoing enforced {0} factory downtime."
@@ -141,19 +137,22 @@ def generate_report (records, suggested_commands):
     for entry_name, record in sorted(records['downtimes'].items(), key=sorter):
         lines.append(record['text'])
 
-    if suggested_commands:
+    with_commands = {}
+    tester = lambda key, rec: 'command' in rec
+    for key, record_d in records.items():
+        with_commands[key] = filter_dict( tester, record_d)
+
+    if with_commands['downtimes'] or with_commands['no downtimes']:
         lines.append("\n---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for entry_name, record in sorted(records['downtimes'].items(), key=sorter):
-            if 'command' in record:
-                lines.append(record['command'])
+        for entry_name, record in sorted(with_commands['downtimes'].items(), key=sorter):
+            lines.append(record['command'])
 
         lines.append('\n')
 
-        for entry_name, record in sorted(records['no downtimes'].items(), key=sorter):
-            if 'command' in record:
-                lines.append(record['command'])
+        for entry_name, record in sorted(with_commands['no downtimes'].items(), key=sorter):
+            lines.append(record['command'])
 
     return '\n'.join(lines)
 
@@ -191,16 +190,15 @@ def gen_downtime_message (downtime_record, entry_name):
 def gen_downtime_command (downtime_record, entry_name):
 
     if downtime_record:
-        command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
-        factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
+        command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment "{comment}""""
         hostname, record = downtime_record.popitem()
 
         end_time = get_local_dt( record['end'])
         end_time_str = end_time.strftime( "%H:%M %b %d %Y")
         comment = record['description']
 
-        command = command_body.format( facdir = factory_dir, entry = entry_name,
-                                       comment = comment, endtime = end_time_str )
+        command = command_body.format( entry = entry_name,
+                                       comment = comment )
     else:
         command = "entry_nuke {0}; $GLIDEIN_FACTORY_DIR/factory_startup up -entry {0}".format(entry_name)
 
@@ -242,7 +240,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
     return registered, enforced
 
 def check_enforced (comment):
-    return "_enforce_" in comment
+    return "enforce" in comment
 
 def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()
