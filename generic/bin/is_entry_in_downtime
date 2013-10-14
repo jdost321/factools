@@ -27,7 +27,8 @@ def main():
         entry_names_specs = ['all']
 
     entries = gather_entries( entry_names_specs)
-    report = generate_report( *build_records( entries))
+    records = build_records( entries)
+    report = generate_report( records)
 
     subject = "New entry downtimes updates."
     if options.send:
@@ -126,7 +127,7 @@ def assign_record (record, entry_name, registered, enforced):
 
     return key, data
 
-def generate_report (records, suggested_commands):
+def generate_report (records):
 
     lines = []
 
