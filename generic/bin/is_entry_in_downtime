@@ -96,8 +96,9 @@ def build_records (entries_config):
             target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
-        registered, enforced = is_entry_in_factory_downtime(entry_name)
-        key, data = assign_record( record, entry_name, registered, enforced)
+        registered, enforced, comment = is_entry_in_factory_downtime(entry_name)
+        key, data = assign_record( record, entry_name, registered, enforced,
+                                   comment)
 
         if key not in report:
             report[key] = {}
@@ -105,7 +106,7 @@ def build_records (entries_config):
 
     return report
 
-def assign_record (record, entry_name, registered, enforced):
+def assign_record (record, entry_name, registered, enforced, comment):
 
     if record:
         if registered:
@@ -117,7 +118,7 @@ def assign_record (record, entry_name, registered, enforced):
     else:
         if registered:
             if enforced:
-                key, data = 'enforced', {'complement': record['description']}
+                key, data = 'enforced', {'complement': comment}
             else:
                 command = gen_downtime_command( record, entry_name)
                 key, data = 'removable', {'complement': '', 'command': command}
@@ -265,7 +266,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
             enforced = check_enforced(comment)
             break
 
-    return registered, enforced
+    return registered, enforced, comment
 
 def check_enforced (comment):
     return "enforce" in comment.lower()
