@@ -8,5 +8,4 @@ tool="${script_dir}/../bin/new_entries_in_downtime"
 
 #$tool all 
 #$tool --send
-$tool 
 
