@@ -117,7 +117,7 @@ def assign_record (record, entry_name, registered, enforced):
     else:
         if registered:
             if enforced:
-                key, data = 'enforced', {'complement': ''}
+                key, data = 'enforced', {'complement': record['description']}
             else:
                 command = gen_downtime_command( record, entry_name)
                 key, data = 'removable', {'complement': '', 'command': command}
