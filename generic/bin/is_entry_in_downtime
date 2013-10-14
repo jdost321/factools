@@ -150,10 +150,12 @@ def generate_report (records, list_all=True):
         del records['none']
 
     for status in sorted(keys):
+
         lines.append( "* " + descriptors[status] + ":")
         width = 2 + max( [ len(entry) for entry in records[status].keys() ] )
 
         for entry_name, record in sorted(records[status].items(), key=sorter):
+
             complement = record['complement']
             if complement:
                 if len(complement.splitlines()) > 1:
@@ -168,6 +170,8 @@ def generate_report (records, list_all=True):
                     line = "{0:<{width}}: {1}".format(entry_name, complement, width=width)
                     lines.append(line)
             else:
+                line = indent_multilines(entry_name,
+                                            indent + indentation_step)
                 lines.append(line)
 
         lines.append('')
