@@ -28,7 +28,7 @@ def main():
 
     entries = gather_entries( entry_names_specs)
     records = build_records( entries)
-    report = generate_report( records)
+    report = generate_report( records, options.verbose)
 
     print report
 
@@ -54,6 +54,8 @@ def parse_command_line():
                        help="If present, sends the report without asking.")
     parser.add_option ('-a', '--ask', action='store_true', default=False,
                        help="If present, does whether to send email.")
+    parser.add_option ('-v', '--verbose', action='store_true', default=False,
+                       help="If present, displays even the entries not currently advertised as in downtime.")
 
     return parser.parse_args()
 
@@ -78,7 +80,7 @@ def gather_entries (entry_names_specs):
 def build_records (entries_config):
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {'downtimes':{}, 'no downtimes':{}}
+    report = {}
 
     for entry in entries_config:
 
@@ -96,6 +98,9 @@ def build_records (entries_config):
         record = get_downtime( entry_name, target_hosts, downtimes )
         registered, enforced = is_entry_in_factory_downtime(entry_name)
         key, data = assign_record( record, entry_name, registered, enforced)
+
+        if key not in report:
+            report[key] = {}
         report[key][entry_name] = data
 
     return report
@@ -107,54 +112,60 @@ def assign_record (record, entry_name, registered, enforced):
     if record:
         if registered:
             text = "Ongoing {0} downtime is already registered in this factory."
-            key = 'no downtimes'
+            key = 'ongoing'
             data = {'text': text.format(entry_name)}
         else:
             command = gen_downtime_command( record, entry_name)
-            key = 'downtimes'
+            key = 'new'
             data = {'text': text, 'command': command}
     else:
-        key = 'no downtimes'
         if registered:
             if not enforced:
                 text = "Finished {0} factory downtime can be removed."
                 command = gen_downtime_command( record, entry_name)
+                key = 'removeable'
                 data = {'text': text.format(entry_name), 'command': command}
             else:
                 text = "Ongoing enforced {0} factory downtime."
+                key = 'enforced'
                 data = {'text': text.format(entry_name)}
         else:
+            key = 'none'
             data = {'text': text}
 
     return key, data
 
-def generate_report (records):
+def generate_report (records, list_all=True):
 
     lines = []
-
     sorter = lambda r: (r[1]['text'], r[0])
-    for entry_name, record in sorted(records['no downtimes'].items(), key=sorter):
-        lines.append(record['text'])
-
-    for entry_name, record in sorted(records['downtimes'].items(), key=sorter):
-        lines.append(record['text'])
-
+    cmd_tester = lambda key, rec: 'command' in rec
     with_commands = {}
-    tester = lambda key, rec: 'command' in rec
-    for key, record_d in records.items():
-        with_commands[key] = filter_dict( tester, record_d)
+    there_are_commands = False
 
-    if with_commands['downtimes'] or with_commands['no downtimes']:
+    keys = records.keys()
+    if not list_all:
+        keys.remove('none')
+
+    for status in keys:
+        for entry_name, record in sorted(records[status].items(), key=sorter):
+            lines.append(record['text'])
+
+        for entry_name, record in sorted(records[status].items(), key=sorter):
+            lines.append(record['text'])
+
+        with_commands[status] = filter_dict( cmd_tester, records[status])
+        there_are_commands |= bool(with_commands[status])
+
+    if there_are_commands:
         lines.append("\n---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for entry_name, record in sorted(with_commands['downtimes'].items(), key=sorter):
-            lines.append(record['command'])
+        for status in keys:
+            for entry_name, record in sorted(with_commands[status].items(), key=sorter):
+                lines.append(record['command'])
 
-        lines.append('\n')
-
-        for entry_name, record in sorted(with_commands['no downtimes'].items(), key=sorter):
-            lines.append(record['command'])
+            lines.append('\n')
 
     return '\n'.join(lines)
 
