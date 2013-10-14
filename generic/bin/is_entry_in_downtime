@@ -17,6 +17,12 @@ from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 
+descriptors = {'enforced': "Registered downtimes manually enforced",
+               'new': "Newly advertised downtimes",
+               'none': "Entries without registered nor advertised downtimes",
+               'ongoing': "Ongoing downtimes already registered in this factory",
+               'removable': "Registered downtimes that have finished and can be removed" }
+
 
 def main():
 
@@ -25,10 +31,11 @@ def main():
         entry_names_specs = args
     else:
         entry_names_specs = ['all']
+    status_list = apply_exclusions (options.verbose, options.updates)
 
     entries = gather_entries( entry_names_specs)
     records = build_records( entries)
-    report = generate_report( records, options.verbose)
+    report = generate_report( records, status_list)
 
     print report
 
@@ -56,8 +63,22 @@ def parse_command_line():
                        help="If present, does whether to send email.")
     parser.add_option ('-v', '--verbose', action='store_true', default=False,
                        help="If present, displays even the entries not currently advertised as in downtime.")
+    parser.add_option ('-u', '--updates', action='store_true', default=False,
+                       help="If present, displays only recent downtime events.")
 
     return parser.parse_args()
+
+def apply_exclusions (verbose, only_updates):
+
+    if only_updates:
+        status_list = ['new', 'removable']
+    else:
+        status_list = set(descriptors.keys())
+        if not verbose:
+            status_list.discard('none')
+        status_list = list(status_list)
+
+    return status_list
 
 def gather_entries (entry_names_specs):
 
@@ -129,13 +150,7 @@ def assign_record (record, entry_name, registered, enforced, comment):
 
     return key, data
 
-descriptors = {'enforced': "Registered downtimes manually enforced",
-               'new': "Newly advertised downtimes",
-               'none': "Entries without registered nor advertised downtimes",
-               'ongoing': "Ongoing downtimes already registered in this factory",
-               'removable': "Registered downtimes that have finished and can be removed" }
-
-def generate_report (records, list_all=True):
+def generate_report (records, status_list):
 
     lines = []
     sorter = lambda r: r[0]
@@ -145,11 +160,11 @@ def generate_report (records, list_all=True):
     indentation_step = 3
     indent = 0
 
-    keys = records.keys()
-    if not list_all:
-        del records['none']
+    to_discard = set(records.keys()) - set(status_list)
+    for key in to_discard:
+        del records[key]
 
-    for status in sorted(keys):
+    for status in sorted(status_list):
 
         lines.append( "* " + descriptors[status] + ":")
         width = 2 + max( [ len(entry) for entry in records[status].keys() ] )
@@ -183,7 +198,7 @@ def generate_report (records, list_all=True):
         lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for status in keys:
+        for status in status_list:
             for entry_name, record in sorted(with_commands[status].items(), key=sorter):
                 lines.append(record['command'])
 
