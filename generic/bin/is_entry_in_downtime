@@ -139,7 +139,7 @@ def generate_report (records, list_all=True):
     cmd_tester = lambda key, rec: 'command' in rec
     with_commands = {}
     there_are_commands = False
-    indentation_step = 2
+    indentation_step = 3
     indent = 0
 
     keys = records.keys()
@@ -147,7 +147,7 @@ def generate_report (records, list_all=True):
         keys.remove('none')
 
     for status in sorted(keys):
-        lines.append( descriptors[status] + ":")
+        lines.append( "* " + descriptors[status] + ":")
         for entry_name, record in sorted(records[status].items(), key=sorter):
             line = indent_multilines(entry_name,
                                      indent + indentation_step)
@@ -166,7 +166,7 @@ def generate_report (records, list_all=True):
         there_are_commands |= bool(with_commands[status])
 
     if there_are_commands:
-        lines.append("\n---- ---- ----")
+        lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
         for status in keys:
