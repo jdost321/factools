@@ -239,8 +239,9 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
     registered = False
     enforced = False
-    record_lines = []
+    comment = ''
 
+    record_lines = []
     with open(downtimes_file) as fd:
         for line in fd:
             if entry_name in line and not line.startswith('#'):
