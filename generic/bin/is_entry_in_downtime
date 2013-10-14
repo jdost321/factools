@@ -2,8 +2,13 @@
 
 import copy
 import os
-import sys
+import optparse
 import pytz
+import sys
+import getpass
+import smtplib
+import socket
+from email.mime.text import MIMEText
 from datetime import datetime
 
 import tzlocal as tzl
@@ -12,13 +17,46 @@ from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 
+
 def main():
 
-    if len(sys.argv) < 2:
-        print "Usage: %s entry_name [entry_name, ...]" % os.path.basename(sys.argv[0])
-        return 1
+    options, args = parse_command_line()
+    if args or args[0].lower() == 'all':
+        entry_names_specs = args
+    else:
+        entry_names_specs = ['all']
 
-    entry_names_specs = sys.argv[1:]
+    entries = gather_entries( entry_names_specs)
+    report = generate_report( *build_records( entries))
+
+    subject = "New entry downtimes updates."
+    if options.send:
+        send_email_plain( subject, report)
+    else:
+        if options.do_ask:
+            print report
+            do_send = raw_input ("Do you want to send the report? ")
+            if do_send.lower() in ("y", "ye", "yes", "ok"):
+                send_email_plain( subject, report)
+            else:
+                print "Report not sent."
+
+    return 0
+
+def parse_command_line():
+
+    desc = "Checks GOCDB and OIM for advertised downtimes that are currently not registered on this GlideinWMS factory."
+
+    parser = optparse.OptionParser (description=desc)
+    parser.add_option ('-s', '--send', action='store_true', default=False,
+                       help="If present, sends the report without asking.")
+    parser.add_option ('-a', '--dont-ask', dest='do_ask',
+                       action='store_true', default=True,
+                       help="If present, does not ask whether to send email.")
+
+    return parser.parse_args()
+
+def gather_entries (entry_names_specs):
 
     factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
@@ -31,16 +69,18 @@ def main():
     else:
         the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
                             for spec in entry_names_specs ], [] )
-
     if not the_entries:
-        print "Error: There are no configured entries with the specified name"
-        return 2
+        raise ValueError("Error: There are no configured entries with the specified name")
+
+    return the_entries
+
+def build_records (entries_config):
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
     report = {'downtimes':{}, 'no downtimes':{}}
     suggested_commands = False
 
-    for entry in the_entries:
+    for entry in entries_config:
 
         entry_name = entry['@name']
 
@@ -54,49 +94,68 @@ def main():
             target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
-        text = gen_downtime_message( record, entry_name)
-        registered = is_entry_in_factory_downtime(entry_name)
+        registered, enforced = is_entry_in_factory_downtime(entry_name)
+        key, data = assign_record( record, entry_name, registered, enforced)
+        report[key][entry_name] = data
 
-        if record:
-            if registered:
-                text = "Ongoing {0} downtime is already registered in this factory."
-                report['no downtimes'][entry_name] = {'text': text.format(entry_name)}
-            else:
-                command = gen_downtime_command( record, entry_name)
-                report['downtimes'][entry_name] = {'text': text,
-                                                   'command': command}
-                suggested_commands = True
+    return report, suggested_commands
+
+def assign_record (record, entry_name, registered, enforced):
+
+    text = gen_downtime_message( record, entry_name)
+
+    if record:
+        if registered:
+            text = "Ongoing {0} downtime is already registered in this factory."
+            key = 'no downtimes'
+            data = {'text': text.format(entry_name)}
         else:
-            if registered:
+            command = gen_downtime_command( record, entry_name)
+            suggested_commands = True
+            key = 'downtimes'
+            data = {'text': text, 'command': command}
+    else:
+        key = 'no downtimes'
+        if registered:
+            if not enforced:
                 text = "Finished {0} factory downtime can be removed."
                 command = gen_downtime_command( record, entry_name)
-                report['no downtimes'][entry_name] = {'text': text.format(entry_name),
-                                                      'command': command}
                 suggested_commands = True
+                data = {'text': text.format(entry_name), 'command': command}
             else:
-                report['no downtimes'][entry_name] = {'text': text}
+                text = "Ongoing enforced {0} factory downtime."
+                data = {'text': text.format(entry_name)}
+        else:
+            data = {'text': text}
 
-    for entry_name, record in sorted(report['no downtimes'].iteritems()):
-        print record['text']
+    return key, data
 
-    for entry_name, record in sorted(report['downtimes'].iteritems()):
-        print record['text']
+def generate_report (records, suggested_commands):
+
+    lines = []
+
+    sorter = lambda r: (r[1]['text'], r[0])
+    for entry_name, record in sorted(report['no downtimes'].items(), keys=sorter):
+        lines.append(record['text'])
+
+    for entry_name, record in sorted(report['downtimes'].iteritems()), keys=sorter:
+        lines.append(record['text'])
 
     if suggested_commands:
-        print "\n---- ---- ----"
-        print "Suggested list of downtime commands:", '\n'
+        lines.append("\n---- ---- ----")
+        lines.append("Suggested list of downtime commands:\n")
 
         for entry_name, record in sorted(report['downtimes'].iteritems()):
             if 'command' in record:
-                print record['command']
+                lines.append(record['command'])
 
-        print '\n'
+        lines.append('\n')
 
         for entry_name, record in sorted(report['no downtimes'].iteritems()):
             if 'command' in record:
-                print record['command']
+                lines.append(record['command'])
 
-    return 0
+    return '\n'.join(lines)
 
 def get_downtime (entry_name, target_hosts, downtimes):
 
@@ -147,11 +206,14 @@ def gen_downtime_command (downtime_record, entry_name):
 
     return command
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
+def is_entry_in_factory_downtime (entry_name, when=datetime.utcnow(tzutc())):
 
     downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
 
+    registered = False
+    enforced = False
     record_lines = []
+
     with open(downtimes_file) as fd:
         for line in fd:
             if entry_name in line and not line.startswith('#'):
@@ -173,9 +235,14 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         comment = ' '.join(fields[5:])
 
         if when >= start and (end is None or end > when):
-            return True
+            registered = True
+            enforced = check_enforced(comment)
+            break
 
-    return False
+    return registered, enforced
+
+def check_enforced (comment):
+    return "_enforce_" in comment
 
 def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()
@@ -191,6 +258,32 @@ def filter_dict (test_function, dictionary):
 
    key_function = lambda e: test_function(e[0], e[1])
    return copy.deepcopy (dict (filter (key_function, dictionary.iteritems())))
+
+def get_user_and_host_names():
+
+    user = getpass.getuser()
+    host = socket.gethostname()
+    return user, host
+
+def send_email_plain (subject, message):
+
+    user, host = get_user_and_host_names()
+    sender = '%s@%s' % (user, host)
+    receivers = ['osg-gfactory-reports@physics.ucsd.edu']
+
+    msg = MIMEText (message)
+
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ", ".join(receivers)
+
+    try:
+       smtpObj = smtplib.SMTP('localhost')
+       smtpObj.sendmail (sender, receivers, msg.as_string())
+       print "Successfully sent email"
+
+    except smtplib.SMTPException:
+       print "Error: unable to send email"
 
 
 if __name__ == "__main__":

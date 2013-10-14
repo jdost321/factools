@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from dateutil.tz import tzutc
+from dateutil.parser import parse as parse_timestamp
 import urllib2
 
 import xmltodict
@@ -55,8 +56,8 @@ def get_osg():
 
         host = record['ResourceFQDN']
         description = record['Description']
-        start = datetime.strptime (record['StartTime'].replace(" UTC",''), "%b %d, %Y %H:%M:%S").replace(tzinfo=tzutc())
-        end = datetime.strptime (record['EndTime'].replace(" UTC",''), "%b %d, %Y %H:%M:%S").replace(tzinfo=tzutc())
+        start = parse_timestamp (record['StartTime'])
+        end = parse_timestamp (record['EndTime'])
 
         downtimes_out[host] = {'start': start, 'end': end,
                                'description':description}
