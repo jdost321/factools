@@ -107,31 +107,26 @@ def build_records (entries_config):
 
 def assign_record (record, entry_name, registered, enforced):
 
-    text = gen_downtime_message( record, entry_name)
+    text = gen_downtime_message(record, entry_name)
 
     if record:
         if registered:
             text = "Ongoing {0} downtime is already registered in this factory."
-            key = 'ongoing'
-            data = {'text': text.format(entry_name)}
+            key, data = 'ongoing', {'text': text.format(entry_name)}
         else:
             command = gen_downtime_command( record, entry_name)
-            key = 'new'
-            data = {'text': text, 'command': command}
+            key, data = 'new', {'text': text, 'command': command}
     else:
         if registered:
             if not enforced:
                 text = "Finished {0} factory downtime can be removed."
                 command = gen_downtime_command( record, entry_name)
-                key = 'removeable'
-                data = {'text': text.format(entry_name), 'command': command}
+                key, data = 'removeable', {'text': text.format(entry_name), 'command': command}
             else:
                 text = "Ongoing enforced {0} factory downtime."
-                key = 'enforced'
-                data = {'text': text.format(entry_name)}
+                key, data = 'enforced', {'text': text.format(entry_name)}
         else:
-            key = 'none'
-            data = {'text': text}
+            key, data = 'none', {'text': text}
 
     return key, data
 
@@ -150,6 +145,7 @@ def generate_report (records, list_all=True):
     for status in sorted(keys):
         for entry_name, record in sorted(records[status].items(), key=sorter):
             lines.append(record['text'])
+        lines.append('')
 
         with_commands[status] = filter_dict( cmd_tester, records[status])
         there_are_commands |= bool(with_commands[status])
@@ -161,8 +157,7 @@ def generate_report (records, list_all=True):
         for status in keys:
             for entry_name, record in sorted(with_commands[status].items(), key=sorter):
                 lines.append(record['command'])
-
-            lines.append('\n')
+            lines.append('')
 
     return '\n'.join(lines)
 
@@ -250,7 +245,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
     return registered, enforced
 
 def check_enforced (comment):
-    return "enforce" in comment
+    return "enforce" in comment.lower()
 
 def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()
