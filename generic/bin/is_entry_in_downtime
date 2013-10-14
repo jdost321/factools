@@ -154,11 +154,11 @@ def generate_report (records, list_all=True):
             if record['complement']:
                 line += ':'
                 lines.append(line)
-            else:
-                lines.append(line)
                 comp_lines = indent_multilines(record['complement'],
                                                indent + 2*indentation_step)
                 lines.append(comp_lines)
+            else:
+                lines.append(line)
 
         lines.append('')
 
