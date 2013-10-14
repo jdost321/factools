@@ -96,7 +96,7 @@ def build_records (entries_config):
             target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
-        registered, enforced, comment = is_entry_in_factory_downtime(entry_name)
+        registered, enforced, comment = is_entry_in_factory_downtime( entry_name)
         key, data = assign_record( record, entry_name, registered, enforced,
                                    comment)
 
@@ -108,22 +108,24 @@ def build_records (entries_config):
 
 def assign_record (record, entry_name, registered, enforced, comment):
 
-    if record:
+    if record is None:
+        if registered:
+            if enforced:
+                key, data = 'enforced', {'complement': comment.strip('#').strip()}
+            else:
+                command = gen_downtime_command( record, entry_name)
+                key, data = 'removable', {'complement': '',
+                                          'command': command}
+        else:
+            key, data = 'none', {'complement': ''}
+    else:
         if registered:
             key, data = 'ongoing', {'complement': ''}
         else:
             text = gen_downtime_message(record, entry_name)
             command = gen_downtime_command( record, entry_name)
-            key, data = 'new', {'complement': text, 'command': command}
-    else:
-        if registered:
-            if enforced:
-                key, data = 'enforced', {'complement': comment}
-            else:
-                command = gen_downtime_command( record, entry_name)
-                key, data = 'removable', {'complement': '', 'command': command}
-        else:
-            key, data = 'none', {'complement': ''}
+            key, data = 'new', {'complement': text,
+                                'command': command}
 
     return key, data
 
@@ -145,7 +147,7 @@ def generate_report (records, list_all=True):
 
     keys = records.keys()
     if not list_all:
-        keys.remove('none')
+        del records['none']
 
     for status in sorted(keys):
         lines.append( "* " + descriptors[status] + ":")
