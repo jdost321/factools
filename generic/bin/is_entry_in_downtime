@@ -30,12 +30,13 @@ def main():
     records = build_records( entries)
     report = generate_report( records)
 
+    print report
+
     subject = "New entry downtimes updates."
     if options.send:
         send_email_plain( subject, report)
     else:
         if options.ask:
-            print report
             do_send = raw_input ("Do you want to send the report? ")
             if do_send.lower() in ("y", "ye", "yes", "ok"):
                 send_email_plain( subject, report)
