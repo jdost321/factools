@@ -34,7 +34,7 @@ def main():
     if options.send:
         send_email_plain( subject, report)
     else:
-        if options.do_ask:
+        if options.ask:
             print report
             do_send = raw_input ("Do you want to send the report? ")
             if do_send.lower() in ("y", "ye", "yes", "ok"):
