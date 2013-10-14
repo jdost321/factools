@@ -148,15 +148,22 @@ def generate_report (records, list_all=True):
 
     for status in sorted(keys):
         lines.append( "* " + descriptors[status] + ":")
+        width = 2 + max( [ len(entry) for entry in records[status].keys() ] )
+
         for entry_name, record in sorted(records[status].items(), key=sorter):
-            line = indent_multilines(entry_name,
-                                     indent + indentation_step)
-            if record['complement']:
-                lines.append('')
-                lines.append(line + ':')
-                comp_lines = indent_multilines(record['complement'],
-                                               indent + 2*indentation_step)
-                lines.append(comp_lines)
+            complement = record['complement']
+            if complement:
+                if len(complement.splitlines()) > 1:
+                    line = indent_multilines(entry_name,
+                                             indent + indentation_step)
+                    lines.append('')
+                    lines.append(line + ':')
+                    comp_lines = indent_multilines(record['complement'],
+                                                indent + 2*indentation_step)
+                    lines.append(comp_lines)
+                else:
+                    line = "{0:<{width}}: {1}".format(entry_name, complement, width=width)
+                    lines.append(line)
             else:
                 lines.append(line)
 
