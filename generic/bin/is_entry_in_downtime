@@ -206,7 +206,7 @@ def gen_downtime_command (downtime_record, entry_name):
 
     return command
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.utcnow(tzutc())):
+def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
     downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
 
