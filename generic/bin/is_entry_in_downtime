@@ -171,10 +171,13 @@ def generate_report (records, list_all=True):
         lines.append("Suggested list of downtime commands:\n")
 
         for status in keys:
+            do_break = False
             for entry_name, record in sorted(with_commands[status].items(), key=sorter):
                 lines.append(record['command'])
+            else:
+                do_break = True
 
-            lines.append('')
+            if do_break: lines.append('')
 
     return '\n'.join(lines)
 
