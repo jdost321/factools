@@ -147,10 +147,7 @@ def generate_report (records, list_all=True):
     if not list_all:
         keys.remove('none')
 
-    for status in keys:
-        for entry_name, record in sorted(records[status].items(), key=sorter):
-            lines.append(record['text'])
-
+    for status in sorted(keys):
         for entry_name, record in sorted(records[status].items(), key=sorter):
             lines.append(record['text'])
 
