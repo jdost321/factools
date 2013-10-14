@@ -135,23 +135,23 @@ def generate_report (records, suggested_commands):
     lines = []
 
     sorter = lambda r: (r[1]['text'], r[0])
-    for entry_name, record in sorted(report['no downtimes'].items(), key=sorter):
+    for entry_name, record in sorted(records['no downtimes'].items(), key=sorter):
         lines.append(record['text'])
 
-    for entry_name, record in sorted(report['downtimes'].items(), key=sorter):
+    for entry_name, record in sorted(records['downtimes'].items(), key=sorter):
         lines.append(record['text'])
 
     if suggested_commands:
         lines.append("\n---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for entry_name, record in sorted(report['downtimes'].items(), key=sorter):
+        for entry_name, record in sorted(records['downtimes'].items(), key=sorter):
             if 'command' in record:
                 lines.append(record['command'])
 
         lines.append('\n')
 
-        for entry_name, record in sorted(report['no downtimes'].items(), key=sorter):
+        for entry_name, record in sorted(records['no downtimes'].items(), key=sorter):
             if 'command' in record:
                 lines.append(record['command'])
 
