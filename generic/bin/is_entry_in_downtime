@@ -135,10 +135,10 @@ def generate_report (records, suggested_commands):
     lines = []
 
     sorter = lambda r: (r[1]['text'], r[0])
-    for entry_name, record in sorted(report['no downtimes'].items(), keys=sorter):
+    for entry_name, record in sorted(report['no downtimes'].items(), key=sorter):
         lines.append(record['text'])
 
-    for entry_name, record in sorted(report['downtimes'].iteritems()), keys=sorter:
+    for entry_name, record in sorted(report['downtimes'].iteritems()), key=sorter:
         lines.append(record['text'])
 
     if suggested_commands:
