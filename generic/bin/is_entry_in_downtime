@@ -107,44 +107,59 @@ def build_records (entries_config):
 
 def assign_record (record, entry_name, registered, enforced):
 
-    text = gen_downtime_message(record, entry_name)
-
     if record:
         if registered:
-            text = "Ongoing {0} downtime is already registered in this factory."
-            key, data = 'ongoing', {'text': text.format(entry_name)}
+            key, data = 'ongoing', {'complement': ''}
         else:
+            text = gen_downtime_message(record, entry_name)
             command = gen_downtime_command( record, entry_name)
-            key, data = 'new', {'text': text, 'command': command}
+            key, data = 'new', {'complement': text, 'command': command}
     else:
         if registered:
-            if not enforced:
-                text = "Finished {0} factory downtime can be removed."
-                command = gen_downtime_command( record, entry_name)
-                key, data = 'removeable', {'text': text.format(entry_name), 'command': command}
+            if enforced:
+                key, data = 'enforced', {'complement': ''}
             else:
-                text = "Ongoing enforced {0} factory downtime."
-                key, data = 'enforced', {'text': text.format(entry_name)}
+                command = gen_downtime_command( record, entry_name)
+                key, data = 'removeable', {'complement': '', 'command': command}
         else:
-            key, data = 'none', {'text': text}
+            key, data = 'none', {'complement': ''}
 
     return key, data
+
+descriptors = {'enforced': "Registered downtimes manually enforced",
+               'new': "Newly advertised downtimes",
+               'none': "Entries without registered nor advertised downtimes",
+               'ongoing': "Ongoing downtimes already registered in this factory",
+               'removable': "Registered downtimes that have finished and can be removed" }
 
 def generate_report (records, list_all=True):
 
     lines = []
-    sorter = lambda r: (r[1]['text'], r[0])
+    sorter = lambda r: r[0]
     cmd_tester = lambda key, rec: 'command' in rec
     with_commands = {}
     there_are_commands = False
+    indentation_step = 2
+    indent = 0
 
     keys = records.keys()
     if not list_all:
         keys.remove('none')
 
     for status in sorted(keys):
+        lines.append( descriptors[status] + ":")
         for entry_name, record in sorted(records[status].items(), key=sorter):
-            lines.append(record['text'])
+            line = indent_multilines(entry_name,
+                                     indent + indentation_step)
+            if record['complement']:
+                line += ':'
+                lines.append(line)
+            else:
+                lines.append(line)
+                comp_lines = indent_multilines(record['complement'],
+                                               indent + 2*indentation_step)
+                lines.append(comp_lines)
+
         lines.append('')
 
         with_commands[status] = filter_dict( cmd_tester, records[status])
@@ -180,12 +195,12 @@ def gen_downtime_message (downtime_record, entry_name):
         hostname, record = downtime_record.popitem()
         downtime_record[hostname] = record
 
-        message = "%s : This entry IS under downtime:\n" % entry_name
+        message = "%s :\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
         message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
         message += "   Description: " + record['description'] + '\n'
         message += "    Start time: " + print_local_dt( record['start']) + '\n'
-        message += "      End time: " + print_local_dt( record['end']) + '\n'
+        message += "      End time: " + print_local_dt( record['end'])
 
     else:
         message = "%s : This entry is NOT under downtime." % entry_name
@@ -287,6 +302,20 @@ def send_email_plain (subject, message):
 
     except smtplib.SMTPException:
        print "Error: unable to send email"
+
+def indent_multilines (the_string, indent=0, sub_indent=0):
+
+    # splitlines() takes care of all types of EOL
+    lines = the_string.splitlines()
+    full_indent = indent + sub_indent
+
+    if sub_indent > 0 and len(lines) > 1:
+        line_list = [(' '*indent + lines[0])]
+        line_list.extend ([ (' '*full_indent + line) for line in lines[1:] ])
+    else:
+        line_list = [ (' '*indent + line) for line in lines ]
+
+    return '\n'.join(line_list)
 
 
 if __name__ == "__main__":
