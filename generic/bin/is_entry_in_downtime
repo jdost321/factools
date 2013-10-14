@@ -157,6 +157,7 @@ def generate_report (records, list_all=True):
                 comp_lines = indent_multilines(record['complement'],
                                                indent + 2*indentation_step)
                 lines.append(comp_lines)
+                lines.append('')
             else:
                 lines.append(line)
 
@@ -172,6 +173,9 @@ def generate_report (records, list_all=True):
         for status in keys:
             for entry_name, record in sorted(with_commands[status].items(), key=sorter):
                 lines.append(record['command'])
+                if not record['command']:
+                    print entry_name, 'no com'
+
             lines.append('')
 
     return '\n'.join(lines)
@@ -195,8 +199,7 @@ def gen_downtime_message (downtime_record, entry_name):
         hostname, record = downtime_record.popitem()
         downtime_record[hostname] = record
 
-        message = "%s :\n" % entry_name
-        message += "    Federation: " + record['federation'] + '\n'
+        message =  "    Federation: " + record['federation'] + '\n'
         message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
         message += "   Description: " + record['description'] + '\n'
         message += "    Start time: " + print_local_dt( record['start']) + '\n'
