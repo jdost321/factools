@@ -21,7 +21,7 @@ from get_grid_downtimes import get_egi, get_osg
 def main():
 
     options, args = parse_command_line()
-    if args or args[0].lower() == 'all':
+    if args:
         entry_names_specs = args
     else:
         entry_names_specs = ['all']
