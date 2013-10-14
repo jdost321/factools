@@ -173,8 +173,6 @@ def generate_report (records, list_all=True):
         for status in keys:
             for entry_name, record in sorted(with_commands[status].items(), key=sorter):
                 lines.append(record['command'])
-                if not record['command']:
-                    print entry_name, 'no com'
 
             lines.append('')
 
@@ -218,7 +216,7 @@ def gen_downtime_command (downtime_record, entry_name):
 
         end_time = get_local_dt( record['end'])
         end_time_str = end_time.strftime( "%H:%M %b %d %Y")
-        comment = record['description']
+        comment = record['description'].strip()
 
         command = command_body.format( entry = entry_name,
                                        comment = comment )
