@@ -190,7 +190,7 @@ def gen_downtime_message (downtime_record, entry_name):
 def gen_downtime_command (downtime_record, entry_name):
 
     if downtime_record:
-        command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment "{comment}""""
+        command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment '{comment}'"""
         hostname, record = downtime_record.popitem()
 
         end_time = get_local_dt( record['end'])
