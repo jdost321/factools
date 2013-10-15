@@ -153,16 +153,24 @@ def assign_record (record, entry_name, registered, enforced, comment):
 def generate_report (records, status_list):
 
     lines = []
-    sorter = lambda r: r[0]
-    cmd_tester = lambda key, rec: 'command' in rec
     with_commands = {}
     there_are_commands = False
     indentation_step = 3
     indent = 0
 
+    to_discard = []
+
     for key in records.keys():
         if key not in status_list or not records[key]:
-            del records[key]
+            to_discard.append(key)
+    for key in to_discard:
+        del records[key]
+    for key in status_list:
+        if key not records:
+            status_list.remove(key)
+
+    sorter = lambda r: r[0]
+    cmd_tester = lambda key, rec: 'command' in rec
 
     for status in sorted(status_list):
 
