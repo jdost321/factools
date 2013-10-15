@@ -166,7 +166,7 @@ def generate_report (records, status_list):
     for key in to_discard:
         del records[key]
     for key in status_list:
-        if key not records:
+        if key not in records:
             status_list.remove(key)
 
     sorter = lambda r: r[0]
