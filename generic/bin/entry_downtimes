@@ -27,7 +27,7 @@ def main():
 
     entries_spec, status_list, ask, send = parse_command_line()
 
-    entries = gather_entries( entres_specs)
+    entries = gather_entries( entries_spec)
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
 
     records = build_records( entries, downtimes)
