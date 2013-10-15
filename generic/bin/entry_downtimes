@@ -80,7 +80,7 @@ def gather_entries (entries_spec):
     if entries_spec[0].lower() in ('*', 'all'):
         the_entries = factory_entries
     else:
-        the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
+        the_entries = sum( [ filter( lambda e: spec.lower() in e['@name'].lower(), factory_entries )
                             for spec in entries_spec ], [] )
     if not the_entries:
         raise ValueError("Error: There are no configured entries with the specified name")
