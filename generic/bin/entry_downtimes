@@ -189,12 +189,11 @@ def generate_report (records, status_list):
                                                 indent + indentation_step)
                         lines.append('')
                         lines.append(line + ':')
-                        comp_lines = indent_multilines(record['complement'],
-                                                    indent + 2*indentation_step)
-                        lines.append(comp_lines)
+                        line = record['complement']
+                        lines.append( indent_multilines( line, indent + 2*indentation_step))
                     else:
                         line = "{0:<{width}}: {1}".format(entry_name, complement, width=width)
-                        lines.append(line)
+                        lines.append( indent_multilines( line, indent + indentation_step))
                 else:
                     line = indent_multilines(entry_name,
                                                 indent + indentation_step)
