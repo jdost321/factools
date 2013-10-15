@@ -160,9 +160,9 @@ def generate_report (records, status_list):
     indentation_step = 3
     indent = 0
 
-    to_discard = set(records.keys()) - set(status_list)
-    for key in to_discard:
-        del records[key]
+    for key in records.keys():
+        if key not in status_list or not records[key]:
+            del records[key]
 
     for status in sorted(status_list):
 
