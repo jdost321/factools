@@ -23,33 +23,18 @@ descriptors = {'enforced': "Registered downtimes manually enforced",
                'ongoing': "Ongoing downtimes already registered in this factory",
                'removable': "Registered downtimes that have finished and can be removed" }
 
-
 def main():
 
-    options, args = parse_command_line()
-    if args:
-        entry_names_specs = args
-    else:
-        entry_names_specs = ['all']
-    status_list = apply_exclusions (options.verbose, options.updates)
+    entries_spec, status_list, ask, send = parse_command_line()
 
-    entries = gather_entries( entry_names_specs)
-    records = build_records( entries)
+    entries = gather_entries( entres_specs)
+    downtimes = {"EGI": get_egi(), "OSG": get_osg()}
+
+    records = build_records( entries, downtimes)
     report = generate_report( records, status_list)
 
     if report:
-        print report
-
-        subject = "New entry downtimes updates."
-        if options.send:
-            send_email_plain( subject, report)
-        else:
-            if options.ask:
-                do_send = raw_input ("Do you want to send the report? ")
-                if do_send.lower() in ("y", "ye", "yes", "ok"):
-                    send_email_plain( subject, report)
-                else:
-                    print "Report not sent."
+        present_report( report, ask, send)
 
     return 0
 
@@ -67,21 +52,24 @@ def parse_command_line():
     parser.add_option ('-u', '--updates', action='store_true', default=False,
                        help="If present, displays only recent downtime events.")
 
-    return parser.parse_args()
+    options, args = parser.parse_args()
 
-def apply_exclusions (verbose, only_updates):
+    if args:
+        entries_spec = args
+    else:
+        entries_spec = ['all']
 
-    if only_updates:
+    if options.updates:
         status_list = ['new', 'removable']
     else:
-        status_list = set(descriptors.keys())
-        if not verbose:
-            status_list.discard('none')
-        status_list = list(status_list)
+        status_list = descriptors.keys()
+        if not options.verbose:
+            status_list.remove('none')
 
-    return status_list
+    return entries_spec, set(status_list), options.ask, options.send
 
-def gather_entries (entry_names_specs):
+
+def gather_entries (entries_spec):
 
     factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
 
@@ -89,20 +77,19 @@ def gather_entries (entry_names_specs):
     factory_entries = filter( lambda e: e['@enabled'] == 'True',
                               factory_config['glidein']['entries']['entry'] )
 
-    if entry_names_specs[0].lower() in ('*', 'all'):
+    if entries_spec[0].lower() in ('*', 'all'):
         the_entries = factory_entries
     else:
         the_entries = sum( [ filter( lambda e: spec in e['@name'], factory_entries )
-                            for spec in entry_names_specs ], [] )
+                            for spec in entries_spec ], [] )
     if not the_entries:
         raise ValueError("Error: There are no configured entries with the specified name")
 
     return the_entries
 
-def build_records (entries_config):
+def build_records (entries_config, downtimes):
 
-    downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {}
+    records = {}
 
     for entry in entries_config:
 
@@ -122,11 +109,11 @@ def build_records (entries_config):
         key, data = assign_record( record, entry_name, registered, enforced,
                                    comment)
 
-        if key not in report:
-            report[key] = {}
-        report[key][entry_name] = data
+        if key not in records:
+            records[key] = {}
+        records[key][entry_name] = data
 
-    return report
+    return records
 
 def assign_record (record, entry_name, registered, enforced, comment):
 
@@ -161,24 +148,19 @@ def generate_report (records, status_list):
 
     to_discard = []
 
-    for key in records.keys():
-        if key not in status_list or not records[key]:
-            to_discard.append(key)
-    for key in to_discard:
-        del records[key]
-    for key in status_list:
-        if key not in records:
-            status_list.remove(key)
+    all_keys = set(records.keys())
+    empty_keys = set( filter_dict( lambda key, val: not val, records).keys() )
+    included_keys = status_list & (all_keys - empty_keys)
 
     sorter = lambda r: r[0]
     cmd_tester = lambda key, rec: 'command' in rec
 
-    for status in sorted(status_list):
+    for status in sorted(included_keys):
 
         if records[status]:
 
             lines.append( "* " + descriptors[status] + ":")
-            width = 2 + max( [ len(entry) for entry in records[status].keys() ] )
+            width = max( [ len(entry) for entry in records[status].keys() ] )
 
             for entry_name, record in sorted(records[status].items(), key=sorter):
 
@@ -186,17 +168,16 @@ def generate_report (records, status_list):
                 if complement:
                     if len(complement.splitlines()) > 1:
                         line = indent_multilines(entry_name,
-                                                indent + indentation_step)
+                                                 indent + indentation_step)
                         lines.append('')
                         lines.append(line + ':')
                         line = record['complement']
                         lines.append( indent_multilines( line, indent + 2*indentation_step))
                     else:
-                        line = "{0:<{width}}: {1}".format(entry_name, complement, width=width)
+                        line = "{0:<{width}} : {1}".format(entry_name, complement, width=width)
                         lines.append( indent_multilines( line, indent + indentation_step))
                 else:
-                    line = indent_multilines(entry_name,
-                                                indent + indentation_step)
+                    line = indent_multilines(entry_name, indent + indentation_step)
                     lines.append(line)
 
             lines.append('')
@@ -208,7 +189,7 @@ def generate_report (records, status_list):
         lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for status in status_list:
+        for status in included_keys:
             for entry_name, record in sorted(with_commands[status].items(), key=sorter):
                 lines.append(record['command'])
 
@@ -216,6 +197,22 @@ def generate_report (records, status_list):
                 lines.append('')
 
     return '\n'.join(lines)
+
+def present_report (report, do_ask, do_send):
+
+    print report
+
+    subject = "New entry downtimes updates."
+
+    if do_send:
+        send_email_plain( subject, report)
+    else:
+        if do_ask:
+            prompt_send = raw_input ("Do you want to send the report? ")
+            if prompt_send.lower() in ("y", "ye", "yes", "ok"):
+                send_email_plain( subject, report)
+            else:
+                print "Report not sent."
 
 def get_downtime (entry_name, target_hosts, downtimes):
 
