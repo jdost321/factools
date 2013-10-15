@@ -37,18 +37,19 @@ def main():
     records = build_records( entries)
     report = generate_report( records, status_list)
 
-    print report
+    if report:
+        print report
 
-    subject = "New entry downtimes updates."
-    if options.send:
-        send_email_plain( subject, report)
-    else:
-        if options.ask:
-            do_send = raw_input ("Do you want to send the report? ")
-            if do_send.lower() in ("y", "ye", "yes", "ok"):
-                send_email_plain( subject, report)
-            else:
-                print "Report not sent."
+        subject = "New entry downtimes updates."
+        if options.send:
+            send_email_plain( subject, report)
+        else:
+            if options.ask:
+                do_send = raw_input ("Do you want to send the report? ")
+                if do_send.lower() in ("y", "ye", "yes", "ok"):
+                    send_email_plain( subject, report)
+                else:
+                    print "Report not sent."
 
     return 0
 
@@ -174,33 +175,35 @@ def generate_report (records, status_list):
 
     for status in sorted(status_list):
 
-        lines.append( "* " + descriptors[status] + ":")
-        width = 2 + max( [ len(entry) for entry in records[status].keys() ] )
+        if records[status]:
 
-        for entry_name, record in sorted(records[status].items(), key=sorter):
+            lines.append( "* " + descriptors[status] + ":")
+            width = 2 + max( [ len(entry) for entry in records[status].keys() ] )
 
-            complement = record['complement']
-            if complement:
-                if len(complement.splitlines()) > 1:
-                    line = indent_multilines(entry_name,
-                                             indent + indentation_step)
-                    lines.append('')
-                    lines.append(line + ':')
-                    comp_lines = indent_multilines(record['complement'],
-                                                indent + 2*indentation_step)
-                    lines.append(comp_lines)
+            for entry_name, record in sorted(records[status].items(), key=sorter):
+
+                complement = record['complement']
+                if complement:
+                    if len(complement.splitlines()) > 1:
+                        line = indent_multilines(entry_name,
+                                                indent + indentation_step)
+                        lines.append('')
+                        lines.append(line + ':')
+                        comp_lines = indent_multilines(record['complement'],
+                                                    indent + 2*indentation_step)
+                        lines.append(comp_lines)
+                    else:
+                        line = "{0:<{width}}: {1}".format(entry_name, complement, width=width)
+                        lines.append(line)
                 else:
-                    line = "{0:<{width}}: {1}".format(entry_name, complement, width=width)
+                    line = indent_multilines(entry_name,
+                                                indent + indentation_step)
                     lines.append(line)
-            else:
-                line = indent_multilines(entry_name,
-                                            indent + indentation_step)
-                lines.append(line)
 
-        lines.append('')
+            lines.append('')
 
-        with_commands[status] = filter_dict( cmd_tester, records[status])
-        there_are_commands |= bool(with_commands[status])
+            with_commands[status] = filter_dict( cmd_tester, records[status])
+            there_are_commands |= bool(with_commands[status])
 
     if there_are_commands:
         lines.append("---- ---- ----")

@@ -3,7 +3,7 @@
 source ~/.bash_profile
 
 script_dir=$( cd $(dirname $0); pwd -P )
-tool="${script_dir}/../bin/is_entry_in_downtime"
+tool="${script_dir}/../bin/entry_downtimes"
 
 $tool --updates --send all 
 
