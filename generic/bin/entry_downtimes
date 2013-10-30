@@ -17,7 +17,7 @@ from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 
-descriptors = {'enforced': "Registered downtimes manually enforced",
+descriptors = {'manual': "Manually registered downtimes",
                'new': "Newly advertised downtimes",
                'none': "Entries without registered nor advertised downtimes",
                'ongoing': "Ongoing downtimes already registered in this factory",
@@ -121,11 +121,11 @@ def assign_record (record, entry_name, registered, manual, comment):
     if record is None:
         if registered:
             if manual:
+                key, data = 'manual', {'complement': comment.strip('#; ')}
+            else:
                 command = gen_downtime_command( record, entry_name)
                 key, data = 'removable', {'complement': '',
                                           'command': command}
-            else:
-                key, data = 'enforced', {'complement': comment.strip('#; ')}
         else:
             key, data = 'none', {'complement': ''}
     else:
@@ -305,7 +305,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
         if when >= start and (end is None or end > when):
             registered = True
-            manual = "_ad_" in comment.lower()
+            manual = "_ad_" not in comment.lower()
             break
 
     return registered, manual, comment
