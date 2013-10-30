@@ -105,8 +105,8 @@ def build_records (entries_config, downtimes):
             target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
-        registered, enforced, comment = is_entry_in_factory_downtime( entry_name)
-        key, data = assign_record( record, entry_name, registered, enforced,
+        registered, manual, comment = is_entry_in_factory_downtime( entry_name)
+        key, data = assign_record( record, entry_name, registered, manual,
                                    comment)
 
         if key not in records:
@@ -115,16 +115,16 @@ def build_records (entries_config, downtimes):
 
     return records
 
-def assign_record (record, entry_name, registered, enforced, comment):
+def assign_record (record, entry_name, registered, manual, comment):
 
     if record is None:
         if registered:
-            if enforced:
-                key, data = 'enforced', {'complement': comment.strip('#').strip()}
-            else:
+            if manual:
                 command = gen_downtime_command( record, entry_name)
                 key, data = 'removable', {'complement': '',
                                           'command': command}
+            else:
+                key, data = 'enforced', {'complement': comment.strip('#; ')}
         else:
             key, data = 'none', {'complement': ''}
     else:
@@ -245,20 +245,31 @@ def gen_downtime_message (downtime_record, entry_name):
     return message
 
 def gen_downtime_command (downtime_record, entry_name):
+    """
+#Start                         End                            Entry                Frontend                       Sec_Class            # Comment
+
+2011-12-20T15:47:29+02:00      2011-12-24T01:02:33+02:00      CMS_T1_CH_CERN_ce203 All                  All                  #; bringing up all entries
+    """
 
     if downtime_record:
-        #command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -end {end} -comment '{comment}'"""
-        command_body = """$GLIDEIN_FACTORY_DIR/factory_startup down -entry {entry} -comment '{comment}'"""
+        downtime_line = "{start} {end} {entry} All All #; _ad_ {comment}"
+        command_body = ( "echo '{line}' >> $GLIDEIN_FACTORY_DIR/glideinWMS.downtimes; "
+                         "entry_rm {entry} -const 'jobstatus!=2'; "
+                         "echo 'entry_nuke {entry}' | at now + 10 min")
+
         hostname, record = downtime_record.popitem()
 
-        end_time = get_local_dt( record['end']).strftime("%Y-%m-%d-%H:%M")
-        comment = ' '.join( [ line.strip() for line in record['description'].splitlines() ])
+        ts_format = '%Y-$m-%dT%H:%M:%S%z'
+        end_time = record['end'].strftime(ts_format)
+        start_time = record['start'].strftime(ts_format)
+        comment = ' '.join( line.strip() for line in record['description'].splitlines() )
 
-        command = command_body.format( entry = entry_name,
-                                       comment = comment)
-                                       #end = end_time )
+        line = downtimes_file.format( start = start_time, end = end_time,
+                                      entry = entry_name, comment = comment )
+        command = command_body.format(line)
+
     else:
-        command = "entry_nuke {0}; $GLIDEIN_FACTORY_DIR/factory_startup up -entry {0}".format(entry_name)
+        command = "$GLIDEIN_FACTORY_DIR/factory_startup up -entry {0}".format(entry_name)
 
     return command
 
@@ -267,7 +278,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
     downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
 
     registered = False
-    enforced = False
+    manual = False
     comment = ''
 
     record_lines = []
@@ -293,13 +304,10 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
         if when >= start and (end is None or end > when):
             registered = True
-            enforced = check_enforced(comment)
+            manual = "_ad_" not in comment.lower()
             break
 
-    return registered, enforced, comment
-
-def check_enforced (comment):
-    return "enforce" in comment.lower()
+    return registered, manual, comment
 
 def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()

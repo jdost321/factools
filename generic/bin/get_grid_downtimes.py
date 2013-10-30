@@ -56,8 +56,8 @@ def get_osg():
 
         host = record['ResourceFQDN']
         description = record['Description']
-        start = parse_timestamp (record['StartTime'])
-        end = parse_timestamp (record['EndTime'])
+        start = parse_timestamp(record['StartTime']).astimezone(tzutc())
+        end = parse_timestamp(record['EndTime']).astimezone(tzutc())
 
         downtimes_out[host] = {'start': start, 'end': end,
                                'description':description}
