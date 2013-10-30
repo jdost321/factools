@@ -246,17 +246,12 @@ def gen_downtime_message (downtime_record, entry_name):
     return message
 
 def gen_downtime_command (downtime_record, entry_name):
-    """
-#Start                         End                            Entry                Frontend                       Sec_Class            # Comment
-
-2011-12-20T15:47:29+02:00      2011-12-24T01:02:33+02:00      CMS_T1_CH_CERN_ce203 All                  All                  #; bringing up all entries
-    """
 
     if downtime_record:
-        downtime_line = "{start} {end} {entry} All All #; _ad_ {comment}"
+        downtime_line = "{start} {end} {entry} All All # _ad_ {comment}"
         command_body = ( "echo '{line}' >> $GLIDEIN_FACTORY_DIR/glideinWMS.downtimes; "
                          "entry_rm {entry} -const 'jobstatus!=2'; "
-                         "echo 'entry_nuke {entry}' | at now + 10 min")
+                         "echo 'entry_rm {entry} -forcex' | at now + 10 min")
 
         hostname, record = downtime_record.popitem()
 
