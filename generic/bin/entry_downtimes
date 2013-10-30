@@ -28,7 +28,8 @@ def main():
     entries_spec, status_list, ask, send = parse_command_line()
 
     entries = gather_entries( entries_spec)
-    downtimes = {"EGI": get_egi(), "OSG": get_osg()}
+    downtimes = {"EGI": get_egi(),
+                 "OSG": get_osg()}
 
     records = build_records( entries, downtimes)
     report = generate_report( records, status_list)
@@ -304,7 +305,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
         if when >= start and (end is None or end > when):
             registered = True
-            manual = "_ad_" not in comment.lower()
+            manual = "_ad_" in comment.lower()
             break
 
     return registered, manual, comment
