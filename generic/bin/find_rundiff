@@ -65,13 +65,19 @@ for schedd in schedds:
                 entries[e] = 0
             entries[e] += 1
     else:
-        print "\nClearing rundiff from %s:" % schedd
+        print "Checking rundiff for %s ..." % schedd
         ent_exp = "jobstatus==2&&(%s)" % "||".join(ent_exp_arr)
-        p = subprocess.Popen(['condor_rm','-name',schedd,'-const',ent_exp])
-        p.communicate()
+        p = subprocess.Popen(['condor_rm','-name',schedd,'-const',ent_exp], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        out = p.communicate()
+        if p.returncode != 0:
+            continue
+
+        print out[0]
+
         # fake rundiff always stays in X forever so remove again with -forcex to take care of those
         ent_exp = "jobstatus==3&&(%s)" % "||".join(ent_exp_arr)
-        p = subprocess.Popen(['condor_rm','-name',schedd,'-forcex','-const',ent_exp])
+        p = subprocess.Popen(['condor_rm','-name',schedd,'-forcex','-const',ent_exp], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.communicate()
         time.sleep(5)
 
