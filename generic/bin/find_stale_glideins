@@ -15,9 +15,9 @@ else:
 from glideinwms.factory import glideFactoryConfig
 from glideinwms.creation.lib import cgWParams
 
-def print_help(name):
+def print_help():
     print '''\
-Usage: %s [OPTIONS] [SCALE]
+Usage: find_stale_glideins [OPTIONS] [SCALE]
 
 Where SCALE is multiplied to GLIDEIN_Max_Walltime
 Valid SCALE values are >= 1.0
@@ -25,7 +25,7 @@ Valid SCALE values are >= 1.0
 OPTIONS:
 -k remove found glideins
 -f used with -k if you really want to remove with SCALE < 2.0
-''' % name
+'''
 
 # Try GLIDEIN_FACTORY_DIR env var first
 if 'GLIDEIN_FACTORY_DIR' in os.environ:
@@ -39,7 +39,7 @@ force = False
 scale = 2.0
 
 if '-h' in sys.argv:
-    print_help(sys.argv[0])
+    print_help()
     sys.exit(0)
 
 if '-k' in sys.argv:
