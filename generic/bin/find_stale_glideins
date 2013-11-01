@@ -15,9 +15,9 @@ else:
 from glideinwms.factory import glideFactoryConfig
 from glideinwms.creation.lib import cgWParams
 
-def print_help():
+def print_help(name):
     print '''\
-Usage: find_rundiff [OPTIONS] [SCALE]
+Usage: %s [OPTIONS] [SCALE]
 
 Where SCALE is multiplied to GLIDEIN_Max_Walltime
 Valid SCALE values are >= 1.0
@@ -25,7 +25,7 @@ Valid SCALE values are >= 1.0
 OPTIONS:
 -k remove found glideins
 -f used with -k if you really want to remove with SCALE < 2.0
-'''
+''' % name
 
 # Try GLIDEIN_FACTORY_DIR env var first
 if 'GLIDEIN_FACTORY_DIR' in os.environ:
@@ -39,7 +39,7 @@ force = False
 scale = 2.0
 
 if '-h' in sys.argv:
-    print_help()
+    print_help(sys.argv[0])
     sys.exit(0)
 
 if '-k' in sys.argv:
@@ -92,7 +92,7 @@ for schedd in schedds:
                 entries[e] = 0
             entries[e] += 1
     else:
-        print "Checking rundiff for %s ..." % schedd
+        print "Checking stale glideins for %s ..." % schedd
         ent_exp = "jobstatus==2&&(%s)" % "||".join(ent_exp_arr)
         p = subprocess.Popen(['condor_rm','-name',schedd,'-const',ent_exp], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
