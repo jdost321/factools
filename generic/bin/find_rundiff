@@ -22,15 +22,26 @@ else:
     gfactory_dir="."
 
 mode = "print"
+force = False
+
 scale = 2.0
 
 if '-k' in sys.argv:
     mode = "kill"
     sys.argv.remove('-k')
+    if '-f' in sys.argv:
+        force = True
+        sys.argv.remove('-f')
+    
 if len(sys.argv) > 1:
     scale = float(sys.argv[1])
     if scale < 1.0:
         print "scale factor must be > 1.0"
+        sys.exit(1)
+    if mode == "kill" and scale < 2.0 and not force:
+        print "Removing glideins < 2x GLIDEIN_Max_Walltime is usually not a good idea."
+        print "Consider diff_rm instead."
+        print "\nRun again with -f if you know what you are doing.\n"
         sys.exit(1)
     
 conf_file=os.path.join(gfactory_dir,"glideinWMS.xml")
