@@ -132,11 +132,11 @@ def main(argv):
 
     # case where no frontends have 100% rundiff
     if len(frontends) == 0:
-        const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2)&&(CurrentTime-EnteredCurrentStatus>%s)'%(factory_name,glidein_name,entry,max_walltime)
+        const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2||JobStatus==3)&&(CurrentTime-EnteredCurrentStatus>%s)'%(factory_name,glidein_name,entry,max_walltime)
     # if a frontend has 100% rundiff, we know all their glideins can be counted as rundiff
     else:
         front_exp_arr = ['(owner=?="%s")' % f for f in frontends]
-        const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2)&&((CurrentTime-EnteredCurrentStatus>%s)||%s)'%(factory_name,glidein_name,entry,max_walltime,'||'.join(front_exp_arr))
+        const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2||JobStatus==3)&&((CurrentTime-EnteredCurrentStatus>%s)||%s)'%(factory_name,glidein_name,entry,max_walltime,'||'.join(front_exp_arr))
 
     cq_argv=argv[i:]
     #print cq_argv
