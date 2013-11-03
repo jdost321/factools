@@ -7,6 +7,8 @@ import pytz
 from datetime import datetime
 
 import tzlocal as tzl
+from dateutil.tz import tzutc
+from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 
@@ -31,7 +33,8 @@ def main():
         return 2
 
     downtimes = {"EGI": get_egi(), "OSG": get_osg()}
-    report = {}
+    report = {'downtimes':{}, 'no downtimes':{}}
+    suggested_commands = False
 
     for entry in the_entries:
 
@@ -47,12 +50,47 @@ def main():
             target_hosts["SE"] = storage_element
 
         record = get_downtime( entry_name, target_hosts, downtimes )
+        text = gen_downtime_message( record, entry_name)
+        registered = is_entry_in_factory_downtime(entry_name)
 
-        if record or entry_name not in report:
-            report[entry_name] = gen_downtime_message( record, entry_name)
+        if record:
+            if registered:
+                text = "Ongoing {0} downtime is already registered in this factory."
+                report['no downtimes'][entry_name] = {'text': text.format(entry_name)}
+            else:
+                command = gen_downtime_command( record, entry_name)
+                report['downtimes'][entry_name] = {'text': text,
+                                                   'command': command}
+                suggested_commands = True
+        else:
+            if registered:
+                text = "Finished {0} factory downtime can be removed."
+                command = gen_downtime_command( record, entry_name)
+                report['no downtimes'][entry_name] = {'text': text.format(entry_name),
+                                                      'command': command}
+                suggested_commands = True
+            else:
+                report['no downtimes'][entry_name] = {'text': text}
 
-    for entry_name, report in sorted(report.iteritems()):
-        print report
+    for entry_name, record in sorted(report['no downtimes'].iteritems()):
+        print record['text']
+
+    for entry_name, record in sorted(report['downtimes'].iteritems()):
+        print record['text']
+
+    if suggested_commands:
+        print "\n---- ---- ----"
+        print "Suggested list of downtime commands:", '\n'
+
+        for entry_name, record in sorted(report['downtimes'].iteritems()):
+            if 'command' in record:
+                print record['command']
+
+        print '\n'
+
+        for entry_name, record in sorted(report['no downtimes'].iteritems()):
+            if 'command' in record:
+                print record['command']
 
     return 0
 
@@ -73,6 +111,7 @@ def gen_downtime_message (downtime_record, entry_name):
 
     if downtime_record:
         hostname, record = downtime_record.popitem()
+        downtime_record[hostname] = record
 
         message = "%s : This entry IS under downtime:\n" % entry_name
         message += "    Federation: " + record['federation'] + '\n'
@@ -86,12 +125,63 @@ def gen_downtime_message (downtime_record, entry_name):
 
     return message
 
-def print_local_dt (utc_dt):
+def gen_downtime_command (downtime_record, entry_name):
 
+    if downtime_record:
+        command_body = """{facdir}/factory_startup down -entry {entry} -comment "{comment}"; echo 'wall "check {entry} downtime"' | at {endtime} """
+        factory_dir = os.getenv('GLIDEIN_FACTORY_DIR')
+        hostname, record = downtime_record.popitem()
+
+        end_time = get_local_dt( record['end'])
+        end_time_str = end_time.strftime( "%H:%M %b %d %Y")
+        comment = record['description']
+
+        command = command_body.format( facdir = factory_dir, entry = entry_name,
+                                       comment = comment, endtime = end_time_str )
+    else:
+        command = "$GLIDEIN_FACTORY_DIR/factory_startup up -entry " + entry_name
+
+    return command
+
+def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
+
+    downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+
+    record_lines = []
+    with open(downtimes_file) as fd:
+        for line in fd:
+            if entry_name in line and not line.startswith('#'):
+                record_lines.append(line.strip())
+
+    for line in record_lines:
+        fields = line.split()
+
+        start = parse_timestamp(fields[0])
+
+        if fields[1] != 'None':
+            end = parse_timestamp(fields[1])
+        else:
+            end = None
+
+        entry = fields[2] # It's equal to entry_name by construction
+        frontend = fields[3]
+        sec_clas = fields[4]
+        comment = ' '.join(fields[5:])
+
+        if when >= start and (end is None or end > when):
+            return True
+
+    return False
+
+def get_local_dt (utc_dt):
     local_tz = tzl.get_localzone()
 
-    local_dt = local_tz.normalize( utc_dt.astimezone( local_tz))
-    return local_dt.strftime("%B %d, %Y %H:%M %Z%z")
+    return local_tz.normalize( utc_dt.astimezone( local_tz))
+
+def print_local_dt (utc_dt):
+
+    local_dt = get_local_dt( utc_dt)
+    return local_dt.strftime( "%B %d, %Y %H:%M %Z%z")
 
 def filter_dict (test_function, dictionary):
 

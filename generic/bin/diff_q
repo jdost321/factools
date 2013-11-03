@@ -9,6 +9,8 @@
 
 import os
 import sys
+import xml.parsers.expat
+
 STARTUP_DIR=sys.path[0]
 
 #sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
@@ -24,6 +26,29 @@ from glideinwms.factory import glideFactoryConfig
 
 USAGE="Usage: diff_q entry|-l [-dir <dir>] [-printschedd] [condor_q options]"
 
+# necessary globals for expat
+frontends = []
+frontend = 'total'
+registered = 0
+
+# builds list of frontends with 100% rundiff
+def start_element(name, attrs):
+    global frontends
+    global frontend
+    global registered
+    global frontendDescript
+
+    if name == 'frontend':
+        frontend = attrs['name']
+    elif name == 'total':
+        frontend = name
+    elif name == 'ClientMonitor' and frontend != 'total':
+        registered = int(attrs['GlideTotal'])
+    elif name == 'Status' and frontend != 'total':
+        if int(attrs['Running']) > 0 and registered == 0:
+            for user in frontendDescript.data[frontend[:-9]]['usermap'].values():
+                frontends.append(user)
+
 def print_entries(entries,want_schedd):
     print "Available entries:"
     for entry in entries.split(','):
@@ -35,6 +60,7 @@ def print_entries(entries,want_schedd):
             print "  %-40s %-30s"%(entry,schedd_name)
 
 def main(argv):
+    global frontendDescript
     if len(argv)<2:
       print USAGE
       sys.exit(1)
@@ -77,12 +103,25 @@ def main(argv):
         print "Dir '%s' not a valid factory dir: %s"%(gfactory_dir, e)
         sys.exit(1)
 
+    try:
+        frontendDescript=glideFactoryConfig.FrontendDescript()
+    except IOError, e:
+        print "Dir '%s' not a valid factory dir: %s"%(gfactory_dir, e)
+        sys.exit(1)
+
     if entry=="-l":
         print_entries(glideinDescript.data['Entries'],want_schedd)
         sys.exit(0)
     
     jobDescript=glideFactoryConfig.JobDescript(entry)
     jobAttributes=glideFactoryConfig.JobAttributes(entry)
+
+    # get frontends with 100% rundiff from schedd_status.xml
+    xml_file = open("entry_%s/monitor/schedd_status.xml" % entry)
+    xmlparser = xml.parsers.expat.ParserCreate()
+    xmlparser.StartElementHandler = start_element
+    xmlparser.ParseFile(xml_file)
+    xml_file.close()
     os.chdir(curdir)
 
     factory_name=glideinDescript.data['FactoryName']
@@ -90,7 +129,14 @@ def main(argv):
     schedd_name=jobDescript.data['Schedd']
     # add extra hour delta for grid unpredictability
     max_walltime=int(jobAttributes.data['GLIDEIN_Max_Walltime']) + 3600
-    const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2)&&(CurrentTime-EnteredCurrentStatus>%s)'%(factory_name,glidein_name,entry,max_walltime)
+
+    # case where no frontends have 100% rundiff
+    if len(frontends) == 0:
+        const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2)&&(CurrentTime-EnteredCurrentStatus>%s)'%(factory_name,glidein_name,entry,max_walltime)
+    # if a frontend has 100% rundiff, we know all their glideins can be counted as rundiff
+    else:
+        front_exp_arr = ['(owner=?="%s")' % f for f in frontends]
+        const_str='(GlideinFactory=?="%s")&&(GlideinName=?="%s")&&(GlideinEntryName=?="%s")&&(JobStatus==2)&&((CurrentTime-EnteredCurrentStatus>%s)||%s)'%(factory_name,glidein_name,entry,max_walltime,'||'.join(front_exp_arr))
 
     cq_argv=argv[i:]
     #print cq_argv
