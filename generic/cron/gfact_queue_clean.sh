@@ -18,4 +18,6 @@ sleep $sleep
 
 for schedd in $schedds;do
     condor_rm -forcex -name $schedd -const "qdate <= $((now - 3600*24*age))"
+    # if there are any X left that have been X for > 2h just remove them
+    condor_rm -forcex -name $schedd -const 'jobstatus==3 && (currenttime-enteredcurrentstatus>2700)'
 done
