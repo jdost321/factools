@@ -255,7 +255,7 @@ def gen_downtime_command (downtime_record, entry_name):
 
         hostname, record = downtime_record.popitem()
 
-        ts_format = '%Y-$m-%dT%H:%M:%S%z'
+        ts_format = '%Y-%m-%dT%H:%M:%S%z'
         end_time = record['end'].strftime(ts_format)
         start_time = record['start'].strftime(ts_format)
         comment = ' '.join( line.strip() for line in record['description'].splitlines() )
