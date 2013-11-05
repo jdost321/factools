@@ -262,10 +262,10 @@ def gen_downtime_command (downtime_record, entry_name):
 
         line = downtime_line.format( start = start_time, end = end_time,
                                       entry = entry_name, comment = comment )
-        command = command_body.format(line)
+        command = command_body.format(line=line, entry=entry_name)
 
     else:
-        command = "$GLIDEIN_FACTORY_DIR/factory_startup up -entry {0}".format(entry_name)
+        command = "$GLIDEIN_FACTORY_DIR/factory_startup up -entry {entry}".format(entry=entry_name)
 
     return command
 
