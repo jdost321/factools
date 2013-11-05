@@ -248,7 +248,7 @@ def gen_downtime_message (downtime_record, entry_name):
 def gen_downtime_command (downtime_record, entry_name):
 
     if downtime_record:
-        downtime_line = "{start} {end} {entry} All All # _ad_ {comment}"
+        downtime_line = "{start}      {end}      {entry}      All      All      # _ad_ {comment}"
         command_body = ( "echo '{line}' >> $GLIDEIN_FACTORY_DIR/glideinWMS.downtimes; "
                          "entry_rm {entry} -const 'jobstatus!=2'; "
                          "echo 'entry_rm {entry} -forcex' | at now + 10 min")
@@ -256,8 +256,8 @@ def gen_downtime_command (downtime_record, entry_name):
         hostname, record = downtime_record.popitem()
 
         ts_format = '%Y-%m-%dT%H:%M:%S%z'
-        end_time = record['end'].strftime(ts_format)
-        start_time = record['start'].strftime(ts_format)
+        end_time = add_offset_semicolon( record['end'].strftime(ts_format))
+        start_time = add_offset_semicolon( record['start'].strftime(ts_format))
         comment = ' '.join( line.strip() for line in record['description'].splitlines() )
 
         line = downtime_line.format( start = start_time, end = end_time,
@@ -359,6 +359,11 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
         line_list = [ (' '*indent + line) for line in lines ]
 
     return '\n'.join(line_list)
+
+def add_offset_semicolon (time_str):
+
+    offset_mins = time_str[-2:]
+    return time_str[:-2] + ':' + offset_mins
 
 
 if __name__ == "__main__":
