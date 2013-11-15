@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.6
 
 import copy
+from datetime import datetime, timedelta
 import os
 import optparse
 import pytz
@@ -16,6 +17,7 @@ from dateutil.tz import tzutc
 from dateutil.parser import parse as parse_timestamp
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
+import PyRSS2Gen as rssgen
 
 descriptors = {'manual': "Manually registered downtimes",
                'new': "Newly advertised downtimes",
@@ -23,9 +25,11 @@ descriptors = {'manual': "Manually registered downtimes",
                'ongoing': "Ongoing downtimes already registered in this factory",
                'removable': "Registered downtimes that have finished and can be removed" }
 
+rss_file = '/tmp/downtimes_feed.xml'
+
 def main():
 
-    entries_spec, status_list, ask, send = parse_command_line()
+    entries_spec, status_list, ask, send, make_rss = parse_command_line()
 
     entries = gather_entries( entries_spec)
     downtimes = {"EGI": get_egi(),
@@ -36,6 +40,9 @@ def main():
 
     if report:
         present_report( report, ask, send)
+
+    if make_rss:
+        generate_feed( records, rss_file)
 
     return 0
 
@@ -52,6 +59,8 @@ def parse_command_line():
                        help="If present, displays even the entries not currently advertised as in downtime.")
     parser.add_option ('-u', '--updates', action='store_true', default=False,
                        help="If present, displays only recent downtime events.")
+    parser.add_option ('-r', '--rss', action='store_true', default=False,
+                       help="If present, generates an RSS feed file to {0}.".format(rss_file))
 
     options, args = parser.parse_args()
 
@@ -67,7 +76,7 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
-    return entries_spec, set(status_list), options.ask, options.send
+    return entries_spec, set(status_list), options.ask, options.send, options.rss
 
 
 def gather_entries (entries_spec):
@@ -146,8 +155,6 @@ def generate_report (records, status_list):
     there_are_commands = False
     indentation_step = 3
     indent = 0
-
-    to_discard = []
 
     all_keys = set(records.keys())
     empty_keys = set( filter_dict( lambda key, val: not val, records).keys() )
@@ -358,6 +365,58 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
         line_list = [ (' '*indent + line) for line in lines ]
 
     return '\n'.join(line_list)
+
+def generate_feed (records, rss_file):
+
+    with_commands = {}
+    there_are_commands = False
+
+    all_keys = set(records.keys())
+    status_list = set(['new', 'removable'])
+    empty_keys = set( filter_dict( lambda key, val: not val, records).keys() )
+    included_keys = status_list & (all_keys - empty_keys)
+
+    cmd_tester = lambda key, rec: 'command' in rec
+
+    for status in included_keys:
+        if records[status]:
+            with_commands[status] = filter_dict( cmd_tester, records[status] )
+            there_are_commands |= bool(with_commands[status])
+
+    if there_are_commands:
+
+        feed = DowntimesFeed(rss_file)
+
+        for status, records in with_commands.items():
+            for entry_name, record in records.items():
+                feed.add_record( entry_name, record, status)
+
+        feed.write()
+
+class DowntimesFeed(object):
+
+    def __init__ (self, rss_file):
+
+        self.filename = rss_file
+        self.rss = rssgen.RSS2(
+            title = "GlideinWMS Factory Downtimes Advertisements",
+            link = "http://vocms32.cern.ch/downtimes.xml",
+            description = "List of recently advertised entry (queue) downtimes, "
+            "obtained from GOCDB and OIM.",
+            lastBuildDate = datetime.now(),
+            items = [])
+
+    def add_record (self, entry_name, record, status):
+
+        self.rss.items.append( PyRSS2Gen.RSSItem(
+                title = "{0} downtime for {1}".format(status, entry_name)
+                link = record['url']
+                guid = rssgen.Guid(record['url'])
+                pubDate = datetime.now()
+                description = record['command'] ))
+
+    def write (self):
+        self.rss.write_xml( open( self.filename, "w"))
 
 
 if __name__ == "__main__":
