@@ -128,7 +128,7 @@ def build_records (entries_config, downtimes):
 
 def assign_record (advertisement, entry_name, registered, manual, comment):
 
-    print advertisement
+    print advertisement, registered, manual
     if advertisement is None:
         if registered:
             if manual:
