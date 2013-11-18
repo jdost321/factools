@@ -153,6 +153,9 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
             if host:
                 data['url'] = advertisement[host]['url']
 
+        if not registered and not manual:
+            print "Tiene que tener URL", 'url' in data
+
     return key, data
 
 def generate_report (records, status_list):
@@ -245,8 +248,7 @@ def get_downtime (entry_name, target_hosts, downtimes):
 def gen_downtime_message (downtime_record, entry_name):
 
     if downtime_record:
-        hostname, record = downtime_record.popitem()
-        downtime_record[hostname] = record
+        hostname, record = dictpeek(downtime_record)
 
         message =  "    Federation: " + record['federation'] + '\n'
         message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
@@ -267,7 +269,7 @@ def gen_downtime_command (downtime_record, entry_name):
                          "entry_rm {entry} -const 'jobstatus!=2'; "
                          "echo 'entry_rm {entry} -forcex' | at now + 10 min")
 
-        hostname, record = downtime_record.popitem()
+        hostname, record = dictpeek(downtime_record)
 
         start_time = record['start'].isoformat()
         end_time = record['end'].isoformat()
