@@ -123,10 +123,6 @@ def build_records (entries_config, downtimes):
         if key not in records:
             records[key] = {}
         records[key][entry_name] = data
-        if advertisement:
-            key = advertisement.keys()[0]
-            print advertisement[key].keys()
-            print data.keys()
 
     return records
 
@@ -148,9 +144,10 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
         else:
             text = gen_downtime_message(advertisement, entry_name)
             command = gen_downtime_command( advertisement, entry_name)
+            host = advertisement.keys()[0]
             key, data = 'new', {'complement': text,
                                 'command': command,
-                                'url': advertisement['url']}
+                                'url': advertisement[host]['url']}
 
     return key, data
 
