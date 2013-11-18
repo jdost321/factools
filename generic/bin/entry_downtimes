@@ -115,16 +115,16 @@ def build_records (entries_config, downtimes):
             storage_element = storage_element_attrs[0]['@value']
             target_hosts["SE"] = storage_element
 
-        record = get_downtime( entry_name, target_hosts, downtimes )
+        advertisement = get_downtime( entry_name, target_hosts, downtimes )
         registered, manual, comment = is_entry_in_factory_downtime( entry_name)
-        key, data = assign_record( record, entry_name, registered, manual,
+        key, data = assign_record( advertisement, entry_name, registered, manual,
                                    comment)
 
         if key not in records:
             records[key] = {}
         records[key][entry_name] = data
-        if record:
-            print record[key].keys()
+        if advertisement:
+            print advertisement.keys()
             print data.keys()
 
     return records
