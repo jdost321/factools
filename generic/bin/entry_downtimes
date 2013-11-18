@@ -135,7 +135,8 @@ def assign_record (record, entry_name, registered, manual, comment):
             else:
                 command = gen_downtime_command( record, entry_name)
                 key, data = 'removable', {'complement': '',
-                                          'command': command}
+                                          'command': command,
+                                          'url': ''}
         else:
             key, data = 'none', {'complement': ''}
     else:
@@ -145,7 +146,8 @@ def assign_record (record, entry_name, registered, manual, comment):
             text = gen_downtime_message(record, entry_name)
             command = gen_downtime_command( record, entry_name)
             key, data = 'new', {'complement': text,
-                                'command': command}
+                                'command': command,
+                                'url': record['url']}
 
     return key, data
 
@@ -230,7 +232,6 @@ def get_downtime (entry_name, target_hosts, downtimes):
 
             record = filter_dict( lambda key, val: key == host_name, records)
             if record:
-                print record[host_name].keys()
                 record[host_name]['federation'] = federation
                 record[host_name]['host_type'] = host_type
                 return record
@@ -388,6 +389,7 @@ def generate_feed (records, rss_file):
     if there_are_commands:
 
         feed = DowntimesFeed(rss_file)
+
 
         for status, records in with_commands.items():
             for entry_name, record in records.items():
