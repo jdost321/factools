@@ -144,10 +144,10 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
         else:
             text = gen_downtime_message(advertisement, entry_name)
             command = gen_downtime_command( advertisement, entry_name)
-            host = advertisement.keys()[0]
+            print advertisement.keys()
             key, data = 'new', {'complement': text,
                                 'command': command,
-                                'url': advertisement[host]['url']}
+                                'url': ''}
 
     return key, data
 
@@ -411,7 +411,7 @@ class DowntimesFeed(object):
             items = [])
 
     def add_record (self, entry_name, record, status):
-        print record.keys()
+
         self.rss.items.append( rssgen.RSSItem(
                 title = "{0} downtime for {1}".format(status, entry_name),
                 link = record['url'],
