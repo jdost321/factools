@@ -153,7 +153,7 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
 
         if not registered and not manual:
             print advertisement
-            print "Tiene que tener URL", 'url' in data
+            print "Must have an URL:", ('url' in data)
 
     return key, data
 
@@ -418,7 +418,8 @@ class DowntimesFeed(object):
     def add_record (self, entry_name, record, status):
 
         self.rss.items.append( rssgen.RSSItem(
-                title = "{0} downtime for {1}".format(status, entry_name),
+                title = "{0} downtime for {1}".format(status.capitalize(),
+                                                      entry_name),
                 link = record['url'],
                 guid = rssgen.Guid(record['url']),
                 pubDate = datetime.now(),
