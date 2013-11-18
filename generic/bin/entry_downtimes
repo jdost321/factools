@@ -424,10 +424,15 @@ class DowntimesFeed(object):
                 link = record['url'],
                 guid = rssgen.Guid(record['url']),
                 pubDate = datetime.now(),
-                description = description ))
+                description = self.wrap_description(description) ))
 
     def write (self):
         self.rss.write_xml( open( self.filename, "w"))
+
+    def wrap_description (self, description):
+        broken = '<br>'.join( description.splitlines() )
+        out = "<![CDATA[\n{0}\n]]>".format(broken)
+        return out
 
 def dictpeek (dictionary):
 
