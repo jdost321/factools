@@ -418,7 +418,7 @@ class DowntimesFeed(object):
         description = template.format( record['complement'],
                                        record['command'] )
 
-        self.rss.items.append( rssgen.RSSItem(
+        self.rss.items.append( rssgen.FlexRSSItem(
                 title = "{0} downtime for {1}".format(status.capitalize(),
                                                       entry_name),
                 link = record['url'],

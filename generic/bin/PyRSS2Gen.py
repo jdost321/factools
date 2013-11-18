@@ -77,7 +77,7 @@ def _format_date(dt):
              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][dt.month-1],
             dt.year, dt.hour, dt.minute, dt.second)
 
-        
+
 ##
 # A couple simple wrapper objects for the fields which
 # take a simple value other than a string.
@@ -85,7 +85,7 @@ class IntElement:
     """implements the 'publish' API for integers
 
     Takes the tag name and the integer value to publish.
-    
+
     (Could be used for anything which uses str() to be published
     to text for XML.)
     """
@@ -151,7 +151,7 @@ class Image:
         self.width = width
         self.height = height
         self.description = description
-        
+
     def publish(self, handler):
         handler.startElement("image", self.element_attrs)
 
@@ -163,7 +163,7 @@ class Image:
         if isinstance(width, int):
             width = IntElement("width", width)
         _opt_element(handler, "width", width)
-        
+
         height = self.height
         if isinstance(height, int):
             height = IntElement("height", height)
@@ -209,7 +209,7 @@ class TextInput:
         _element(handler, "name", self.name)
         _element(handler, "link", self.link)
         handler.endElement("textInput")
-        
+
 
 class Enclosure:
     """Publish an enclosure"""
@@ -268,7 +268,7 @@ class RSS2(WriteXmlMixin):
     Stores the channel attributes, with the "category" elements under
     ".categories" and the RSS items under ".items".
     """
-    
+
     rss_attrs = {"version": "2.0"}
     element_attrs = {}
     def __init__(self,
@@ -282,7 +282,7 @@ class RSS2(WriteXmlMixin):
                  webMaster = None,
                  pubDate = None,  # a datetime, *in* *GMT*
                  lastBuildDate = None, # a datetime
-                 
+
                  categories = None, # list of strings or Category
                  generator = _generator_name,
                  docs = "http://blogs.law.harvard.edu/tech/rss",
@@ -307,7 +307,7 @@ class RSS2(WriteXmlMixin):
         self.webMaster = webMaster
         self.pubDate = pubDate
         self.lastBuildDate = lastBuildDate
-        
+
         if categories is None:
             categories = []
         self.categories = categories
@@ -333,7 +333,7 @@ class RSS2(WriteXmlMixin):
         _element(handler, "description", self.description)
 
         self.publish_extensions(handler)
-        
+
         _opt_element(handler, "language", self.language)
         _opt_element(handler, "copyright", self.copyright)
         _opt_element(handler, "managingEditor", self.managingEditor)
@@ -387,8 +387,8 @@ class RSS2(WriteXmlMixin):
         # output after the three required fields.
         pass
 
-    
-    
+
+
 class RSSItem(WriteXmlMixin):
     """Publish an RSS Item"""
     element_attrs = {}
@@ -404,7 +404,7 @@ class RSSItem(WriteXmlMixin):
                  pubDate = None, # a datetime
                  source = None,  # a Source
                  ):
-        
+
         if title is None and description is None:
             raise TypeError(
                 "must define at least one of 'title' or 'description'")
@@ -434,7 +434,7 @@ class RSSItem(WriteXmlMixin):
             if isinstance(category, basestring):
                 category = Category(category)
             category.publish(handler)
-        
+
         _opt_element(handler, "comments", self.comments)
         if self.enclosure is not None:
             self.enclosure.publish(handler)
@@ -447,10 +447,36 @@ class RSSItem(WriteXmlMixin):
 
         if self.source is not None:
             self.source.publish(handler)
-        
+
         handler.endElement("item")
 
     def publish_extensions(self, handler):
         # Derived classes can hook into this to insert
         # output after the title and link elements
         pass
+
+"""
+Addition from:
+   http://stackoverflow.com/questions/5371704/python-generated-rss-outputting-raw-html
+
+   to enable formatted output in the description field of the feed
+"""
+
+class NoOutput:
+    def __init__(self):
+        pass
+    def publish(self, handler):
+        pass
+
+class FlexRSSItem(RSSItem):
+    def __init__(self, **kwargs):
+        RSSItem.__init__(self, **kwargs)
+
+    def publish(self, handler):
+        self.do_not_autooutput_description = self.description
+        self.description = NoOutput() # This disables the Py2GenRSS "Automatic" output of the description, which would be escaped.
+        RSSItem.publish(self, handler)
+
+    def publish_extensions(self, handler):
+        handler._out.write('<%s>< ![CDATA[%s]]></%s>' % ("description", self.do_not_autooutput_description, "description"))
+
