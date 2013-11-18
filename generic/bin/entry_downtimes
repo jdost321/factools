@@ -135,8 +135,7 @@ def assign_record (record, entry_name, registered, manual, comment):
             else:
                 command = gen_downtime_command( record, entry_name)
                 key, data = 'removable', {'complement': '',
-                                          'command': command,
-                                          'url': ''}
+                                          'command': command}
         else:
             key, data = 'none', {'complement': ''}
     else:
@@ -146,8 +145,7 @@ def assign_record (record, entry_name, registered, manual, comment):
             text = gen_downtime_message(record, entry_name)
             command = gen_downtime_command( record, entry_name)
             key, data = 'new', {'complement': text,
-                                'command': command,
-                                'url': record['url']}
+                                'command': command}
 
     return key, data
 
