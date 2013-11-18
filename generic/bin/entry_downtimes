@@ -75,7 +75,7 @@ def parse_command_line():
         status_list = descriptors.keys()
         if not options.verbose:
             status_list.remove('none')
-    print options.rss
+
     return entries_spec, set(status_list), options.ask, options.send, options.rss
 
 
