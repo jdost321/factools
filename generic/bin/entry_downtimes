@@ -429,9 +429,10 @@ class DowntimesFeed(object):
 def dictpeek (dictionary):
 
     if isinstance(dictionary, dict):
-        key, record = dictionary.popitem()
-        dictionary[key] = record
-        return key, record
+        if dictionary:
+            key, record = dictionary.popitem()
+            dictionary[key] = record
+            return key, record
 
     return None, None
 
