@@ -42,6 +42,7 @@ def main():
     if report:
         present_report( report, ask, send)
 
+    print make_rss
     if make_rss:
         generate_feed( records, rss_file)
 
@@ -77,6 +78,7 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
+    print options.rss
     return entries_spec, set(status_list), options.ask, options.send, options.rss
 
 
