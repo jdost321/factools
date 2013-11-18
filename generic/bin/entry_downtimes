@@ -124,7 +124,7 @@ def build_records (entries_config, downtimes):
             records[key] = {}
         records[key][entry_name] = data
         if advertisement:
-            print advertisement.keys()
+            print advertisement[entry_name].keys()
             print data.keys()
 
     return records
