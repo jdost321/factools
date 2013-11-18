@@ -149,8 +149,9 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
             key, data = 'new', {'complement': text,
                                 'command': command}
         if not manual:
-            host = advertisement.keys()[0]
-            data['url'] = advertisement[host]['url']
+            host, downtime_ad = dictpeek(advertisement)
+            if host:
+                data['url'] = advertisement[host]['url']
 
     return key, data
 
@@ -424,6 +425,15 @@ class DowntimesFeed(object):
 
     def write (self):
         self.rss.write_xml( open( self.filename, "w"))
+
+def dictpeek (dictionary):
+
+    if isinstance(dictionary, dict):
+        key, record = dictionary.popitem()
+        dictionary[key] = record
+        return key, record
+
+    return None, None
 
 if __name__ == "__main__":
     sys.exit (main())
