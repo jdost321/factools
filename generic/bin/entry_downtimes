@@ -151,10 +151,6 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
             if host:
                 data['url'] = advertisement[host]['url']
 
-        if not registered and not manual:
-            print advertisement
-            print "Must have an URL:", ('url' in data)
-
     return key, data
 
 def generate_report (records, status_list):
@@ -417,13 +413,17 @@ class DowntimesFeed(object):
 
     def add_record (self, entry_name, record, status):
 
+        template = "{0}\n\n Suggested command:\n{1}"
+        description = template.format( record['complement'],
+                                       record['command'] )
+
         self.rss.items.append( rssgen.RSSItem(
                 title = "{0} downtime for {1}".format(status.capitalize(),
                                                       entry_name),
                 link = record['url'],
                 guid = rssgen.Guid(record['url']),
                 pubDate = datetime.now(),
-                description = record['command'] ))
+                description = description ))
 
     def write (self):
         self.rss.write_xml( open( self.filename, "w"))
