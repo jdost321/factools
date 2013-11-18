@@ -124,19 +124,20 @@ def build_records (entries_config, downtimes):
             records[key] = {}
         records[key][entry_name] = data
         if advertisement:
-            print advertisement[entry_name].keys()
+            key = advertisement.keys()[0]
+            print advertisement[key].keys()
             print data.keys()
 
     return records
 
-def assign_record (record, entry_name, registered, manual, comment):
+def assign_record (advertisement, entry_name, registered, manual, comment):
 
-    if record is None:
+    if advertisement is None:
         if registered:
             if manual:
                 key, data = 'manual', {'complement': comment.strip('#; ')}
             else:
-                command = gen_downtime_command( record, entry_name)
+                command = gen_downtime_command( advertisement, entry_name)
                 key, data = 'removable', {'complement': '',
                                           'command': command}
         else:
@@ -145,11 +146,11 @@ def assign_record (record, entry_name, registered, manual, comment):
         if registered:
             key, data = 'ongoing', {'complement': ''}
         else:
-            text = gen_downtime_message(record, entry_name)
-            command = gen_downtime_command( record, entry_name)
+            text = gen_downtime_message(advertisement, entry_name)
+            command = gen_downtime_command( advertisement, entry_name)
             key, data = 'new', {'complement': text,
                                 'command': command,
-                                'url': record['url']}
+                                'url': advertisement['url']}
 
     return key, data
 
