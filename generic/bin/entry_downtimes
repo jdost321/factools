@@ -431,8 +431,7 @@ class DowntimesFeed(object):
 
     def wrap_description (self, description):
         broken = '<br>'.join( description.splitlines() )
-        out = "<![CDATA[\n{0}\n]]>".format(broken)
-        return out
+        return broken
 
 def dictpeek (dictionary):
 
