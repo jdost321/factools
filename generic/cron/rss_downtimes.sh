@@ -2,9 +2,9 @@
 
 source ~/.bash_profile
 
-script_dir=$( cd $(dirname $0); pwd -P )
-tool="${script_dir}/../bin/entry_downtimes"
+script_dir=$( cd $(dirname $0)/../bin; pwd -P )
 
 date
-$tool --rss 
+echo "Running from ${script_dir}"
+${script_dir}/entry_downtimes --rss 
 
