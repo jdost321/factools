@@ -148,10 +148,9 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
             command = gen_downtime_command( advertisement, entry_name)
             key, data = 'new', {'complement': text,
                                 'command': command}
-            """if not manual:
-                host = advertisement.keys()[0]
-                data['url'] = advertisement[host]['url']
-            """
+        if not manual:
+            host = advertisement.keys()[0]
+            data['url'] = advertisement[host]['url']
 
     return key, data
 
