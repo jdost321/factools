@@ -120,6 +120,7 @@ def build_records (entries_config, downtimes):
         key, data = assign_record( record, entry_name, registered, manual,
                                    comment)
 
+        print record.keys()
         if key not in records:
             records[key] = {}
         records[key][entry_name] = data
