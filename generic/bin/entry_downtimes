@@ -26,6 +26,8 @@ descriptors = {'manual': "Manually registered downtimes",
                'ongoing': "Ongoing downtimes already registered in this factory",
                'removable': "Registered downtimes that have finished and can be removed" }
 
+rss_file = '/tmp/downtimes_feed.xml'
+
 def main():
 
     entries_spec, status_list, ask, send, make_rss = parse_command_line()
@@ -41,7 +43,6 @@ def main():
         present_report( report, ask, send)
 
     if make_rss:
-        rss_file = '/tmp/downtimes_feed.xml'
         generate_feed( records, rss_file)
 
     return 0
