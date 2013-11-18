@@ -120,11 +120,12 @@ def build_records (entries_config, downtimes):
         key, data = assign_record( record, entry_name, registered, manual,
                                    comment)
 
-        print record
         if key not in records:
             records[key] = {}
         records[key][entry_name] = data
-        print data.keys()
+        if record:
+            print record
+            print data.keys()
 
     return records
 
@@ -147,7 +148,8 @@ def assign_record (record, entry_name, registered, manual, comment):
             text = gen_downtime_message(record, entry_name)
             command = gen_downtime_command( record, entry_name)
             key, data = 'new', {'complement': text,
-                                'command': command}
+                                'command': command,
+                                'url': record['url']}
 
     return key, data
 
