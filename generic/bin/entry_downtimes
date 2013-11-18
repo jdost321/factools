@@ -404,14 +404,14 @@ class DowntimesFeed(object):
         self.filename = rss_file
         self.rss = rssgen.RSS2(
             title = "GlideinWMS Factory Downtimes Advertisements",
-            link = "http://vocms32.cern.ch/downtimes.xml",
+            link = "http://vocms32.cern.ch/gfactory/rss_downtimes.xml",
             description = "List of recently advertised entry (queue) downtimes, "
             "obtained from GOCDB and OIM.",
             lastBuildDate = datetime.now(),
             items = [])
 
     def add_record (self, entry_name, record, status):
-
+        print record.keys()
         self.rss.items.append( rssgen.RSSItem(
                 title = "{0} downtime for {1}".format(status, entry_name),
                 link = record['url'],
