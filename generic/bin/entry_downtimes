@@ -128,7 +128,6 @@ def build_records (entries_config, downtimes):
 
 def assign_record (advertisement, entry_name, registered, manual, comment):
 
-    print advertisement, registered, manual
     if advertisement is None:
         if registered:
             if manual:
@@ -146,8 +145,10 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
             text = gen_downtime_message(advertisement, entry_name)
             command = gen_downtime_command( advertisement, entry_name)
             key, data = 'new', {'complement': text,
-                                'command': command,
-                                'url': ''}
+                                'command': command}
+            if not manual:
+                host = advertisement.keys()[0]
+                data['url'] = advertisement[host]['url']
 
     return key, data
 
