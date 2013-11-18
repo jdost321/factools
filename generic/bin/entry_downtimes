@@ -42,7 +42,6 @@ def main():
     if report:
         present_report( report, ask, send)
 
-    print make_rss
     if make_rss:
         generate_feed( records, rss_file)
 
@@ -78,7 +77,6 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
-    print options.rss
     return entries_spec, set(status_list), options.ask, options.send, options.rss
 
 
@@ -419,11 +417,7 @@ class DowntimesFeed(object):
                 description = record['command'] ))
 
     def write (self):
-        sio = StringIO.StringIO()
         self.rss.write_xml( open( self.filename, "w"))
-        self.rss.write_xml( sio)
-        print sio.getvalue()
-
 
 if __name__ == "__main__":
     sys.exit (main())
