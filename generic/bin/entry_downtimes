@@ -9,6 +9,7 @@ import sys
 import getpass
 import smtplib
 import socket
+import StringIO
 from email.mime.text import MIMEText
 from datetime import datetime
 
@@ -25,8 +26,6 @@ descriptors = {'manual': "Manually registered downtimes",
                'ongoing': "Ongoing downtimes already registered in this factory",
                'removable': "Registered downtimes that have finished and can be removed" }
 
-rss_file = '/tmp/downtimes_feed.xml'
-
 def main():
 
     entries_spec, status_list, ask, send, make_rss = parse_command_line()
@@ -42,6 +41,7 @@ def main():
         present_report( report, ask, send)
 
     if make_rss:
+        rss_file = '/tmp/downtimes_feed.xml'
         generate_feed( records, rss_file)
 
     return 0
@@ -371,8 +371,8 @@ def generate_feed (records, rss_file):
     with_commands = {}
     there_are_commands = False
 
-    all_keys = set(records.keys())
     status_list = set(['new', 'removable'])
+    all_keys = set(records.keys())
     empty_keys = set( filter_dict( lambda key, val: not val, records).keys() )
     included_keys = status_list & (all_keys - empty_keys)
 
@@ -416,7 +416,10 @@ class DowntimesFeed(object):
                 description = record['command'] ))
 
     def write (self):
+        sio = StringIO.StringIO()
         self.rss.write_xml( open( self.filename, "w"))
+        self.rss.write_xml( sio)
+        print sio.getvalue()
 
 
 if __name__ == "__main__":
