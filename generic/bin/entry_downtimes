@@ -438,7 +438,11 @@ class DowntimesFeed(object):
             lines.append("</p>")
 
         lines.append("<p>Suggested commands:</p>")
-        lines.append("<p>{0}</p>".format(command))
+        cmd_lines = [ "{0}<br>".format(l)
+                     for l in command.strip().splitlines() ]
+        lines.append("<p>")
+        lines.extend(cmd_lines)
+        lines.append("</p>")
 
         return ''.join(lines)
 
