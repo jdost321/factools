@@ -422,7 +422,7 @@ class DowntimesFeed(object):
                 title = "{0} downtime for {1}".format(status.capitalize(),
                                                       entry_name),
                 link = record['url'] if 'url' in record else None,
-                guid = rssgen.Guid(random.randint(1, 2**16), False),
+                guid = rssgen.Guid(str(random.randint(1, 2**16)), False),
                 pubDate = datetime.now(),
                 description = text )
             )
