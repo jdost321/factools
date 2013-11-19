@@ -429,7 +429,7 @@ class DowntimesFeed(object):
                 description = text )
             )
 
-    def format_description (self, complement, command):
+    def format_description (self, complement, commands):
 
         lines = []
 
@@ -441,11 +441,9 @@ class DowntimesFeed(object):
             lines.append("</p>")
 
         lines.append("<p>Suggested commands:</p>")
-        cmd_lines = [ "{0}<br>".format(l)
-                     for l in command.strip().splitlines() ]
-        lines.append("<p>")
-        lines.extend(cmd_lines)
-        lines.append("</p>")
+        lines.append("<pre>")
+        lines.append(commands)
+        lines.append("</pre>")
 
         return ''.join(lines)
 
