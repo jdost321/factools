@@ -431,7 +431,7 @@ class DowntimesFeed(object):
         lines = []
 
         info = [ "<b>{0}</b>: {1}<br>".format(*l.split(':', 1))
-                for l in complement.strip().splitlines() ] )
+                for l in complement.strip().splitlines() ]
         if info:
             lines.append("<p>")
             lines.extend(info)
