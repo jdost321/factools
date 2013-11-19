@@ -417,12 +417,13 @@ class DowntimesFeed(object):
 
         text = self.format_description( record['complement'],
                                         record['command'] )
+        guid = str( random.randint( 1, 2**64))
 
         self.rss.items.append( rssgen.FlexRSSItem(
                 title = "{0} downtime for {1}".format(status.capitalize(),
                                                       entry_name),
                 link = record['url'] if 'url' in record else None,
-                guid = rssgen.Guid(str(random.randint(1, 2**16)), False),
+                guid = rssgen.Guid(guid, isPermaLink = False),
                 pubDate = datetime.now(),
                 description = text )
             )
