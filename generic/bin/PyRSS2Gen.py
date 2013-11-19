@@ -478,5 +478,5 @@ class FlexRSSItem(RSSItem):
         RSSItem.publish(self, handler)
 
     def publish_extensions(self, handler):
-        handler._out.write('<%s>< ![CDATA[%s]]></%s>' % ("description", self.do_not_autooutput_description, "description"))
+        handler._out.write('<%s><![CDATA[%s]]></%s>' % ("description", self.do_not_autooutput_description, "description"))
 

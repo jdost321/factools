@@ -135,8 +135,7 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
             else:
                 command = gen_downtime_command( advertisement, entry_name)
                 key, data = 'removable', {'complement': '',
-                                          'command': command,
-                                          'url': ''}
+                                          'command': command}
         else:
             key, data = 'none', {'complement': ''}
     else:
@@ -416,16 +415,20 @@ class DowntimesFeed(object):
     def add_record (self, entry_name, record, status):
 
         template = "{0}\n\n Suggested command:\n{1}"
-        text = template.format( record['complement'],
-                                record['command'] )
+        lines = template.format( record['complement'],
+                                record['command'] )\
+                        .strip().splitlines()
+        description = ''.join( [ "<p>{0}</p>".format(l)
+                                 for l in lines ] )
 
         self.rss.items.append( rssgen.FlexRSSItem(
                 title = "{0} downtime for {1}".format(status.capitalize(),
                                                       entry_name),
-                link = record['url'],
-                guid = rssgen.Guid(record['url']),
+                link = record['url'] if 'url' in record else None,
+                guid = rssgen.Guid(record['url']) if 'url' in record else None,
                 pubDate = datetime.now(),
-                description = '<br>'.join(text.splitlines()) )
+                description = description )
+            )
         )
 
     def write (self):
