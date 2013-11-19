@@ -414,12 +414,8 @@ class DowntimesFeed(object):
 
     def add_record (self, entry_name, record, status):
 
-        template = "{0}\n\n Suggested command:\n{1}"
-        lines = template.format( record['complement'],
-                                record['command'] )\
-                        .strip().splitlines()
-        description = ''.join( [ "<p>{0}</p>".format(l)
-                                 for l in lines ] )
+        text = self.format_description( record['complement'],
+                                        record['command'] )
 
         self.rss.items.append( rssgen.FlexRSSItem(
                 title = "{0} downtime for {1}".format(status.capitalize(),
@@ -427,8 +423,24 @@ class DowntimesFeed(object):
                 link = record['url'] if 'url' in record else None,
                 guid = rssgen.Guid(record['url']) if 'url' in record else None,
                 pubDate = datetime.now(),
-                description = description )
+                description = text )
             )
+
+    def format_description (self, complement, command):
+
+        lines = []
+
+        info = [ "<b>{0}</b>: {1}<br>".format(*l.split(':', 1))
+                for l in complement.strip().splitlines() ] )
+        if info:
+            lines.append("<p>")
+            lines.extend(info)
+            lines.append("</p>")
+
+        lines.append("<p>Suggested commands:</p>")
+        lines.append("<p>{0}</p>".format(command))
+
+        return ''.join(lines)
 
     def write (self):
         self.rss.write_xml( open( self.filename, "w"))
