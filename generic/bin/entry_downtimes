@@ -429,7 +429,6 @@ class DowntimesFeed(object):
                 pubDate = datetime.now(),
                 description = description )
             )
-        )
 
     def write (self):
         self.rss.write_xml( open( self.filename, "w"))
