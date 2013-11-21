@@ -28,6 +28,7 @@ descriptors = {'manual': "Manually registered downtimes",
                'removable': "Registered downtimes that have finished and can be removed" }
 
 rss_file = '/tmp/downtimes_feed.xml'
+rss_url = "http://gfactory-1.t2.ucsd.edu/osg_gfactory/rss_downtimes.xml"
 
 def main():
 
@@ -44,7 +45,7 @@ def main():
         present_report( report, ask, send)
 
     if make_rss:
-        generate_feed( records, rss_file)
+        generate_feed( records, rss_file, rss_url)
 
     return 0
 
@@ -372,7 +373,7 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
 
     return '\n'.join(line_list)
 
-def generate_feed (records, rss_file):
+def generate_feed (records, rss_file, rss_url):
 
     with_commands = {}
     there_are_commands = False
@@ -391,7 +392,7 @@ def generate_feed (records, rss_file):
 
     if there_are_commands:
 
-        feed = DowntimesFeed(rss_file)
+        feed = DowntimesFeed(rss_file, rss_url)
 
 
         for status, records in with_commands.items():
@@ -402,12 +403,12 @@ def generate_feed (records, rss_file):
 
 class DowntimesFeed(object):
 
-    def __init__ (self, rss_file):
+    def __init__ (self, rss_file, rss_url):
 
         self.filename = rss_file
         self.rss = rssgen.RSS2(
             title = "GlideinWMS Factory Downtimes Advertisements",
-            link = "http://gfactory-1.t2.ucsd.edu/osg_gfactory/rss_downtimes.xml",
+            link = rss_url,
             description = "List of recently advertised entry (queue) downtimes, "
             "obtained from GOCDB and OIM.",
             lastBuildDate = datetime.now(),
