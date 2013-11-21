@@ -27,8 +27,9 @@ descriptors = {'manual': "Manually registered downtimes",
                'ongoing': "Ongoing downtimes already registered in this factory",
                'removable': "Registered downtimes that have finished and can be removed" }
 
-rss_file = '/tmp/downtimes_feed.xml'
-rss_url = "http://gfactory-1.t2.ucsd.edu/osg_gfactory/rss_downtimes.xml"
+rss_file = "rss_downtimes.xml"
+rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
+rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
 
 def main():
 
@@ -45,7 +46,7 @@ def main():
         present_report( report, ask, send)
 
     if make_rss:
-        generate_feed( records, rss_file, rss_url)
+        generate_feed( records, rss_path, rss_url)
 
     return 0
 
@@ -63,7 +64,7 @@ def parse_command_line():
     parser.add_option ('-u', '--updates', action='store_true', default=False,
                        help="If present, displays only recent downtime events.")
     parser.add_option ('-r', '--rss', action='store_true', default=False,
-                       help="If present, generates an RSS feed file to {0}.".format(rss_file))
+                       help="If present, generates an RSS feed file to {0}.".format(rss_path))
 
     options, args = parser.parse_args()
 
@@ -373,7 +374,7 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
 
     return '\n'.join(line_list)
 
-def generate_feed (records, rss_file, rss_url):
+def generate_feed (records, rss_file_path, rss_url):
 
     with_commands = {}
     there_are_commands = False
@@ -392,7 +393,7 @@ def generate_feed (records, rss_file, rss_url):
 
     if there_are_commands:
 
-        feed = DowntimesFeed(rss_file, rss_url)
+        feed = DowntimesFeed(rss_file_path, rss_url)
 
 
         for status, records in with_commands.items():
@@ -403,9 +404,9 @@ def generate_feed (records, rss_file, rss_url):
 
 class DowntimesFeed(object):
 
-    def __init__ (self, rss_file, rss_url):
+    def __init__ (self, rss_file_path, rss_url):
 
-        self.filename = rss_file
+        self.filename = rss_file_path
         self.rss = rssgen.RSS2(
             title = "GlideinWMS Factory Downtimes Advertisements",
             link = rss_url,
