@@ -407,6 +407,7 @@ class DowntimesFeed(object):
         self.filename = rss_file
         self.rss = rssgen.RSS2(
             title = "GlideinWMS Factory Downtimes Advertisements",
+            link = "http://gfactory-1.t2.ucsd.edu/osg_gfactory/rss_downtimes.xml",
             description = "List of recently advertised entry (queue) downtimes, "
             "obtained from GOCDB and OIM.",
             lastBuildDate = datetime.now(),
