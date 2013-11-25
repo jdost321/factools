@@ -265,8 +265,7 @@ def gen_downtime_command (downtime_record, entry_name):
     if downtime_record:
         downtime_line = "{start}{s: <5s}{end}{s: <5s}{entry}{s: <2s}All{s: <18s}All{s: <18s}# _ad_ {comment}"
         command_body = ( "echo '{line}' >> $GLIDEIN_FACTORY_DIR/glideinWMS.downtimes; "
-                         "entry_rm {entry} -const 'jobstatus!=2'; "
-                         "echo 'entry_rm {entry} -forcex' | at now + 10 min")
+                         "entry_rm {entry} -const 'jobstatus!=2'")
 
         hostname, record = dictpeek(downtime_record)
 
