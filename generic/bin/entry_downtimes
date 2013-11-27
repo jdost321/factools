@@ -411,7 +411,7 @@ class DowntimesFeed(object):
             link = rss_url,
             description = "List of recently advertised entry (queue) downtimes, "
             "obtained from GOCDB and OIM.",
-            lastBuildDate = datetime.now(),
+            lastBuildDate = datetime.utcnow(),
             items = [])
 
     def add_record (self, entry_name, record, status):
@@ -426,7 +426,7 @@ class DowntimesFeed(object):
                                                       entry_name),
                 link = url if url else None,
                 guid = rssgen.Guid(guid, isPermaLink = False),
-                pubDate = datetime.now(),
+                pubDate = datetime.utcnow(),
                 description = text )
             )
 
