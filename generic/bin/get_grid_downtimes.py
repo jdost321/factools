@@ -64,7 +64,7 @@ def get_osg():
         url_id = record['ID']
 
         downtimes_out[host] = {'start': start, 'end': end,
-                               'description':description,
+                               'description': description,
                                'url': url_id}
 
     return downtimes_out

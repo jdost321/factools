@@ -237,8 +237,14 @@ def get_downtime (entry_name, target_hosts, downtimes):
 
             record = filter_dict( lambda key, val: key == host_name, records)
             if record:
+                record[host_name]['description'] = federation
                 record[host_name]['federation'] = federation
                 record[host_name]['host_type'] = host_type
+
+                description = record[host_name]['description']
+                description = description.replace('"', "'")
+                record[host_name]['description'] = description
+
                 return record
 
     return None
@@ -264,7 +270,7 @@ def gen_downtime_command (downtime_record, entry_name):
 
     if downtime_record:
         downtime_line = "{start}{s: <5s}{end}{s: <5s}{entry}{s: <2s}All{s: <18s}All{s: <18s}# _ad_ {comment}"
-        command_body = ( "echo '{line}' >> $GLIDEIN_FACTORY_DIR/glideinWMS.downtimes; "
+        command_body = ( """echo "{line}" >> $GLIDEIN_FACTORY_DIR/glideinWMS.downtimes; """
                          "entry_rm {entry} -const 'jobstatus!=2'")
 
         hostname, record = dictpeek(downtime_record)
