@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from dateutil.tz import tzutc
+from dateutil.parser import parse as parse_timestamp
 import urllib2
 
 import xmltodict
@@ -37,9 +38,11 @@ def get_egi():
         description = record['DESCRIPTION']
         start = datetime.fromtimestamp (int (record['START_DATE']), tzutc())
         end = datetime.fromtimestamp (int (record['END_DATE']), tzutc())
+        url = record['GOCDB_PORTAL_URL']
 
         downtimes_out[host] = {'start': start, 'end': end,
-                               'description':description}
+                               'description':description,
+                               'url': url}
 
     return downtimes_out
 
@@ -55,11 +58,14 @@ def get_osg():
 
         host = record['ResourceFQDN']
         description = record['Description']
-        start = datetime.strptime (record['StartTime'].replace(" UTC",''), "%b %d, %Y %H:%M:%S").replace(tzinfo=tzutc())
-        end = datetime.strptime (record['EndTime'].replace(" UTC",''), "%b %d, %Y %H:%M:%S").replace(tzinfo=tzutc())
+        start = parse_timestamp(record['StartTime']).astimezone(tzutc())
+        end = parse_timestamp(record['EndTime']).astimezone(tzutc())
+        #TODO: Build the direct url that relates to this OIM record ID
+        url_id = record['ID']
 
         downtimes_out[host] = {'start': start, 'end': end,
-                               'description':description}
+                               'description': description,
+                               'url': url_id}
 
     return downtimes_out
 
