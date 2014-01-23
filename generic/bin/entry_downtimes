@@ -65,7 +65,7 @@ def parse_command_line():
                        help="If present, displays only recent downtime events.")
     parser.add_option ('-r', '--rss', action='store_true', default=False,
                        help="If present, generates an RSS feed file to {0}.".format(rss_path))
-    parser.add_option ('-l', '--one-line', dest="oneline", default=False,
+    parser.add_option ('-l', '--one-line', dest="oneline", action='store_true', default=False,
                        help="If present, prints all suggested commands in a single line, separated by colons.")
 
     options, args = parser.parse_args()
