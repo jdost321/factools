@@ -33,14 +33,14 @@ rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
 
 def main():
 
-    entries_spec, status_list, ask, send, make_rss = parse_command_line()
+    entries_spec, status_list, ask, send, make_rss, one_line = parse_command_line()
 
     entries = gather_entries( entries_spec)
     downtimes = {"EGI": get_egi(),
                  "OSG": get_osg()}
 
     records = build_records( entries, downtimes)
-    report = generate_report( records, status_list)
+    report = generate_report( records, status_list, one_line)
 
     if report:
         present_report( report, ask, send)
@@ -65,6 +65,8 @@ def parse_command_line():
                        help="If present, displays only recent downtime events.")
     parser.add_option ('-r', '--rss', action='store_true', default=False,
                        help="If present, generates an RSS feed file to {0}.".format(rss_path))
+    parser.add_option ('-l', '--one-line', dest="oneline", default=False,
+                       help="If present, prints all suggested commands in a single line, separated by colons.")
 
     options, args = parser.parse_args()
 
@@ -80,7 +82,7 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
-    return entries_spec, set(status_list), options.ask, options.send, options.rss
+    return entries_spec, set(status_list), options.ask, options.send, options.rss, options.oneline
 
 
 def gather_entries (entries_spec):
@@ -156,7 +158,7 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
 
     return key, data
 
-def generate_report (records, status_list):
+def generate_report (records, status_list, one_line):
 
     lines = []
     with_commands = {}
@@ -202,15 +204,26 @@ def generate_report (records, status_list):
             there_are_commands |= bool(with_commands[status])
 
     if there_are_commands:
+
         lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for status in included_keys:
-            for entry_name, record in sorted(with_commands[status].items(), key=sorter):
-                lines.append(record['command'])
+        single_line = []
 
-            if with_commands[status]:
-                lines.append('')
+        for status in included_keys:
+            if one_line:
+                for entry_name, record in sorted(with_commands[status].items(), key=sorter):
+                    single_line.append(record['command'])
+
+            else:
+                for entry_name, record in sorted(with_commands[status].items(), key=sorter):
+                    lines.append(record['command'])
+
+                if with_commands[status]:
+                    lines.append('')
+
+        if one_line:
+            lines.append( '; '.join(single_line) )
 
     return '\n'.join(lines)
 
