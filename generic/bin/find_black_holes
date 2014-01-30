@@ -1,0 +1,292 @@
+#!/usr/bin/python
+
+import os
+import stat
+import sys
+import subprocess
+import tempfile
+import xml.parsers.expat
+import fnmatch
+import time
+
+''' This script gathers stats for empty logs and possible black holes
+and generates relevant debugging info.
+
+entry data is stored in a dictionary of the form:
+entry_dict =
+{
+  'name': entry_name
+  'tot':[tot_jobs, num_empty, num_short, percent_empty, percent_short],
+  'frontends':
+  {
+    'fe1_name':
+    {
+      # per-frontend stats
+      'stats': [tot_jobs, num_empty, num_short, percent_empty, percent_short],
+      'samples': [list of relevant condor_activity lines for 3 example short jobs]
+    }
+    'fe2_name': ...
+  }
+}
+
+ent_stat is a list of entry_dicts and can be arbitrarily sorted before
+generating report by setting sort key function
+'''
+# Max time to be counted as black hole
+BH_MAX_TIME = 20 * 60
+
+# dimensions for report
+ENTRY_WIDTH = 42
+FE_WIDTH = 11
+
+def start_element(name, attrs):
+    global job_dict
+    global ent_dict
+
+    if name == 'job':
+        ent_dict['tot'][0] += 1
+        user = attrs['username']
+
+        if user not in ent_dict['frontends']:
+            ent_dict['frontends'][user] = {'stats': [0,0,0]}
+        ent_dict['frontends'][user]['stats'][0] += 1
+
+        if attrs['condor_started'] == 'False':
+            cluster,proc = attrs['id'].split(".")
+            err_log =  os.path.join(gfactory_dir, "client_log/user_%s/entry_%s/job.%s.%i.err" % (user,entry,cluster,int(proc)))
+
+            # if doesn't exist just skip for now.
+            try:
+                s = os.stat(err_log)
+            except OSError:
+                return
+
+            if s[stat.ST_SIZE] == 0:
+                if user not in job_dict:
+                    job_dict[user] = set()
+
+                job_dict[user].add(attrs['id'])
+
+                ent_dict['tot'][1] += 1
+                ent_dict['frontends'][user]['stats'][1] += 1
+    
+# obtain a list of condor_activity* logs to mine. reverse ordered by date,
+# assumption being most of the job info is contained in most recent logs
+# to reduce mining overhead
+def get_cond_logs(gfactory_dir, user, entry):
+    client_dir =  os.path.join(gfactory_dir, "client_log/user_%s/entry_%s" % (user,entry))
+
+    log_list = []
+    for f in  os.listdir(client_dir):
+        if fnmatch.fnmatch(f, 'condor_activity_*'):
+            abs_path = "%s/%s" % (client_dir, f)
+            s = os.stat(abs_path)
+            log_list.append((s[stat.ST_MTIME],abs_path))
+
+    log_list.sort(reverse=True)
+    return [l[1] for l in log_list]
+
+# returns tuple of number of short jobs and sample_queue,
+# a list of relevant condor_activity lines for 3 most recent short jobs
+# removes job id's from job_set when found for efficiency
+def parse_cond_log(f, job_set):
+    sample_queue = []
+    n_short = 0
+    job_states = {}
+    cur_id = -1
+    grid_state = False
+    fin = open(f)
+    for line in fin:
+        if grid_state:
+            if line == '...\n':
+                grid_state = False
+            else:
+                job_states[cur_id][1].append(line)
+        elif line.startswith('000'):
+            id = line.split()[1][1:-5]
+            if id in job_set:
+                job_states[id] = [[],[],[],[]]
+                job_states[id][0] = [line]
+                #print "job submit: %s" % id
+        elif line.startswith('027'):
+            id = line.split()[1][1:-5]
+            if id in job_set:
+                job_states[id][1] = [line]
+                #print "job submit grid: %s" % id
+                cur_id = id
+                grid_state = True
+        elif line.startswith('001'):
+            id = line.split()[1][1:-5]
+            if id in job_set:
+                job_states[id][2] = [line]
+                #print "job start: %s" % id
+        elif line.startswith('005'):
+            id = line.split()[1][1:-5]
+            if id in job_set:
+                job_states[id][3] = [line]
+                #print "job term: %s" % id
+
+                # for now give arbitrary year to calculate in seconds
+                # this will cause weirdness Dec 31 around midnight
+                # also skip worrying about DST changes for now too
+                strt_arr = job_states[id][2][0].split()
+                strt_time = time.mktime(time.strptime("%s %s 2014" % (strt_arr[2],strt_arr[3]), "%m/%d %X %Y"))
+                end_arr = job_states[id][3][0].split()
+                end_time = time.mktime(time.strptime("%s %s 2014" % (end_arr[2],end_arr[3]), "%m/%d %X %Y"))
+
+                # do nothing if negative (can happen Dec 31)
+                if end_time - strt_time >= 0 and end_time - strt_time <= BH_MAX_TIME:
+                    n_short += 1
+                    if len(sample_queue) == 3:
+                        sample_queue.pop(0)
+                    sample_queue.append(job_states[id])
+                        
+                del job_states[id]
+                job_set.remove(id)
+
+    fin.close()
+
+    return (n_short,sample_queue)
+
+# calculate and append percent_empty and percent_short values to stats lists
+def calc_percent(ent_stats):
+    for es in ent_stats:
+        if es['tot'][0] > 0:
+            es['tot'].append(es['tot'][1] / float(es['tot'][0]) * 100)
+            es['tot'].append(es['tot'][2] / float(es['tot'][0]) * 100)
+        else:
+            es['tot'].append(0.)
+            es['tot'].append(0.)
+        for user in es['frontends']:
+            if es['frontends'][user]['stats'][0] > 0:
+                es['frontends'][user]['stats'].append(es['frontends'][user]['stats'][1] / float(es['frontends'][user]['stats'][0]) * 100)
+                es['frontends'][user]['stats'].append(es['frontends'][user]['stats'][2] / float(es['frontends'][user]['stats'][0]) * 100)
+            else:
+                es['frontends'][user]['stats'].append(0.)
+                es['frontends'][user]['stats'].append(0.)
+
+########
+#
+# main
+#
+########
+
+date = sys.argv[1]
+
+if 'GLIDEIN_FACTORY_DIR' in os.environ:
+    gfactory_dir = os.environ['GLIDEIN_FACTORY_DIR']
+else:
+    gfactory_dir = "."
+
+curdir=os.getcwd()
+
+try:
+    os.chdir(gfactory_dir) # to make analyze_entries happy
+except OSError, e:
+    print "Dir '%s' not a valid factory dir: %s"%(gfactory_dir, e)
+    sys.exit(1)
+
+(out, err) = subprocess.Popen(['analyze_entries', '--nb'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+
+os.chdir(curdir)
+
+# to collect stats
+ent_stats = []
+
+# keep track of all frontends encountered
+users  = set()
+
+for line in out.splitlines()[9:]:
+    if line == "":
+        break
+    line_arr = line.split()
+    if line_arr[1] == "0%":
+        continue
+    entry = line_arr[0]
+
+    comp_jobs_log = os.path.join(gfactory_dir, "log/entry_%s/completed_jobs_%s.log" % (entry, date))
+
+    # for now just skip if can't find it
+    try:
+        fin = open(comp_jobs_log)
+    except IOError:
+        continue
+    
+    # init job dict each time we parse xml
+    job_dict = {}
+
+    # to tally statistics for this entry
+    ent_dict = {'name': entry, 'tot': [0,0,0], 'frontends': {}}
+
+    # write into a temporary xml file and add root tags to make expat happy
+    tmp = tempfile.TemporaryFile()
+    tmp.write("<r>")
+
+    for line in fin:
+        tmp.write(line)
+    fin.close()
+
+    tmp.write("</r>")
+
+    tmp.flush()
+
+    tmp.seek(0)
+
+    # expat is stupid and can only open one file in its lifetime
+    # so create a new one for every iteration
+    xmlparser = xml.parsers.expat.ParserCreate()
+    xmlparser.StartElementHandler = start_element
+
+    xmlparser.ParseFile(tmp)
+    tmp.close()
+
+    #print "parsing for entry: %s" % entry
+    for user in job_dict:
+        users.add(user)
+        #print "parsing for user: %s" % user
+
+        log_list = get_cond_logs(gfactory_dir, user, entry)
+
+        user_samples = []
+        for f in log_list:
+            #print f
+            log_short,log_samples = parse_cond_log(f, job_dict[user])
+            ent_dict['tot'][2] += log_short
+            ent_dict['frontends'][user]['stats'][2] += log_short
+
+            if len(user_samples) < 3:
+                for s in log_samples:
+                    user_samples.append(s)
+                    if len(user_samples) == 3:
+                        break
+
+            # stop searching if we found all the jobs
+            if len(job_dict[user]) == 0:
+                break
+
+        ent_dict['frontends'][user]['samples'] = user_samples
+
+    ent_stats.append(ent_dict)
+
+# now we add all the users to make the entry stats uniform
+for user in users:
+    for es in ent_stats:
+        if user not in es['frontends']:
+            es['frontends'][user] = {'stats':[0,0,0]}
+
+calc_percent(ent_stats)
+
+ent_stats.sort(key=lambda x: x['tot'][4], reverse=True)
+
+user_list = list(users)
+user_list.sort()
+
+# generate report
+print "%*s%*s | %s" % (ENTRY_WIDTH, "", FE_WIDTH, 'tot','frontends')
+print "%*s%*s%s" % (ENTRY_WIDTH, "", FE_WIDTH, "", "".join([" | %-*s" % (FE_WIDTH,fe) for fe in user_list]))
+print "%*s%-*s%s%s" % (ENTRY_WIDTH, "", FE_WIDTH - 4, 'empt','shrt',"".join([" | %-*s%s" % (FE_WIDTH - 4, "empt", "shrt") for u in user_list]))
+
+for es in ent_stats:
+    line_start = "%-*s %3i%*i" % (ENTRY_WIDTH, es['name'], es['tot'][3], FE_WIDTH - 4, es['tot'][4])
+    fe_strings = [" |  %3i%*i" % (es['frontends'][fe]['stats'][3], FE_WIDTH - 4, es['frontends'][fe]['stats'][4]) for fe in user_list]
+    print "%s%s" % (line_start, "".join(fe_strings))
