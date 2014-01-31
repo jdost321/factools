@@ -1,7 +1,8 @@
 #!/usr/bin/env python2.6
 
+import calendar
 import copy
-from datetime import datetime, timedelta
+import json
 import os
 import optparse
 import pytz
@@ -12,7 +13,7 @@ import smtplib
 import socket
 import StringIO
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import tzlocal as tzl
 from dateutil.tz import tzutc
@@ -30,15 +31,14 @@ descriptors = {'manual': "Manually registered downtimes",
 rss_file = "rss_downtimes.xml"
 rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
 rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
+downtimes_cache_file = "/tmp/.downtimes.cache"
 
 def main():
 
     entries_spec, status_list, ask, send, make_rss, one_line = parse_command_line()
 
     entries = gather_entries( entries_spec)
-    downtimes = {"EGI": get_egi(),
-                 "OSG": get_osg()}
-
+    downtimes = get_downtimes( downtimes_cache_file, 20)
     records = build_records( entries, downtimes)
     report = generate_report( records, status_list, one_line)
 
@@ -84,7 +84,6 @@ def parse_command_line():
 
     return entries_spec, set(status_list), options.ask, options.send, options.rss, options.oneline
 
-
 def gather_entries (entries_spec):
 
     factory_config_file = os.path.join( os.getenv('GLIDEIN_FACTORY_DIR'), "glideinWMS.xml")
@@ -102,6 +101,38 @@ def gather_entries (entries_spec):
         raise ValueError("Error: There are no configured entries with the specified name")
 
     return the_entries
+
+def get_downtimes (downtimes_cache_file, cache_expiry=0):
+
+    cache_exists = os.path.exists(downtimes_cache_file)
+    now = datetime.utcnow()
+
+    do_get = True
+    if cache_expiry and cache_exists:
+        cache_data = DateTimeAwareDecoder().decode( open(downtimes_cache_file, 'r').read() )
+        cache_timestamp = cache_data['timestamp']
+        usage = cache_data['usage']
+        age = (now - cache_timestamp).seconds
+        if age <= cache_expiry:
+                downtimes = cache_data['downtimes']
+                do_get = False
+                print "Using cached downtimes data."
+
+    if do_get:
+        downtimes = {"EGI": get_egi(),
+                     "OSG": get_osg()}
+        usage = -1
+        cache_timestamp = now
+
+    cache = {'timestamp': cache_timestamp,
+             'downtimes': downtimes,
+             'usage': usage + 1}
+    json_str = DateTimeAwareEncoder().encode(cache)
+    json_out = open(downtimes_cache_file, 'w')
+    json_out.write(json_str)
+    json_out.close()
+
+    return downtimes
 
 def build_records (entries_config, downtimes):
 
@@ -478,6 +509,41 @@ def dictpeek (dictionary):
             return key, record
 
     return None, None
+
+def datetime_to_UTC_epoch (dt):
+
+    return calendar.timegm( dt.utctimetuple())
+
+class DateTimeAwareEncoder (json.JSONEncoder):
+
+    def default (self, obj):
+
+        if isinstance(obj, datetime):
+            epoch = datetime_to_UTC_epoch(obj)
+            encoded_object = { "__type__": "datetime",
+                               "epoch": epoch }
+        else:
+            encoded_object = json.JSONEncoder.default(self, obj)
+
+        return encoded_object
+
+class DateTimeAwareDecoder (json.JSONDecoder):
+
+    def __init__(self):
+
+        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+
+    def dict_to_object(self, d):
+
+        if '__type__' not in d:
+            return d
+
+        type = d.pop('__type__')
+
+        if type == 'datetime':
+            return datetime.utcfromtimestamp(d["epoch"])
+        else:
+            return d
 
 if __name__ == "__main__":
     sys.exit (main())
