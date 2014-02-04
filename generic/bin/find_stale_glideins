@@ -15,6 +15,9 @@ else:
 from glideinwms.factory import glideFactoryConfig
 from glideinwms.creation.lib import cgWParams
 
+# some padding when comparing against GLIDEIN_Max_Walltime
+DELTA = 2 * 3600
+
 def print_help():
     print '''\
 Usage: find_stale_glideins [OPTIONS] [SCALE]
@@ -78,7 +81,7 @@ for entry in cparams.entries.keys():
 schedd = schedds[schedds.keys()[0]]
 
 for schedd in schedds:
-    ent_exp_arr = ['(glideinentryname=?="%s"&&currenttime-enteredcurrentstatus>%i)' % (e[0],scale * float(e[1])) for e in schedds[schedd]]
+    ent_exp_arr = ['(glideinentryname=?="%s"&&currenttime-enteredcurrentstatus>%i)' % (e[0],scale * float(e[1]) + DELTA) for e in schedds[schedd]]
     #print ent_exp
 
     #print "querying %s..." % schedd
