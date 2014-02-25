@@ -77,7 +77,7 @@ def parse_command_line():
     parser.add_option ('-l', '--one-line', dest="oneline", action='store_true', default=False,
                        help="If present, prints all suggested commands in a single line, separated by colons.")
     parser.add_option ('-f', '--force-reload', dest="override", action='store_true', default=False,
-                       help="If present, overrides the current cache with new data from GOCBD and OIM.")
+                       help="If present, overrides the current cache with new data from GOCDB and OIM.")
 
     options, args = parser.parse_args()
 
