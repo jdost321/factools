@@ -365,7 +365,6 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         if when >= start and (end is None or end > when):
             registered = True
             manual = "_ad_" not in comment.lower()
-            print line
             break
 
     return registered, manual, comment
