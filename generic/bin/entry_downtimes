@@ -303,11 +303,13 @@ def gen_downtime_message (downtime_record, entry_name):
         hostname, record = dictpeek(downtime_record)
         description = ' '.join(record['description'].split())
 
-        message =  "    Federation: " + record['federation'] + '\n'
-        message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
-        message += "   Description: " + description + '\n'
-        message += "    Start time: " + print_local_dt( record['start']) + '\n'
-        message += "      End time: " + print_local_dt( record['end'])
+        lines = []
+        lines.append( "%14s: %s" % ("Federation", record['federation']) )
+        lines.append( "%14s: %s (%s)" % ("Affected Host", hostname, record['host_type']) )
+        lines.append( "%14s: %s" % ("Description", description) )
+        lines.append( "%14s: %s" % ("Start time", print_local_dt( record['start'])) )
+        lines.append( "%14s: %s" % ("End time", print_local_dt( record['end'])) )
+        message = '\n'.join(lines)
 
     else:
         message = "%s : This entry is NOT under downtime." % entry_name
