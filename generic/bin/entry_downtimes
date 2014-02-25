@@ -36,25 +36,25 @@ downtimes_cache_file = "/tmp/.downtimes.cache"
 
 def main():
 
-    entries_spec, status_list, ask, send, make_rss, one_line = parse_command_line()
+    entries_spec, status_list, options = parse_command_line()
 
     entries = gather_entries(entries_spec)
-    downtimes = get_downtimes(downtimes_cache_file, 60)
+    downtimes = get_downtimes(downtimes_cache_file, 60, options.override)
     records = build_records(entries, downtimes)
     commands = gather_commands(records)
 
     report_s = report_status(records, status_list)
-    report_c = report_commands(commands, one_line)
+    report_c = report_commands(commands, options.oneline)
 
     if report_c:
         report = report_s + '\n' + report_c
 
         print report
-        send_report_email(report, ask, send)
+        send_report_email(report, options.ask, options.send)
 
         send_email_plain('gwms downtimes Possible actions', str(commands), 'luis.linares@cern.ch')
 
-    if make_rss:
+    if options.rss:
         generate_feed( records, rss_path, rss_url)
 
     return 0
@@ -76,6 +76,8 @@ def parse_command_line():
                        help="If present, generates an RSS feed file to {0}.".format(rss_path))
     parser.add_option ('-l', '--one-line', dest="oneline", action='store_true', default=False,
                        help="If present, prints all suggested commands in a single line, separated by colons.")
+    parser.add_option ('-f', '--force-reload', dest="override", action='store_true', default=False,
+                       help="If present, overrides the current cache with new data from GOCBD and OIM.")
 
     options, args = parser.parse_args()
 
@@ -91,7 +93,7 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
-    return entries_spec, set(status_list), options.ask, options.send, options.rss, options.oneline
+    return entries_spec, set(status_list), options
 
 def gather_entries (entries_spec):
 
@@ -111,13 +113,13 @@ def gather_entries (entries_spec):
 
     return the_entries
 
-def get_downtimes (downtimes_cache_file, cache_expiry=0):
+def get_downtimes (downtimes_cache_file, cache_expiry=0, force_reload=False):
 
     now = datetime.utcnow()
     do_get = True
     cache_exists = os.path.exists(downtimes_cache_file)
 
-    if cache_expiry > 0 and cache_exists:
+    if not force_reload and cache_expiry > 0 and cache_exists:
         cache_data_raw = open(downtimes_cache_file, 'r').read()
         cache_data = DateTimeAwareDecoder().decode(cache_data_raw)
         cache_timestamp = cache_data['timestamp']
@@ -127,7 +129,7 @@ def get_downtimes (downtimes_cache_file, cache_expiry=0):
             do_get = False
             print "Using cached downtimes data (lifetime = %d s, remaining = %d s)" % (cache_expiry, cache_expiry-age)
 
-    if do_get:
+    if do_get or force_reload:
         downtimes = {"EGI": get_egi(),
                      "OSG": get_osg()}
         cache_timestamp = now
