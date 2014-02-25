@@ -347,6 +347,10 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
     for line in record_lines:
         fields = line.split()
 
+        # 'entry' >= 'entry_name' (because of "if entry_name in line...")
+        entry = fields[2]
+        if entry != entry_name: continue
+
         start = parse_timestamp(fields[0])
 
         if fields[1] != 'None':
@@ -354,7 +358,6 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         else:
             end = None
 
-        entry = fields[2] # It's equal to entry_name by construction
         frontend = fields[3]
         sec_clas = fields[4]
         comment = ' '.join(fields[5:])
