@@ -104,29 +104,28 @@ def gather_entries (entries_spec):
 
 def get_downtimes (downtimes_cache_file, cache_expiry=0):
 
-    cache_exists = os.path.exists(downtimes_cache_file)
     now = datetime.utcnow()
-
     do_get = True
-    if cache_expiry and cache_exists:
-        cache_data = DateTimeAwareDecoder().decode( open(downtimes_cache_file, 'r').read() )
+    cache_exists = os.path.exists(downtimes_cache_file)
+
+    if cache_expiry > 0 and cache_exists:
+        cache_data_raw = open(downtimes_cache_file, 'r').read()
+        cache_data = DateTimeAwareDecoder().decode(cache_data_raw)
         cache_timestamp = cache_data['timestamp']
-        usage = cache_data['usage']
         age = (now - cache_timestamp).seconds
         if age <= cache_expiry:
-                downtimes = cache_data['downtimes']
-                do_get = False
-                print "Using cached downtimes data."
+            downtimes = cache_data['downtimes']
+            do_get = False
+            print "Using cached downtimes data."
 
     if do_get:
         downtimes = {"EGI": get_egi(),
                      "OSG": get_osg()}
-        usage = -1
         cache_timestamp = now
 
     cache = {'timestamp': cache_timestamp,
-             'downtimes': downtimes,
-             'usage': usage + 1}
+             'downtimes': downtimes}
+
     json_str = DateTimeAwareEncoder().encode(cache)
     json_out = open(downtimes_cache_file, 'w')
     json_out.write(json_str)
@@ -363,6 +362,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         if when >= start and (end is None or end > when):
             registered = True
             manual = "_ad_" not in comment.lower()
+            print line
             break
 
     return registered, manual, comment
