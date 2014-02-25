@@ -52,7 +52,7 @@ def main():
         print report
         send_report_email(report, ask, send)
 
-        send_email_plain('gwms downtimes Possible actions', report_c, 'luis.linares@cern.ch')
+        send_email_plain('gwms downtimes Possible actions', str(commands), 'luis.linares@cern.ch')
 
     if make_rss:
         generate_feed( records, rss_path, rss_url)
@@ -415,7 +415,7 @@ def send_email_plain (subject, message, to):
     try:
        smtpObj = smtplib.SMTP('localhost')
        smtpObj.sendmail (sender, receivers, msg.as_string())
-       print "Successfully sent email"
+       print "Successfully sent email to:", ', '.join(receivers)
 
     except smtplib.SMTPException:
        print "Error: unable to send email"
