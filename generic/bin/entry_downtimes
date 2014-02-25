@@ -1,7 +1,8 @@
 #!/usr/bin/env python2.6
 
+import calendar
 import copy
-from datetime import datetime, timedelta
+import json
 import os
 import optparse
 import pytz
@@ -12,7 +13,7 @@ import smtplib
 import socket
 import StringIO
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import tzlocal as tzl
 from dateutil.tz import tzutc
@@ -30,17 +31,16 @@ descriptors = {'manual': "Manually registered downtimes",
 rss_file = "rss_downtimes.xml"
 rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
 rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
+downtimes_cache_file = "/tmp/.downtimes.cache"
 
 def main():
 
-    entries_spec, status_list, ask, send, make_rss = parse_command_line()
+    entries_spec, status_list, ask, send, make_rss, one_line = parse_command_line()
 
     entries = gather_entries( entries_spec)
-    downtimes = {"EGI": get_egi(),
-                 "OSG": get_osg()}
-
+    downtimes = get_downtimes( downtimes_cache_file, 20)
     records = build_records( entries, downtimes)
-    report = generate_report( records, status_list)
+    report = generate_report( records, status_list, one_line)
 
     if report:
         present_report( report, ask, send)
@@ -65,6 +65,8 @@ def parse_command_line():
                        help="If present, displays only recent downtime events.")
     parser.add_option ('-r', '--rss', action='store_true', default=False,
                        help="If present, generates an RSS feed file to {0}.".format(rss_path))
+    parser.add_option ('-l', '--one-line', dest="oneline", action='store_true', default=False,
+                       help="If present, prints all suggested commands in a single line, separated by colons.")
 
     options, args = parser.parse_args()
 
@@ -80,8 +82,7 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
-    return entries_spec, set(status_list), options.ask, options.send, options.rss
-
+    return entries_spec, set(status_list), options.ask, options.send, options.rss, options.oneline
 
 def gather_entries (entries_spec):
 
@@ -100,6 +101,37 @@ def gather_entries (entries_spec):
         raise ValueError("Error: There are no configured entries with the specified name")
 
     return the_entries
+
+def get_downtimes (downtimes_cache_file, cache_expiry=0):
+
+    now = datetime.utcnow()
+    do_get = True
+    cache_exists = os.path.exists(downtimes_cache_file)
+
+    if cache_expiry > 0 and cache_exists:
+        cache_data_raw = open(downtimes_cache_file, 'r').read()
+        cache_data = DateTimeAwareDecoder().decode(cache_data_raw)
+        cache_timestamp = cache_data['timestamp']
+        age = (now - cache_timestamp).seconds
+        if age <= cache_expiry:
+            downtimes = cache_data['downtimes']
+            do_get = False
+            print "Using cached downtimes data."
+
+    if do_get:
+        downtimes = {"EGI": get_egi(),
+                     "OSG": get_osg()}
+        cache_timestamp = now
+
+    cache = {'timestamp': cache_timestamp,
+             'downtimes': downtimes}
+
+    json_str = DateTimeAwareEncoder().encode(cache)
+    json_out = open(downtimes_cache_file, 'w')
+    json_out.write(json_str)
+    json_out.close()
+
+    return downtimes
 
 def build_records (entries_config, downtimes):
 
@@ -156,7 +188,7 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
 
     return key, data
 
-def generate_report (records, status_list):
+def generate_report (records, status_list, one_line):
 
     lines = []
     with_commands = {}
@@ -202,15 +234,26 @@ def generate_report (records, status_list):
             there_are_commands |= bool(with_commands[status])
 
     if there_are_commands:
+
         lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
-        for status in included_keys:
-            for entry_name, record in sorted(with_commands[status].items(), key=sorter):
-                lines.append(record['command'])
+        single_line = []
 
-            if with_commands[status]:
-                lines.append('')
+        for status in included_keys:
+            if one_line:
+                for entry_name, record in sorted(with_commands[status].items(), key=sorter):
+                    single_line.append(record['command'])
+
+            else:
+                for entry_name, record in sorted(with_commands[status].items(), key=sorter):
+                    lines.append(record['command'])
+
+                if with_commands[status]:
+                    lines.append('')
+
+        if one_line:
+            lines.append( '; '.join(single_line) )
 
     return '\n'.join(lines)
 
@@ -304,6 +347,10 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
     for line in record_lines:
         fields = line.split()
 
+        # 'entry' >= 'entry_name' (because of "if entry_name in line...")
+        entry = fields[2]
+        if entry != entry_name: continue
+
         start = parse_timestamp(fields[0])
 
         if fields[1] != 'None':
@@ -311,7 +358,6 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         else:
             end = None
 
-        entry = fields[2] # It's equal to entry_name by construction
         frontend = fields[3]
         sec_clas = fields[4]
         comment = ' '.join(fields[5:])
@@ -319,6 +365,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         if when >= start and (end is None or end > when):
             registered = True
             manual = "_ad_" not in comment.lower()
+            print line
             break
 
     return registered, manual, comment
@@ -465,6 +512,41 @@ def dictpeek (dictionary):
             return key, record
 
     return None, None
+
+def datetime_to_UTC_epoch (dt):
+
+    return calendar.timegm( dt.utctimetuple())
+
+class DateTimeAwareEncoder (json.JSONEncoder):
+
+    def default (self, obj):
+
+        if isinstance(obj, datetime):
+            epoch = datetime_to_UTC_epoch(obj)
+            encoded_object = { "__type__": "datetime",
+                               "epoch": epoch }
+        else:
+            encoded_object = json.JSONEncoder.default(self, obj)
+
+        return encoded_object
+
+class DateTimeAwareDecoder (json.JSONDecoder):
+
+    def __init__(self):
+
+        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+
+    def dict_to_object(self, d):
+
+        if '__type__' not in d:
+            return d
+
+        type = d.pop('__type__')
+
+        if type == 'datetime':
+            return datetime.utcfromtimestamp(d["epoch"])
+        else:
+            return d
 
 if __name__ == "__main__":
     sys.exit (main())
