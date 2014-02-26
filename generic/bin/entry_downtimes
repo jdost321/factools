@@ -462,7 +462,7 @@ def execute_commands (commands):
 
     for sites in commands.values():
         for site in sites.values():
-            command_list.append(site['command'])
+            command_list.extend( site['command'].split("; ") )
 
     send_email_plain( 'gwms downtimes Possible actions', '\n'.join(command_list),
                       'luis.linares@cern.ch' )
