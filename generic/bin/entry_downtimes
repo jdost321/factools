@@ -6,7 +6,6 @@ import json
 import os
 import optparse
 import pytz
-import random
 import re
 import sys
 import getpass
