@@ -502,7 +502,7 @@ def report_command_execution (commands, records):
 
     display_list = '\n'.join(lines)
 
-    send_email_plain( 'Executed commands', display_list),
+    send_email_plain( 'Executed commands', display_list,
                       'luis.linares@cern.ch' )
 
 def generate_feed (commands, rss_file_path, rss_url):
