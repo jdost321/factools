@@ -53,8 +53,7 @@ def main():
         send_report_email(report, options.ask, options.send)
 
         if commands:
-            send_email_plain('gwms downtimes Possible actions', str(commands),
-                             'luis.linares@cern.ch')
+            execute_commands(commands)
 
     if options.rss:
         generate_feed( records, rss_path, rss_url)
@@ -456,6 +455,17 @@ def gather_commands (records):
             with_commands[status] = filter_dict( cmd_tester, records[status] )
 
     return with_commands
+
+def execute_commands (commands):
+
+    command_list = []
+
+    for sites in commands.values():
+        for site in sites:
+            command_list.append(site['command'])
+
+    send_email_plain( 'gwms downtimes Possible actions', '\n'.join(command_list),
+                      'luis.linares@cern.ch' )
 
 def generate_feed (commands, rss_file_path, rss_url):
 
