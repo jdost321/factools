@@ -12,6 +12,7 @@ import sys
 import getpass
 import smtplib
 import socket
+import subprocess as sp
 import StringIO
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
@@ -29,6 +30,7 @@ descriptors = {'manual': "Manually registered downtimes",
                'ongoing': "Ongoing downtimes already registered in this factory",
                'removable': "Registered downtimes that have finished and can be removed" }
 
+downtimes_file_path = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
 rss_file = "rss_downtimes.xml"
 rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
 rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
@@ -343,14 +345,12 @@ def gen_downtime_command (downtime_record, entry_name):
 
 def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
 
-    downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
-
     registered = False
     manual = False
     comment = ''
 
     record_lines = []
-    with open(downtimes_file) as fd:
+    with open(downtimes_file_path) as fd:
         for line in fd:
             if not line.startswith('#'):           # comments start with a hash
                 match = re.search(r'\b' + entry_name + r'\b',
@@ -459,12 +459,26 @@ def gather_commands (records):
 def execute_commands (commands):
 
     command_list = []
-
     for sites in commands.values():
         for site in sites.values():
             command_list.extend( site['command'].split("; ") )
 
-    send_email_plain( 'gwms downtimes Possible actions', '\n'.join(command_list),
+    additions_test = lambda l: 'echo' in l and 'glideinWMS.downtimes' in l
+    additions = filter(additions_test, command_list)
+    remaining = filter(lambda l: not additions_test(l), command_list)
+
+    downtimes_file = open(downtimes_file_path, 'a')
+    for addition in additions:
+        to_add = addition.split('"')[1]
+        downtimes_file.write(to_add + '\n')
+    downtimes_file.close()
+
+    for command in remaining:
+        p = sp.Popen(command.split(), stdout=sp.PIPE)
+        out, err = p.communicate()
+        time.sleep(0.1)
+
+    send_email_plain( 'Executed commands', '\n'.join(additions+remaining),
                       'luis.linares@cern.ch' )
 
 def generate_feed (commands, rss_file_path, rss_url):
