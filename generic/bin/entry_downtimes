@@ -55,8 +55,9 @@ def main():
         print report
         send_report_email(report, options.ask, options.send)
 
-        if commands:
+        if options.execute and commands:
             execute_commands(commands)
+            report_command_execution(commands, records)
 
     if options.rss:
         generate_feed( records, rss_path, rss_url)
@@ -82,6 +83,8 @@ def parse_command_line():
                        help="If present, prints all suggested commands in a single line, separated by colons.")
     parser.add_option ('-f', '--force-reload', dest="override", action='store_true', default=False,
                        help="If present, overrides the current cache with new data from GOCDB and OIM.")
+    parser.add_option ('-x', '--execute', dest="execute", action='store_true', default=False,
+                       help="If present, executes all suggested commands.")
 
     options, args = parser.parse_args()
 
@@ -208,43 +211,41 @@ def report_status (records, status_list):
     lines = []
     with_commands = {}
     there_are_commands = False
-    indentation_step = 3
-    indent = 0
 
     all_keys = set(records.keys())
     empty_keys = set( filter_dict( lambda key, val: not val, records).keys() )
     included_keys = status_list & (all_keys - empty_keys)
 
-    sorter = lambda r: r[0]
+    for kind in sorted(included_keys):
 
-    for status in sorted(included_keys):
+        if records[kind]:
 
-        if records[status]:
+            lines.append( "* " + descriptors[kind] + ":")
+            width = max( len(entry) for entry in records[kind].keys() )
 
-            lines.append( "* " + descriptors[status] + ":")
-            width = max( [ len(entry) for entry in records[status].keys() ] )
-
-            for entry_name, record in sorted(records[status].items(), key=sorter):
-
-                complement = record['complement']
-                if complement:
-                    if len(complement.splitlines()) > 1:
-                        line = indent_multilines(entry_name,
-                                                 indent + indentation_step)
-                        lines.append('')
-                        lines.append(line + ':')
-                        line = record['complement']
-                        lines.append( indent_multilines( line, indent + 2*indentation_step))
-                    else:
-                        line = "{0:<{width}} : {1}".format(entry_name, complement, width=width)
-                        lines.append( indent_multilines( line, indent + indentation_step))
-                else:
-                    line = indent_multilines(entry_name, indent + indentation_step)
-                    lines.append(line)
+            for entry_name in sorted(records[kind].keys()):
+                add_formated_record (lines, entry_name, records[kind][entry_name], width)
 
             lines.append('')
 
     return '\n'.join(lines)
+
+def add_formated_record (lines, entry_name, record, width, indent=0, indentation_step=3):
+
+    complement = record['complement']
+    if complement:
+        if len(complement.splitlines()) > 1:
+            line = indent_multilines(entry_name, indent + indentation_step)
+            lines.append('')
+            lines.append(line + ':')
+            line = record['complement']
+            lines.append( indent_multilines( line, indent + 2*indentation_step))
+        else:
+            line = "{0:<{width}} : {1}".format(entry_name, complement, width=width)
+            lines.append( indent_multilines( line, indent + indentation_step))
+    else:
+        line = indent_multilines(entry_name, indent + indentation_step)
+        lines.append(line)
 
 def report_commands (commands={}, one_line=False):
 
@@ -252,23 +253,20 @@ def report_commands (commands={}, one_line=False):
 
     if commands:
 
-        sorter = lambda r: r[0]
-
         lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
         single_line = []
 
-        for status in commands.keys():
+        for kind in commands.keys():
             if one_line:
-                for entry_name, record in sorted(commands[status].items(), key=sorter):
-                    single_line.append(record['command'])
-
+                for entry_name in sorted(commands[kind].keys()):
+                    single_line.append(commands[kind][entry_name]['command'])
             else:
-                for entry_name, record in sorted(commands[status].items(), key=sorter):
-                    lines.append(record['command'])
+                for entry_name in sorted(commands[kind].keys()):
+                    lines.append(commands[kind][entry_name]['command'])
 
-                if commands[status]:
+                if commands[kind]:
                     lines.append('')
 
         if one_line:
@@ -451,9 +449,9 @@ def gather_commands (records):
 
     cmd_tester = lambda key, rec: 'command' in rec
 
-    for status in included_keys:
-        if records[status]:
-            with_commands[status] = filter_dict( cmd_tester, records[status] )
+    for kind in included_keys:
+        if records[kind]:
+            with_commands[kind] = filter_dict( cmd_tester, records[kind] )
 
     return with_commands
 
@@ -479,16 +477,41 @@ def execute_commands (commands):
         out, err = p.communicate()
         time.sleep(0.1)
 
-    send_email_plain( 'Executed commands', '\n'.join(additions+remaining),
+    print "Commands were executed."
+
+def report_command_execution (commands, records):
+
+    lines = []
+    indentation_step = 3
+    indent = 0
+
+    for kind in commands.keys():
+
+        lines.append( "* " + descriptors[kind] + ":")
+        width = max( len(entry) for entry in records[kind].keys() )
+
+        for entry_name in sorted(commands[kind].keys()):
+            record = records[kind][entry_name]
+            command = commands[kind][entry_name]
+
+            add_formated_record (lines, entry_name, record, width)
+            lines.append( indent_multilines( "Executed command:", indent + indentation_step))
+            lines.append( indent_multilines( command, indent + 2*indentation_step))
+
+        lines.append('')
+
+    display_list = '\n'.join(lines)
+
+    send_email_plain( 'Executed commands', display_list),
                       'luis.linares@cern.ch' )
 
 def generate_feed (commands, rss_file_path, rss_url):
 
     feed = DowntimesFeed(rss_file_path, rss_url)
 
-    for status, records in commands.items():
+    for kind, records in commands.items():
         for entry_name, record in records.items():
-            feed.add_record( entry_name, record, status)
+            feed.add_record( entry_name, record, kind)
 
     feed.write()
 
@@ -505,7 +528,7 @@ class DowntimesFeed(object):
             lastBuildDate = datetime.utcnow(),
             items = [])
 
-    def add_record (self, entry_name, record, status):
+    def add_record (self, entry_name, record, kind):
 
         text = self.format_description( record['complement'],
                                         record['command'] )
@@ -513,7 +536,7 @@ class DowntimesFeed(object):
         guid = entry_name + '-' + url
 
         self.rss.items.append( rssgen.FlexRSSItem(
-                title = "{0} downtime for {1}".format(status.capitalize(),
+                title = "{0} downtime for {1}".format(kind.capitalize(),
                                                       entry_name),
                 link = url if url else None,
                 guid = rssgen.Guid(guid, isPermaLink = False),
