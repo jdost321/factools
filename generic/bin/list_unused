@@ -3,7 +3,11 @@
 import sys
 import os
 import re
+import StringIO
+import ConfigParser
+import getopt
 
+STARTUP_DIR=sys.path[0]
 #sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
 
 # get source dir from env var until we push upstream to glideinWMS
@@ -16,59 +20,50 @@ else:
 from glideinwms.creation.lib import cgWParams
 from glideinwms.lib import ldapMonitor
 
-# translates GLIDEIN_Supported_VOs list name to bdii name
-vo_map = {'glowVO':'glow','CMS':'cms','HCC':'hcc','EngageVO':'engage','ATLAS':'atlas',
-	'OSGVO':'osg', 'nanoHUB':'nanohub', 'NEES':'nees'}
+# globals
+VERBOSE=False
+CONF = os.path.join(STARTUP_DIR, "../../etc/list_unused.blacklist")
 
-def build_entry_dict(conf_file):
-    entries = {}
-    cparams=cgWParams.GlideinParams("dummy",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["dummy",conf_file])
+# returns processed file object that allows for non-value ini options
+# needed until we get the ConfigParser allow_no_value option in python 2_7
+def open_no_value(bl_file):
+    fin = open(bl_file)
+    fout = StringIO.StringIO()
+
+    for line in fin:
+        if len(line) > 1 and not re.match(r"\s*\[", line):
+            line = "%s=\n" % line.rstrip()
+        fout.write(line)
+    fin.close()
+    fout.flush()
+    fout.seek(0)
+    return fout
+
+def build_site_dict(conf_file):
+    sites = {}
+    cparams=cgWParams.GlideinParams("",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["",conf_file])
 
     for entry in cparams.entries.keys():
-        if eval(cparams.entries[entry]['enabled']):
-            if cparams.entries[entry]['gridtype'] == 'cream':
-                gk = cparams.entries[entry]['gatekeeper'].split()
-                contact = gk[0]
-                if 'https' in contact:
-                    contact = contact[8:]
-                host = contact.split(':')[0]
-                jm = gk[-2]
-                queue = gk[-1]
-                key = "%s,%s,%s" % (host,jm,queue)
-            else:
-                host = cparams.entries[entry]['gatekeeper'].split(':')[0]
-                if cparams.entries[entry]['gridtype'] == 'nordugrid':
-                    jm = "arc"
-                else:
-                    jm = cparams.entries[entry]['gatekeeper'].split('-')[-1]
-                rsl = cparams.entries[entry]['rsl']
-                if jm == "condor":
-                    key = "%s,%s" % (host,jm)
-                else:
-                    if rsl is not None and "queue" in rsl:
-                        queue = re.search(r"queue=(\w+)\)", rsl).group(1)
-                    # try pulling queue from infosys if there
-                    elif len(cparams.entries[entry]['infosys_refs']) > 0:
-                        dn = cparams.entries[entry]['infosys_refs'][0]['ref']
-                        queue = dn.split(',')[0].split('-')[-1]
-                        #print "%s %s" % (entry, queue)
-                    else:
-                        # finally just assume default if queue not specified
-                        queue = 'default'
-                    key = "%s,%s,%s" % (host,jm,queue)
-            if key not in entries:
-                entries[key] = {}
-                # to figure out who we visited later
-                entries[key]['found'] = False
-                entries[key]['name'] = entry
-                entries[key]['GLIDEIN_Supported_VOs'] = cparams.entries[entry]['attrs']['GLIDEIN_Supported_VOs']['value']
-    #for e in entries:
-    #    print "%s %s %s" % (e, entries[e]['name'], entries[e]['dn'])
-    return entries
+        if (eval(cparams.entries[entry]['enabled']) and len(cparams.entries[entry]['infosys_refs']) > 0
+            and 'GlueCEUniqueID' in cparams.entries[entry]['infosys_refs'][0]['ref']):
+            dn = cparams.entries[entry]['infosys_refs'][0]['ref']
+            # remove queue from condor site to make dn not unique
+            dn = re.sub(r'jobmanager-condor-[^,]+,', 'jobmanager-condor,', dn)
+            site_name = dn.split(',')[-3].split('=')[1]
+            if not site_name in sites:
+                sites[site_name] = {'dns':{},'vos':set()}
+            if not dn in sites[site_name]['dns']:
+                sites[site_name]['dns'][dn] = []
+            vos = cparams.entries[entry]['attrs']['GLIDEIN_Supported_VOs']['value'].split(',')
+            sites[site_name]['dns'][dn].append((entry,vos))
+            for vo in vos:
+                sites[site_name]['vos'].add(vo)
+
+    return sites
 
 # choose is.grid.iu.edu or exp-bdii.cern.ch for server
-def search_bdii(server, entries, vo):
-    bdii_obj=ldapMonitor.BDIICEQuery(bdii_url=server,additional_filter_str="(GlueCEAccessControlBaseRule=VO:%s)" % vo_map[vo])
+def search_bdii(server, sites, sup_vo, bdii_vo, blacklist=None):
+    bdii_obj=ldapMonitor.BDIICEQuery(bdii_url=server,additional_filter_str="(GlueCEAccessControlBaseRule=VO:%s)" % bdii_vo)
     bdii_data=bdii_obj.fetch()
 
 
@@ -81,57 +76,75 @@ def search_bdii(server, entries, vo):
     cur_sites = {}
     new_sites = {}
     for b_entry in bdii_data.keys():
-        host = bdii_data[b_entry]['GlueCEInfoHostName'][0]
-        jm = bdii_data[b_entry]['GlueCEInfoJobManager'][0]
+        # remove queue from condor site to make dn not unique
+        dn = re.sub(r'jobmanager-condor-[^,]+,', 'jobmanager-condor,', b_entry)
         site_name = b_entry.split(',')[-3].split('=')[1]
 
-        if jm == 'condor':
-            key = "%s,%s" % (host, jm)
-        else:
-            queue = bdii_data[b_entry]['GlueCEName'][0]
-            key = "%s,%s,%s" % (host, jm, queue)
-
-        if not key in entries:
+        # skip blacklisted sites
+        if (blacklist is not None and (site_name in blacklist.defaults() or
+            sup_vo in blacklist.sections() and blacklist.has_option(sup_vo,site_name))):
+            continue
+            
+        if not site_name in sites:
             if not site_name in new_sites:
                 new_sites[site_name] = []
             new_sites[site_name].append(bdii_data[b_entry]['GlueCEUniqueID'][0])
 
-        elif key in entries and not entries[key]['found']:
-            entries[key]['found'] = True
-            if vo not in entries[key]['GLIDEIN_Supported_VOs']:
-                #print entries[key]['name']
-                if not site_name in cur_sites:
-                    cur_sites[site_name] = []
-                cur_sites[site_name].append(bdii_data[b_entry]['GlueCEUniqueID'][0])
+        else:
+            if dn in sites[site_name]['dns']:
+                for e in sites[site_name]['dns'][dn]:
+                    if sup_vo not in e[1]:
+                        if not site_name in cur_sites:
+                            cur_sites[site_name] = set()
+                        cur_sites[site_name].add(e[0])
+        
     #print cur_sites
     #print new_sites
 
     return (cur_sites, new_sites)
 
+
 def print_results(cur_sites, new_sites):
-    print "In Factory but Not Whitelisted"
-    print "------------------------------"
+    print "Available queues in factory"
+    print "---------------------------"
     for s in sorted(cur_sites):
-        print s
+        print "%s:" % s
         for e in sorted(cur_sites[s]):
             print e
         print
-                
-    print "Not Yet Added to Factory"
-    print "------------------------"
+
+    print "\nSites not yet added to factory"
+    print "------------------------------"
     for s in sorted(new_sites):
         print s
-        for e in sorted(new_sites[s]):
-            print e
-        print
+        if VERBOSE:
+            for dn in sorted(new_sites[s]):
+                print dn 
+            print
 
-# ./list_unused <vo> <server> <config>
+# ./list_unused <SupportedVO>:<bdii_vo> <server> <config>
 # choose is.grid.iu.edu or exp-bdii.cern.ch for server
 if __name__ == '__main__':
-    vo = sys.argv[1]
-    db = sys.argv[2]
-    conf = sys.argv[3]
-    print 'Queues Not Whitelisted in the Factory that Claim to Support %s:\n' % vo
-    entries = build_entry_dict(conf)
-    cur_sites, new_sites = search_bdii(db, entries, vo)
+    opts,args = getopt.getopt(sys.argv[1:], 'v')
+
+    for opt in opts:
+        if opt[0] == '-v':
+            VERBOSE = True
+
+    sup_vo,bdii_vo = args[0].split(':')
+    db = args[1]
+    conf = args[2]
+    try:
+        bl_fp = open_no_value(CONF)
+        blacklist = ConfigParser.RawConfigParser()
+        # force case sensitivity
+        blacklist.optionxform = str
+        blacklist.readfp(bl_fp)
+        bl_fp.close()
+    except:
+        blacklist = None
+
+    print 'New submission points that claim to support %s:\n' % sup_vo
+    sites = build_site_dict(conf)
+    cur_sites, new_sites = search_bdii(db, sites, sup_vo, bdii_vo, blacklist)
     print_results(cur_sites, new_sites)
