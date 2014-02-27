@@ -130,7 +130,10 @@ except IOError:
 try:
     down_entries = set()
     for line in down_file:
+        #print line
         line = line.split()
+        if len(line) < 3:
+            continue
         end = line[1]
         entry = line[2]
         if end == "None":
