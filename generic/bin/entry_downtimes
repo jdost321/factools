@@ -40,8 +40,13 @@ def main():
 
     entries_spec, status_list, options = parse_command_line()
 
+    try:
+        downtimes = get_downtimes(downtimes_cache_file, 60, options.override)
+    except IOError as e:
+        print e
+        return 1
+
     entries = gather_entries(entries_spec)
-    downtimes = get_downtimes(downtimes_cache_file, 60, options.override)
     records = build_records(entries, downtimes)
     commands = gather_commands(records)
 

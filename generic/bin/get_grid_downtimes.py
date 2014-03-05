@@ -18,11 +18,14 @@ def main():
 
 def get_data (url):
 
-    rq = urllib2.Request (url)
-    xml_string = urllib2.urlopen(rq).read()
-    data = xmltodict.parse (xml_string)
-
-    return data
+    try:
+        rq = urllib2.Request (url)
+        xml_string = urllib2.urlopen(rq).read()
+        data = xmltodict.parse (xml_string)
+        return data
+    except:
+        host = url.split('/', 2)[1]
+        raise IOError("Unable to download downtimes information from " + host)
 
 def get_egi():
 
@@ -49,8 +52,8 @@ def get_egi():
 def get_osg():
 
     source_url = "https://myosg.grid.iu.edu/rgdowntime/xml?summary_attrs_showservice=on&summary_attrs_showrsvstatus=on&summary_attrs_showfqdn=on&current_status_attrs_shownc=on&gip_status_attrs_showtestresults=on&downtime_attrs_showpast=&account_type=cumulative_hours&ce_account_type=gip_vo&se_account_type=vo_transfer_volume&bdiitree_type=total_jobs&bdii_object=service&bdii_server=is-osg&start_type=7daysago&end_type=now&all_resources=on&facility_10009=on&gridtype=on&gridtype_1=on&service_1=on&service_5=on&service_2=on&service_3=on&active=on&active_value=1&disable_value=1"
-
     data = get_data(source_url)
+
     downtimes_in = data['Downtimes']['CurrentDowntimes']['Downtime']
     downtimes_out = {}
 
