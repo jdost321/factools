@@ -454,7 +454,7 @@ def gather_commands (records):
     cmd_tester = lambda key, rec: 'command' in rec
 
     for kind in included_keys:
-        if records[kind]:
+        if kind in records:
             with_commands[kind] = filter_dict( cmd_tester, records[kind] )
 
     return with_commands
@@ -496,7 +496,7 @@ def report_command_execution (commands, records):
 
         for entry_name in sorted(commands[kind].keys()):
             record = records[kind][entry_name]
-            command = commands[kind][entry_name]
+            command = commands[kind][entry_name]['command']
 
             add_formated_record (lines, entry_name, record, width)
             lines.append( indent_multilines( "Executed command:", indent + indentation_step))
@@ -620,5 +620,5 @@ def console_prompt (message):
     return prompt.lower() in ("y", "ye", "yes", "ok")
 
 if __name__ == "__main__":
-    sys.exit (main())
+    sys.exit( main() )
 
