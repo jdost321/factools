@@ -1,6 +1,10 @@
 #!/bin/bash
 
-source ~/.bash_profile
+script_dir=`dirname $0`
+ft_env=${script_dir}/../../etc/factools-env.sh
+if [ -e $ft_env ];then
+    . $ft_env
+fi
 
 # Fail if reply-to is not set
 if [ -z "$GLIDEIN_MAIL_REPLY_TO" ]; then
@@ -17,7 +21,6 @@ fi
 emails=$1
 subject="${factory_name}Infosys Report `date +%m-%d-%Y`"
 conf=${GLIDEIN_FACTORY_DIR}/glideinWMS.xml
-script_dir=`dirname $0`
 body=`${script_dir}/../libexec/check_infosys.py $conf`
 
 #echo "$body"

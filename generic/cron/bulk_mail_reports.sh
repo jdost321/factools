@@ -1,8 +1,11 @@
 #!/bin/bash
 
-source ~/.bash_profile
-
 script_dir=`dirname $0`
+ft_env=${script_dir}/../../etc/factools-env.sh
+if [ -e $ft_env ];then
+    . $ft_env
+fi
+
 mail_report=${script_dir}/../libexec/mail_report.sh
 conf=$1
 

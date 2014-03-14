@@ -1,7 +1,12 @@
 #!/bin/bash
 
-source ~/.bash_profile
-source  /etc/profile.d/condor.sh
+script_dir=`dirname $0`
+ft_env=${script_dir}/../../etc/factools-env.sh
+if [ -e $ft_env ];then
+    . $ft_env
+fi
+
+. /etc/profile.d/condor.sh
 now=`date +%s`
 age=$1
 sleep=1200
