@@ -280,7 +280,7 @@ def report_commands (commands={}, one_line=False):
 
 def send_report_email (report, do_ask, do_send):
 
-    subject = "New entry downtimes updates."
+    subject = "Factory Downtimes status."
 
     if do_send or ( do_ask and console_prompt("Do you want to send the report?") ):
         to = 'osg-gfactory-reports@physics.ucsd.edu'
@@ -496,7 +496,7 @@ def report_command_execution (commands, records):
 
         for entry_name in sorted(commands[kind].keys()):
             record = records[kind][entry_name]
-            command = commands[kind][entry_name]['command']
+            command = commands[kind][entry_name]['command'].replace(";", '\n')
 
             add_formated_record (lines, entry_name, record, width)
             lines.append( indent_multilines( "Executed command:", indent + indentation_step))
@@ -506,8 +506,8 @@ def report_command_execution (commands, records):
 
     display_list = '\n'.join(lines)
 
-    send_email_plain( 'Executed commands', display_list,
-                      'luis.linares@cern.ch' )
+    send_email_plain( 'Factory downtimes: Executed commands', display_list,
+                      'osg-gfactory-reports@physics.ucsd.edu' )
 
 def generate_feed (commands, rss_file_path, rss_url):
 
