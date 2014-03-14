@@ -11,7 +11,7 @@ if [ -z "$GLIDEIN_MAIL_REPLY_TO" ]; then
     exit 1
 fi
 
-if [ -n "GLIDEIN_FACTORY_NAME" ];then
+if [ -n "$GLIDEIN_FACTORY_NAME" ];then
     factory_name="$GLIDEIN_FACTORY_NAME "
 fi
 

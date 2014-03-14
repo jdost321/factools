@@ -15,7 +15,7 @@ if [ -z "$GLIDEIN_MON_URL" ]; then
     exit 1
 fi
 
-if [ -n "GLIDEIN_FACTORY_NAME" ];then
+if [ -n "$GLIDEIN_FACTORY_NAME" ];then
     factory_name="$GLIDEIN_FACTORY_NAME "
 fi
 
