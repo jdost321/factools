@@ -24,33 +24,22 @@ from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 import PyRSS2Gen as rssgen
 
-descriptors = {'manual': "Manually registered downtimes",
-               'new': "Newly advertised downtimes",
-               'none': "Entries without registered nor advertised downtimes",
-               'ongoing': "Ongoing downtimes already registered in this factory",
-               'removable': "Registered downtimes that have finished and can be removed" }
-
-downtimes_file_path = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
-rss_file = "rss_downtimes.xml"
-rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
-rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
-downtimes_cache_file = "/tmp/.downtimes.cache"
-
 def main():
 
-    entries_spec, status_list, options = parse_command_line()
+    downtimes_file_path, downtimes_cache_path, rss_path, rss_url, descriptors = setup_environment()
+    entries_spec, status_list, options = parse_command_line(descriptors, rss_path)
 
     try:
-        downtimes = get_downtimes(downtimes_cache_file, 60, options.override)
+        downtimes = get_downtimes(downtimes_cache_path, 60, options.override)
     except IOError as e:
         print e
         return 1
 
     entries = gather_entries(entries_spec)
-    records = build_records(entries, downtimes)
+    records = build_records(entries, downtimes, downtimes_file_path)
     commands = gather_commands(records)
 
-    report_s = report_status(records, status_list)
+    report_s = report_status(records, status_list, descriptors)
     report_c = report_commands(commands, options.oneline)
 
     if report_s:
@@ -60,15 +49,47 @@ def main():
         send_report_email(report, options.ask, options.send)
 
         if options.execute and commands:
-            execute_commands(commands)
-            report_command_execution(commands, records)
+            execute_commands(commands, downtimes_file_path)
+            report_command_execution(commands, records, descriptors)
 
     if options.rss:
         generate_feed( records, rss_path, rss_url)
 
     return 0
 
-def parse_command_line():
+def setup_environment():
+
+    rss_file = "rss_downtimes.xml"
+    downtimes_cache_path = "/tmp/.downtimes.cache"
+    descriptors = { 'manual': "Manually registered downtimes",
+                    'new': "Newly advertised downtimes",
+                    'none': "Entries without registered nor advertised downtimes",
+                    'ongoing': "Ongoing downtimes already registered in this factory",
+                    'removable': "Registered downtimes that have finished and can be removed" }
+
+    this_path = os.path.dirname(os.path.abspath(__file__))
+    factools_file = os.path.join(this_path, '../../etc/factools-env.sh')
+    source_shell_file(os.path.abspath(factools_file))
+
+    downtimes_file_path = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+    rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
+    rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
+
+    return downtimes_file_path, downtimes_cache_path, rss_path, rss_url, descriptors
+
+def source_shell_file (file_path):
+
+    command = ['bash', '-c', 'source {0} && env'.format(file_path)]
+
+    proc = sp.Popen(command, stdout = sp.PIPE)
+
+    for line in proc.stdout:
+        (key, _, value) = line.partition("=")
+        os.environ[key] = value
+
+    proc.communicate()
+
+def parse_command_line(descriptors, rss_path):
 
     desc = "Checks GOCDB and OIM for advertised downtimes that are currently not registered on this GlideinWMS factory."
 
@@ -124,14 +145,14 @@ def gather_entries (entries_spec):
 
     return the_entries
 
-def get_downtimes (downtimes_cache_file, cache_expiry=0, force_reload=False):
+def get_downtimes (downtimes_cache_path, cache_expiry=0, force_reload=False):
 
     now = datetime.utcnow()
     do_get = True
-    cache_exists = os.path.exists(downtimes_cache_file)
+    cache_exists = os.path.exists(downtimes_cache_path)
 
     if not force_reload and cache_expiry > 0 and cache_exists:
-        cache_data_raw = open(downtimes_cache_file, 'r').read()
+        cache_data_raw = open(downtimes_cache_path, 'r').read()
         cache_data = DateTimeAwareDecoder().decode(cache_data_raw)
         cache_timestamp = cache_data['timestamp']
         age = (now - cache_timestamp).seconds
@@ -149,13 +170,13 @@ def get_downtimes (downtimes_cache_file, cache_expiry=0, force_reload=False):
              'downtimes': downtimes}
 
     json_str = DateTimeAwareEncoder().encode(cache)
-    json_out = open(downtimes_cache_file, 'w')
+    json_out = open(downtimes_cache_path, 'w')
     json_out.write(json_str)
     json_out.close()
 
     return downtimes
 
-def build_records (entries_config, downtimes):
+def build_records (entries_config, downtimes, downtimes_file_path):
 
     records = {}
 
@@ -173,7 +194,7 @@ def build_records (entries_config, downtimes):
             target_hosts["SE"] = storage_element
 
         advertisement = get_downtime( entry_name, target_hosts, downtimes )
-        registered, manual, comment = is_entry_in_factory_downtime( entry_name)
+        registered, manual, comment = is_entry_in_factory_downtime( entry_name, downtimes_file_path)
         key, data = assign_record( advertisement, entry_name, registered, manual,
                                    comment)
 
@@ -210,7 +231,7 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
 
     return key, data
 
-def report_status (records, status_list):
+def report_status (records, status_list, descriptors):
 
     lines = []
     with_commands = {}
@@ -346,7 +367,7 @@ def gen_downtime_command (downtime_record, entry_name):
 
     return command
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
+def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc()), downtimes_file_path):
 
     registered = False
     manual = False
@@ -459,7 +480,7 @@ def gather_commands (records):
 
     return with_commands
 
-def execute_commands (commands):
+def execute_commands (commands, downtimes_file_path):
 
     command_list = []
     for sites in commands.values():
@@ -483,7 +504,7 @@ def execute_commands (commands):
 
     print "Commands were executed."
 
-def report_command_execution (commands, records):
+def report_command_execution (commands, records, descriptors):
 
     lines = []
     indentation_step = 3
