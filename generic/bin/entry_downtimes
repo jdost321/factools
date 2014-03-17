@@ -85,7 +85,7 @@ def source_shell_file (file_path):
 
     for line in proc.stdout:
         (key, _, value) = line.partition("=")
-        os.environ[key] = value
+        os.environ[key] = value.strip()
 
     proc.communicate()
 
