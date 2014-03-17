@@ -367,7 +367,7 @@ def gen_downtime_command (downtime_record, entry_name):
 
     return command
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc()), downtimes_file_path):
+def is_entry_in_factory_downtime (entry_name, downtimes_file_path, when=datetime.now(tzutc())):
 
     registered = False
     manual = False
