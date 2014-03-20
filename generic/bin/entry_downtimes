@@ -503,8 +503,11 @@ def execute_commands (commands, downtimes_file_path):
 
     for command in remaining:
         p = sp.Popen(command.split(), stdout=sp.PIPE)
-        out, err = p.communicate()
-        time.sleep(0.1)
+        try:
+            out, err = p.communicate()
+            time.sleep(0.1)
+        except Exception as e:
+            raise Exception("An error ocurred while trying to execute:\n{0}\nError:\n{1}".format(command, e))
 
     print "Commands were executed."
 
