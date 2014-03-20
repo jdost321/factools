@@ -17,9 +17,13 @@ import time
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
-import tzlocal as tzl
 from dateutil.tz import tzutc
 from dateutil.parser import parse as parse_timestamp
+
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(here, "../lib"))
+
+import tzlocal as tzl
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 import PyRSS2Gen as rssgen

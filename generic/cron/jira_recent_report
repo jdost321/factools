@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6 
+#!/usr/bin/env python2.6
 
 import base64
 import cookielib
@@ -6,7 +6,7 @@ import datetime
 import getpass
 import json
 import optparse
-import os 
+import os
 import pickle
 import re
 import smtplib
@@ -22,15 +22,14 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 debugging = False
 
-now = datetime.datetime.now (tzlocal())
+now = datetime.datetime.now(tzlocal())
 
-
-def main ():
+def main():
 
     parser = optparse.OptionParser (description="Loads issues from OSG Jira for the GFACTOPS project for the last N hours.")
     parser.add_option ('-t', '--timeframe', choices=[str(x) for x in range(1,25)], default="24",
-                       help="Specifies the time range in hours to check for Jira activity.")  
-    parser.add_option ('-s', '--send', action='store_true', default=False, 
+                       help="Specifies the time range in hours to check for Jira activity.")
+    parser.add_option ('-s', '--send', action='store_true', default=False,
                        help="If present, sends the report without asking.")
     (options, args) = parser.parse_args()
 
@@ -61,7 +60,7 @@ def main ():
             send_activity_report (message, timeframe)
         else:
             print "Report not sent."
-        
+
 
 def get_recent_activity (timeframe, timeframe_val):
 
@@ -72,7 +71,7 @@ def get_recent_activity (timeframe, timeframe_val):
 
     day_events = {}
     for i, issue in enumerate (info['issues']):
-   
+
         key = issue['key']
         self_url = issue['self']
         user_url = "https://jira.opensciencegrid.org/browse/" + key
@@ -98,10 +97,10 @@ def get_recent_activity (timeframe, timeframe_val):
         for comment in comments:
 
             comment_update_time = parse_timestamp (comment['updated'], tzlocal())
-            if now - comment_update_time <= timeframe: 
+            if now - comment_update_time <= timeframe:
                 comment_text = comment['body']
                 comment_auth = comment['author']['displayName']
-                comment_info = {'text':comment_text, 
+                comment_info = {'text':comment_text,
                                 'author':comment_auth}
                 day_events[key]['comments'].append (comment_info)
 
@@ -111,7 +110,7 @@ def get_recent_activity (timeframe, timeframe_val):
 def format_activity (day_activity, timeframe):
 
     cms_filter = lambda e: 'cms' in e['summary'].lower()
-    for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) ) 
+    for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) )
     not_cms = dict( (key, val) for key, val in day_activity.iteritems() if not cms_filter(val) )
 
     indentation_step = 2
@@ -134,7 +133,7 @@ def format_activity (day_activity, timeframe):
             if event['status'] not in ["Resolved", "Closed", "Fixed"]:
                 if event['create_date'] >= (now - timeframe).date():
                     status = "New"
-                else: 
+                else:
                     status = "Open"
             else:
                 status = "Closed"
@@ -152,12 +151,12 @@ def format_activity (day_activity, timeframe):
                 indent += indentation_step
                 line = indent_multilines (event['description'], indent)
                 lines.append(line)
-       
+
             comments = event['comments']
             if len(comments) > 0:
 
                 indent = 2 * indentation_step
-                line = indent_multilines ("Updates:", indent) 
+                line = indent_multilines ("Updates:", indent)
                 lines.append(line)
 
                 indent += indentation_step
@@ -169,7 +168,7 @@ def format_activity (day_activity, timeframe):
                     sub_indent = len(author) + 2
 
                     item = '* ' + text
-                    line = indent_multilines (item, indent, sub_indent) 
+                    line = indent_multilines (item, indent, sub_indent)
                     lines.append(line)
 
             lines.append('')
@@ -185,7 +184,7 @@ def send_activity_report (report_text, timeframe):
     subject = 'Glidein Factory Jira Activity Report (%s => %s)(UTC)' % (before_str, now_str)
 
     send_email_plain (subject, report_text)
-    
+
 
 def get_user_and_host_names():
 
@@ -202,26 +201,26 @@ def send_email_plain (subject, message):
 
     msg = MIMEText (message)
 
-    msg['Subject'] = subject 
-    msg['From'] = sender 
+    msg['Subject'] = subject
+    msg['From'] = sender
     msg['To'] = ", ".join(receivers)
 
     try:
        smtpObj = smtplib.SMTP('localhost')
-       smtpObj.sendmail (sender, receivers, msg.as_string())         
+       smtpObj.sendmail (sender, receivers, msg.as_string())
        print "Successfully sent email"
 
     except smtplib.SMTPException:
        print "Error: unable to send email"
 
-    
+
 class Browser(dict):
     """ Simple browser with cookies"""
     urlopen = None
     Request = None
     cookieJar = None
     postData = None
-     
+
     def __init__(self):
 
         self.txHeaders = {}
@@ -256,22 +255,22 @@ class Browser(dict):
         handle = urllib2.urlopen (req)
         return handle.read().strip()
 
-     
+
 class JiraManager:
- 
+
     def __init__(self):
-         
+
         self.jiraURL = "http://jira.opensciencegrid.org"
 
         self.get_user_secrets()
         authString = "%s:%s" % (self.jiraUserName, self.jiraPassword)
         loginBase64 = base64.b64encode (authString)
-         
+
         #JIRA ROUTES
         self.restURL = '/rest/api/2'
         self.versionURL = '/version'
         self.queryURL = '/search?jql='
-         
+
         #instantiate the browser and make it login
         self.browser = Browser()
         self.browser.txHeaders['Authorization'] = 'Basic %s' % loginBase64
@@ -283,7 +282,7 @@ class JiraManager:
         secrets_file = os.path.expanduser("~/.jira.secrets")
         try:
             file_in = open (secrets_file, 'rb')
-            secrets = pickle.load(file_in) 
+            secrets = pickle.load(file_in)
             file_in.close()
             username = secrets['user']
             passwd = secrets['pass']
@@ -297,7 +296,7 @@ class JiraManager:
             while passwd != passwd_conf:
                 passwd = getpass.getpass("Password: ")
                 passwd_conf = getpass.getpass("Confirm password: ")
-            
+
             file_out = open (secrets_file, 'wb')
             pickle.dump ({'user':username, 'pass':passwd},
                          file_out)
@@ -313,7 +312,7 @@ class JiraManager:
         postData['os_username'] = self.jiraUserName
         postData['os_password'] = self.jiraPassword
         postData['os_cookie'] = 'true'
-         
+
         #perform the login so our cookies get set properly
         self.browser.postData = postData
         self.browser.post (self.jiraURL)
@@ -322,7 +321,7 @@ class JiraManager:
     def get_activity (self, query=''):
 
         if query:
-            jql_query = query 
+            jql_query = query
         else:
             jql_query = "assignee=" + self.jiraUserName
 
@@ -334,7 +333,7 @@ class JiraManager:
         try:
             result = self.browser.post (full_url)
             output = json.loads (result)
-             
+
         except urllib2.HTTPError, e:
             log.error('Jira failed with errorcode %d' % e.code)
             raise e
@@ -350,10 +349,10 @@ def strip_html (text):
     tag_filter = '<[^<]+?>'
     #tag_filter = '<.*?>'
     return re.sub (tag_filter, '', text)
-    
+
 def indent_multilines (the_string, indent=0, sub_indent=0):
     # splitlines() takes care of all types of EOL
-    lines = the_string.splitlines() 
+    lines = the_string.splitlines()
     full_indent = indent + sub_indent
 
     if sub_indent > 0 and len(lines) > 1:
@@ -361,9 +360,9 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
         line_list.extend ([ (' '*full_indent + line) for line in lines[1:] ])
     else:
         line_list = [ (' '*indent + line) for line in lines ]
-        
+
     return '\n'.join(line_list)
 
-            
+
 if __name__ == '__main__':
     main()

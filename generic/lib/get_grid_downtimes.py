@@ -24,7 +24,7 @@ def get_data (url):
         data = xmltodict.parse (xml_string)
         return data
     except:
-        host = url.split('/', 2)[1]
+        host = url.split('/', 3)[2]
         raise IOError("Unable to download downtimes information from " + host)
 
 def get_egi():
