@@ -163,12 +163,13 @@ def get_downtimes (downtimes_cache_path, cache_expiry=0, force_reload=False):
         if age <= cache_expiry:
             downtimes = cache_data['downtimes']
             do_get = False
-            print "Using cached downtimes data (lifetime = %d s, remaining = %d s)" % (cache_expiry, cache_expiry-age)
 
     if do_get or force_reload:
         downtimes = {"EGI": get_egi(),
                      "OSG": get_osg()}
         cache_timestamp = now
+    else:
+        print "Using cached downtimes data (lifetime = %d s, remaining = %d s)" % (cache_expiry, cache_expiry-age)
 
     cache = {'timestamp': cache_timestamp,
              'downtimes': downtimes}
