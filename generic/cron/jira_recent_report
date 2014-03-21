@@ -22,10 +22,9 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 debugging = True
 
-now = datetime.datetime.now (tzlocal())
+now = datetime.datetime.now(tzlocal())
 
-
-def main ():
+def main():
 
     parser = optparse.OptionParser (description="Loads issues from OSG Jira for the GFACTOPS project for the last N hours.")
     parser.add_option ('-t', '--timeframe', choices=[str(x) for x in range(1,49)], default="24",
@@ -121,9 +120,7 @@ def get_recent_activity (timeframe, timeframe_val):
 
 def format_activity (day_activity, timeframe):
 
-    cms_keywords = ['cms', 'egi', 'cern']
-    cms_filter = lambda e: any (name in e['summary'].lower() for name in cms_keywords) or \
-                           any (name in e['description'].lower() for name in cms_keywords)
+    cms_filter = lambda e: 'cms' in e['summary'].lower()
     for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) )
     not_cms = dict( (key, val) for key, val in day_activity.iteritems() if not cms_filter(val) )
 
@@ -146,10 +143,9 @@ def format_activity (day_activity, timeframe):
 
             if event['status'] not in ["Resolved", "Closed", "Fixed"]:
                 if event['create_date'] >= (now - timeframe).date():
-                    reporter_name = event['reporter'].split()[0]
-                    tag = "[New, by %s]" % reporter_name
+                    status = "New"
                 else:
-                    tag = "[Open]"
+                    status = "Open"
             else:
                 tag = "[Closed]"
 

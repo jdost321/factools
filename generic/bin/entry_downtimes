@@ -6,51 +6,94 @@ import json
 import os
 import optparse
 import pytz
-import random
+import re
 import sys
 import getpass
 import smtplib
 import socket
+import subprocess as sp
 import StringIO
+import time
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
-import tzlocal as tzl
 from dateutil.tz import tzutc
 from dateutil.parser import parse as parse_timestamp
+
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(here, "../lib"))
+
+import tzlocal as tzl
 from xmltodict import parse as xml_to_dict
 from get_grid_downtimes import get_egi, get_osg
 import PyRSS2Gen as rssgen
 
-descriptors = {'manual': "Manually registered downtimes",
-               'new': "Newly advertised downtimes",
-               'none': "Entries without registered nor advertised downtimes",
-               'ongoing': "Ongoing downtimes already registered in this factory",
-               'removable': "Registered downtimes that have finished and can be removed" }
-
-rss_file = "rss_downtimes.xml"
-rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
-rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
-downtimes_cache_file = "/tmp/.downtimes.cache"
-
 def main():
 
-    entries_spec, status_list, ask, send, make_rss, one_line = parse_command_line()
+    downtimes_file_path, downtimes_cache_path, rss_path, rss_url, descriptors = setup_environment()
+    entries_spec, status_list, options = parse_command_line(descriptors, rss_path)
 
-    entries = gather_entries( entries_spec)
-    downtimes = get_downtimes( downtimes_cache_file, 20)
-    records = build_records( entries, downtimes)
-    report = generate_report( records, status_list, one_line)
+    try:
+        downtimes = get_downtimes(downtimes_cache_path, 60, options.override)
+    except IOError as e:
+        print e
+        return 1
 
-    if report:
-        present_report( report, ask, send)
+    entries = gather_entries(entries_spec)
+    records = build_records(entries, downtimes, downtimes_file_path)
+    commands = gather_commands(records)
 
-    if make_rss:
+    report_s = report_status(records, status_list, descriptors)
+    report_c = report_commands(commands, options.oneline)
+
+    if report_s:
+        report = report_s + '\n' + report_c
+
+        print report
+        send_report_email(report, options.ask, options.send)
+
+        if options.execute and commands:
+            execute_commands(commands, downtimes_file_path)
+            report_command_execution(commands, records, descriptors)
+
+    if options.rss:
         generate_feed( records, rss_path, rss_url)
 
     return 0
 
-def parse_command_line():
+def setup_environment():
+
+    rss_file = "rss_downtimes.xml"
+    downtimes_cache_path = "/tmp/.downtimes.cache"
+    descriptors = { 'manual': "Manually registered downtimes",
+                    'new': "Newly advertised downtimes",
+                    'none': "Entries without registered nor advertised downtimes",
+                    'ongoing': "Ongoing downtimes already registered in this factory",
+                    'removable': "Registered downtimes that have finished and can be removed" }
+
+    this_path = os.path.dirname(os.path.abspath(__file__))
+    factools_file = os.path.join(this_path, '../../etc/factools-env.sh')
+    source_shell_file(os.path.abspath(factools_file))
+
+    downtimes_file_path = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+    rss_path = os.getenv('GLIDEIN_FACTORY_DIR') + '/' + rss_file
+    rss_url = os.getenv('GLIDEIN_MON_URL') + rss_file
+
+    return downtimes_file_path, downtimes_cache_path, rss_path, rss_url, descriptors
+
+def source_shell_file (file_path):
+
+    command = ['bash', '-c', 'source {0} && env'.format(file_path)]
+
+    proc = sp.Popen(command, stdout = sp.PIPE)
+
+    for line in proc.stdout:
+        (key, _, value) = line.partition("=")
+        os.environ[key] = value.strip()
+
+    proc.communicate()
+
+def parse_command_line(descriptors, rss_path):
 
     desc = "Checks GOCDB and OIM for advertised downtimes that are currently not registered on this GlideinWMS factory."
 
@@ -67,6 +110,10 @@ def parse_command_line():
                        help="If present, generates an RSS feed file to {0}.".format(rss_path))
     parser.add_option ('-l', '--one-line', dest="oneline", action='store_true', default=False,
                        help="If present, prints all suggested commands in a single line, separated by colons.")
+    parser.add_option ('-f', '--force-reload', dest="override", action='store_true', default=False,
+                       help="If present, overrides the current cache with new data from GOCDB and OIM.")
+    parser.add_option ('-x', '--execute', dest="execute", action='store_true', default=False,
+                       help="If present, executes all suggested commands.")
 
     options, args = parser.parse_args()
 
@@ -82,7 +129,7 @@ def parse_command_line():
         if not options.verbose:
             status_list.remove('none')
 
-    return entries_spec, set(status_list), options.ask, options.send, options.rss, options.oneline
+    return entries_spec, set(status_list), options
 
 def gather_entries (entries_spec):
 
@@ -102,38 +149,39 @@ def gather_entries (entries_spec):
 
     return the_entries
 
-def get_downtimes (downtimes_cache_file, cache_expiry=0):
+def get_downtimes (downtimes_cache_path, cache_expiry=0, force_reload=False):
 
     now = datetime.utcnow()
     do_get = True
-    cache_exists = os.path.exists(downtimes_cache_file)
+    cache_exists = os.path.exists(downtimes_cache_path)
 
-    if cache_expiry > 0 and cache_exists:
-        cache_data_raw = open(downtimes_cache_file, 'r').read()
+    if not force_reload and cache_expiry > 0 and cache_exists:
+        cache_data_raw = open(downtimes_cache_path, 'r').read()
         cache_data = DateTimeAwareDecoder().decode(cache_data_raw)
         cache_timestamp = cache_data['timestamp']
         age = (now - cache_timestamp).seconds
         if age <= cache_expiry:
             downtimes = cache_data['downtimes']
             do_get = False
-            print "Using cached downtimes data."
 
-    if do_get:
+    if do_get or force_reload:
         downtimes = {"EGI": get_egi(),
                      "OSG": get_osg()}
         cache_timestamp = now
+    else:
+        print "Using cached downtimes data (lifetime = %d s, remaining = %d s)" % (cache_expiry, cache_expiry-age)
 
     cache = {'timestamp': cache_timestamp,
              'downtimes': downtimes}
 
     json_str = DateTimeAwareEncoder().encode(cache)
-    json_out = open(downtimes_cache_file, 'w')
+    json_out = open(downtimes_cache_path, 'w')
     json_out.write(json_str)
     json_out.close()
 
     return downtimes
 
-def build_records (entries_config, downtimes):
+def build_records (entries_config, downtimes, downtimes_file_path):
 
     records = {}
 
@@ -151,7 +199,7 @@ def build_records (entries_config, downtimes):
             target_hosts["SE"] = storage_element
 
         advertisement = get_downtime( entry_name, target_hosts, downtimes )
-        registered, manual, comment = is_entry_in_factory_downtime( entry_name)
+        registered, manual, comment = is_entry_in_factory_downtime( entry_name, downtimes_file_path)
         key, data = assign_record( advertisement, entry_name, registered, manual,
                                    comment)
 
@@ -188,68 +236,67 @@ def assign_record (advertisement, entry_name, registered, manual, comment):
 
     return key, data
 
-def generate_report (records, status_list, one_line):
+def report_status (records, status_list, descriptors):
 
     lines = []
     with_commands = {}
     there_are_commands = False
-    indentation_step = 3
-    indent = 0
 
     all_keys = set(records.keys())
     empty_keys = set( filter_dict( lambda key, val: not val, records).keys() )
     included_keys = status_list & (all_keys - empty_keys)
 
-    sorter = lambda r: r[0]
-    cmd_tester = lambda key, rec: 'command' in rec
+    for kind in sorted(included_keys):
 
-    for status in sorted(included_keys):
+        if records[kind]:
 
-        if records[status]:
+            lines.append( "* " + descriptors[kind] + ":")
+            width = max( len(entry) for entry in records[kind].keys() )
 
-            lines.append( "* " + descriptors[status] + ":")
-            width = max( [ len(entry) for entry in records[status].keys() ] )
-
-            for entry_name, record in sorted(records[status].items(), key=sorter):
-
-                complement = record['complement']
-                if complement:
-                    if len(complement.splitlines()) > 1:
-                        line = indent_multilines(entry_name,
-                                                 indent + indentation_step)
-                        lines.append('')
-                        lines.append(line + ':')
-                        line = record['complement']
-                        lines.append( indent_multilines( line, indent + 2*indentation_step))
-                    else:
-                        line = "{0:<{width}} : {1}".format(entry_name, complement, width=width)
-                        lines.append( indent_multilines( line, indent + indentation_step))
-                else:
-                    line = indent_multilines(entry_name, indent + indentation_step)
-                    lines.append(line)
+            for entry_name in sorted(records[kind].keys()):
+                add_formated_record (lines, entry_name, records[kind][entry_name], width)
 
             lines.append('')
 
-            with_commands[status] = filter_dict( cmd_tester, records[status])
-            there_are_commands |= bool(with_commands[status])
+    return '\n'.join(lines)
 
-    if there_are_commands:
+def add_formated_record (lines, entry_name, record, width, indent=0, indentation_step=3):
+
+    complement = record['complement']
+    if complement:
+        if len(complement.splitlines()) > 1:
+            line = indent_multilines(entry_name, indent + indentation_step)
+            lines.append('')
+            lines.append(line + ':')
+            line = record['complement']
+            lines.append( indent_multilines( line, indent + 2*indentation_step))
+        else:
+            line = "{0:<{width}} : {1}".format(entry_name, complement, width=width)
+            lines.append( indent_multilines( line, indent + indentation_step))
+    else:
+        line = indent_multilines(entry_name, indent + indentation_step)
+        lines.append(line)
+
+def report_commands (commands={}, one_line=False):
+
+    lines = []
+
+    if commands:
 
         lines.append("---- ---- ----")
         lines.append("Suggested list of downtime commands:\n")
 
         single_line = []
 
-        for status in included_keys:
+        for kind in commands.keys():
             if one_line:
-                for entry_name, record in sorted(with_commands[status].items(), key=sorter):
-                    single_line.append(record['command'])
-
+                for entry_name in sorted(commands[kind].keys()):
+                    single_line.append(commands[kind][entry_name]['command'])
             else:
-                for entry_name, record in sorted(with_commands[status].items(), key=sorter):
-                    lines.append(record['command'])
+                for entry_name in sorted(commands[kind].keys()):
+                    lines.append(commands[kind][entry_name]['command'])
 
-                if with_commands[status]:
+                if commands[kind]:
                     lines.append('')
 
         if one_line:
@@ -257,21 +304,14 @@ def generate_report (records, status_list, one_line):
 
     return '\n'.join(lines)
 
-def present_report (report, do_ask, do_send):
+def send_report_email (report, do_ask, do_send):
 
-    print report
+    subject = "Factory Downtimes status."
 
-    subject = "New entry downtimes updates."
-
-    if do_send:
-        send_email_plain( subject, report)
-    else:
-        if do_ask:
-            prompt_send = raw_input ("Do you want to send the report? ")
-            if prompt_send.lower() in ("y", "ye", "yes", "ok"):
-                send_email_plain( subject, report)
-            else:
-                print "Report not sent."
+    if do_send or ( do_ask and console_prompt("Do you want to send the report?") ):
+        to = 'osg-gfactory-reports@physics.ucsd.edu'
+        send_email_plain(subject, report, to)
+        print "Report sent."
 
 def get_downtime (entry_name, target_hosts, downtimes):
 
@@ -297,11 +337,13 @@ def gen_downtime_message (downtime_record, entry_name):
         hostname, record = dictpeek(downtime_record)
         description = ' '.join(record['description'].split())
 
-        message =  "    Federation: " + record['federation'] + '\n'
-        message += " Affected Host: %s (%s)\n" % (hostname, record['host_type'])
-        message += "   Description: " + description + '\n'
-        message += "    Start time: " + print_local_dt( record['start']) + '\n'
-        message += "      End time: " + print_local_dt( record['end'])
+        lines = []
+        lines.append( "%14s: %s" % ("Federation", record['federation']) )
+        lines.append( "%14s: %s (%s)" % ("Affected Host", hostname, record['host_type']) )
+        lines.append( "%14s: %s" % ("Description", description) )
+        lines.append( "%14s: %s" % ("Start time", print_local_dt( record['start'])) )
+        lines.append( "%14s: %s" % ("End time", print_local_dt( record['end'])) )
+        message = '\n'.join(lines)
 
     else:
         message = "%s : This entry is NOT under downtime." % entry_name
@@ -330,26 +372,23 @@ def gen_downtime_command (downtime_record, entry_name):
 
     return command
 
-def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
-
-    downtimes_file = os.getenv('GLIDEIN_FACTORY_DIR') + "/glideinWMS.downtimes"
+def is_entry_in_factory_downtime (entry_name, downtimes_file_path, when=datetime.now(tzutc())):
 
     registered = False
     manual = False
     comment = ''
 
     record_lines = []
-    with open(downtimes_file) as fd:
+    with open(downtimes_file_path) as fd:
         for line in fd:
-            if entry_name in line and not line.startswith('#'):
-                record_lines.append(line.strip())
+            if not line.startswith('#'):           # comments start with a hash
+                match = re.search(r'\b' + entry_name + r'\b',
+                                  line)                     # whole-word search
+                if match:
+                    record_lines.append(line.strip())
 
     for line in record_lines:
         fields = line.split()
-
-        # 'entry' >= 'entry_name' (because of "if entry_name in line...")
-        entry = fields[2]
-        if entry != entry_name: continue
 
         start = parse_timestamp(fields[0])
 
@@ -358,6 +397,7 @@ def is_entry_in_factory_downtime (entry_name, when=datetime.now(tzutc())):
         else:
             end = None
 
+        entry = fields[2]         # It is equal to entry_name by construction
         frontend = fields[3]
         sec_clas = fields[4]
         comment = ' '.join(fields[5:])
@@ -390,11 +430,15 @@ def get_user_and_host_names():
     host = socket.gethostname()
     return user, host
 
-def send_email_plain (subject, message):
+def send_email_plain (subject, message, to):
 
     user, host = get_user_and_host_names()
     sender = '%s@%s' % (user, host)
-    receivers = ['osg-gfactory-reports@physics.ucsd.edu']
+
+    if isinstance(to, str):
+        receivers = to.split(',')
+    elif isinstance(to, list):
+        receivers = to
 
     msg = MIMEText (message)
 
@@ -405,14 +449,14 @@ def send_email_plain (subject, message):
     try:
        smtpObj = smtplib.SMTP('localhost')
        smtpObj.sendmail (sender, receivers, msg.as_string())
-       print "Successfully sent email"
+       print "Successfully sent email to:", ', '.join(receivers)
 
     except smtplib.SMTPException:
        print "Error: unable to send email"
 
 def indent_multilines (the_string, indent=0, sub_indent=0):
 
-    # splitlines() takes care of all types of EOL
+    # splitlines() takes care of all types of line-ending characters
     lines = the_string.splitlines()
     full_indent = indent + sub_indent
 
@@ -424,10 +468,9 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
 
     return '\n'.join(line_list)
 
-def generate_feed (records, rss_file_path, rss_url):
+def gather_commands (records):
 
     with_commands = {}
-    there_are_commands = False
 
     status_list = set(['new', 'removable'])
     all_keys = set(records.keys())
@@ -436,21 +479,74 @@ def generate_feed (records, rss_file_path, rss_url):
 
     cmd_tester = lambda key, rec: 'command' in rec
 
-    for status in included_keys:
-        if records[status]:
-            with_commands[status] = filter_dict( cmd_tester, records[status] )
-            there_are_commands |= bool(with_commands[status])
+    for kind in included_keys:
+        if kind in records:
+            with_commands[kind] = filter_dict( cmd_tester, records[kind] )
 
-    if there_are_commands:
+    return with_commands
 
-        feed = DowntimesFeed(rss_file_path, rss_url)
+def execute_commands (commands, downtimes_file_path):
 
+    command_list = []
+    for sites in commands.values():
+        for site in sites.values():
+            command_list.extend( site['command'].split("; ") )
 
-        for status, records in with_commands.items():
-            for entry_name, record in records.items():
-                feed.add_record( entry_name, record, status)
+    additions_test = lambda l: 'echo' in l and 'glideinWMS.downtimes' in l
+    additions = filter(additions_test, command_list)
+    remaining = filter(lambda l: not additions_test(l), command_list)
 
-        feed.write()
+    downtimes_file = open(downtimes_file_path, 'a')
+    for addition in additions:
+        to_add = addition.split('"')[1]
+        downtimes_file.write(to_add + '\n')
+    downtimes_file.close()
+
+    for command in remaining:
+        p = sp.Popen(command.split(), stdout=sp.PIPE)
+        try:
+            out, err = p.communicate()
+            time.sleep(0.1)
+        except Exception as e:
+            raise Exception("An error ocurred while trying to execute:\n{0}\nError:\n{1}".format(command, e))
+
+    print "Commands were executed."
+
+def report_command_execution (commands, records, descriptors):
+
+    lines = []
+    indentation_step = 3
+    indent = 0
+
+    for kind in commands.keys():
+
+        lines.append( "* " + descriptors[kind] + ":")
+        width = max( len(entry) for entry in records[kind].keys() )
+
+        for entry_name in sorted(commands[kind].keys()):
+            record = records[kind][entry_name]
+            command = commands[kind][entry_name]['command'].replace(";", '\n')
+
+            add_formated_record (lines, entry_name, record, width)
+            lines.append( indent_multilines( "Executed command:", indent + indentation_step))
+            lines.append( indent_multilines( command, indent + 2*indentation_step))
+
+        lines.append('')
+
+    display_list = '\n'.join(lines)
+
+    send_email_plain( 'Factory downtimes: Executed commands', display_list,
+                      'osg-gfactory-reports@physics.ucsd.edu' )
+
+def generate_feed (commands, rss_file_path, rss_url):
+
+    feed = DowntimesFeed(rss_file_path, rss_url)
+
+    for kind, records in commands.items():
+        for entry_name, record in records.items():
+            feed.add_record( entry_name, record, kind)
+
+    feed.write()
 
 class DowntimesFeed(object):
 
@@ -465,7 +561,7 @@ class DowntimesFeed(object):
             lastBuildDate = datetime.utcnow(),
             items = [])
 
-    def add_record (self, entry_name, record, status):
+    def add_record (self, entry_name, record, kind):
 
         text = self.format_description( record['complement'],
                                         record['command'] )
@@ -473,7 +569,7 @@ class DowntimesFeed(object):
         guid = entry_name + '-' + url
 
         self.rss.items.append( rssgen.FlexRSSItem(
-                title = "{0} downtime for {1}".format(status.capitalize(),
+                title = "{0} downtime for {1}".format(kind.capitalize(),
                                                       entry_name),
                 link = url if url else None,
                 guid = rssgen.Guid(guid, isPermaLink = False),
@@ -547,6 +643,11 @@ class DateTimeAwareDecoder (json.JSONDecoder):
         else:
             return d
 
+def console_prompt (message):
+
+    prompt = raw_input(message.rstrip() + ' ')
+    return prompt.lower() in ("y", "ye", "yes", "ok")
+
 if __name__ == "__main__":
-    sys.exit (main())
+    sys.exit( main() )
 
