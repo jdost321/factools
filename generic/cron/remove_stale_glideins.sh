@@ -6,6 +6,7 @@ if [ -e $ft_env ];then
     . $ft_env
 fi
 
+. /etc/profile.d/condor.sh
 scale=${1:-2.0}
 
 ${script_dir}/../bin/find_stale_glideins -k -f $scale
