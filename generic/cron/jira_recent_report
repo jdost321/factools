@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 # Remove buffering from stdout
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-debugging = True
+debugging = False
 
 now = datetime.datetime.now(tzlocal())
 
@@ -52,7 +52,6 @@ def main():
         except urllib2.URLError:
             retry_period_min = 2
             message = "The OSG Jira server isn't responding at this moment. Trying again in %d minutes..." % retry_period_min
-            retry = True
             time.sleep (retry_period_min*60)
 
     print "Report:"
@@ -67,6 +66,7 @@ def main():
         else:
             print "Report not sent."
 
+    return 0
 
 def get_recent_activity (timeframe, timeframe_val):
 
@@ -119,8 +119,8 @@ def get_recent_activity (timeframe, timeframe_val):
 def format_activity (day_activity, timeframe):
 
     cms_keywords = ['cms', 'egi', 'cern']
-    cms_filter = lambda e: any (name in e['summary'].lower() for name in cms_keywords) or \
-                           any (name in e['description'].lower() for name in cms_keywords)
+    cms_filter = lambda e: any( name in e['summary'].lower() for name in cms_keywords ) or \
+                           any( name in e['description'].lower() for name in cms_keywords )
     for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) )
     not_cms = dict( (key, val) for key, val in day_activity.iteritems() if not cms_filter(val) )
 
@@ -379,4 +379,4 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
