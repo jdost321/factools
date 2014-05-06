@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 # Remove buffering from stdout
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-debugging = True
+debugging = False
 
 now = datetime.datetime.now(tzlocal())
 
@@ -47,14 +47,11 @@ def main():
                 message = format_activity (day_events, timeframe)
             else:
                 message = "There has been no new activity reported in OSG Jira for the last %d hours." % timeframe_val
-
             retry = False
 
         except urllib2.URLError:
             retry_period_min = 2
             message = "The OSG Jira server isn't responding at this moment. Trying again in %d minutes..." % retry_period_min
-
-            retry = True
             time.sleep (retry_period_min*60)
 
     print "Report:"
@@ -69,6 +66,7 @@ def main():
         else:
             print "Report not sent."
 
+    return 0
 
 def get_recent_activity (timeframe, timeframe_val):
 
@@ -120,7 +118,9 @@ def get_recent_activity (timeframe, timeframe_val):
 
 def format_activity (day_activity, timeframe):
 
-    cms_filter = lambda e: 'cms' in e['summary'].lower()
+    cms_keywords = ['cms', 'egi', 'cern']
+    cms_filter = lambda e: any( name in e['summary'].lower() for name in cms_keywords ) or \
+                           any( name in e['description'].lower() for name in cms_keywords )
     for_cms = dict( (key, val) for key, val in day_activity.iteritems() if cms_filter(val) )
     not_cms = dict( (key, val) for key, val in day_activity.iteritems() if not cms_filter(val) )
 
@@ -143,9 +143,10 @@ def format_activity (day_activity, timeframe):
 
             if event['status'] not in ["Resolved", "Closed", "Fixed"]:
                 if event['create_date'] >= (now - timeframe).date():
-                    status = "New"
+                    reporter_name = event['reporter'].split()[0]
+                    tag = "[New, by %s]" % reporter_name
                 else:
-                    status = "Open"
+                    tag = "[Open]"
             else:
                 tag = "[Closed]"
 
@@ -378,4 +379,4 @@ def indent_multilines (the_string, indent=0, sub_indent=0):
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
