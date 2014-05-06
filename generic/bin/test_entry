@@ -43,7 +43,7 @@ def get_glidein_args(gfactory_dir, entry):
         fin.close()
 
 def get_glidein_params(glide_desc, job_params, client_name, entry):
-    status_constraint='(Name=?="%s@%s@%s@%s")'%(entry,glide_desc.data['GlideinName'],glide_desc.data['FactoryName'],client_name)
+    status_constraint='(ReqGlidein=?="%s@%s@%s"&&ClientName=?="%s")'%(entry,glide_desc.data['GlideinName'],glide_desc.data['FactoryName'],client_name)
     status=condorMonitor.CondorStatus("any")
     status.load(status_constraint)
     data=status.fetchStored()
