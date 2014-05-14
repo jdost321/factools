@@ -4,6 +4,8 @@
 import sys
 import os
 import re
+import time
+import calendar
 
 #sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
 
@@ -131,6 +133,8 @@ try:
     down_entries = set()
     for line in down_file:
         #print line
+        if line.startswith("#"):
+            continue
         line = line.split()
         if len(line) < 3:
             continue
@@ -138,6 +142,12 @@ try:
         entry = line[2]
         if end == "None":
             down_entries.add(entry)
+        else:
+            offset = int(end[-6:].split(':')[0])
+            end_seconds = calendar.timegm(time.strptime(end[:-6], "%Y-%m-%dT%X"))
+            end_seconds -= offset * 3600
+            if end_seconds > time.time():
+                down_entries.add(entry)
 
 finally:
     down_file.close()
