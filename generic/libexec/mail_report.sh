@@ -34,7 +34,7 @@ case "$mode" in
     ae)
         script=analyze_entries
         if [ "$target" = factory ]; then
-            cmd="${tools_path}/${script} $src_flag -x $interval -s strt  -l strt,10 --nb;${tools_path}/${script} $src_flag -x $interval -s strt -m;${tools_path}/${script} $src_flag -x $interval -s strt"
+            cmd="${tools_path}/${script} $src_flag -x $interval -s waste  -l wst,25 --nb;${tools_path}/${script} $src_flag -x $interval -s waste -m;${tools_path}/${script} $src_flag -x $interval -s waste"
         else
             cmd="${tools_path}/${script} $src_flag -x $interval -s waste -f $target"
         fi
