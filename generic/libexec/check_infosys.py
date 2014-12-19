@@ -7,14 +7,8 @@ import re
 import time
 import calendar
 
-#sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
-
-# get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
-else:
-    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
-    sys.exit(1)
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "../"))
 
 from glideinwms.creation.lib import cgWParams
 from glideinwms.lib import ldapMonitor
@@ -118,6 +112,9 @@ def parse_bdii(bdii_data, other_bdii_data, server, unique_ids, bad_bdii_entries)
 
 if 'GLIDEIN_FACTORY_DIR' in os.environ:
     gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+# try rpm location
+elif os.path.isdir('/var/lib/gwms-factory/work-dir'):
+    gfactory_dir='/var/lib/gwms-factory/work-dir'
 else:
     gfactory_dir="."
 
