@@ -6,14 +6,10 @@ import os
 import re
 
 if 'GLIDEIN_SRC_DIR' in os.environ:
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "lib"))
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "creation/lib"))
-else:
-    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
-    sys.exit(1)
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "../"))
 
-import cgWParams
-import ldapMonitor
+from glideinwms.creation.lib import cgWParams
+from glideinwms.lib import ldapMonitor
 
 def get_bad_entries(unique_ids, key, b_entry):
     bad_entries = None
@@ -114,6 +110,9 @@ def parse_bdii(bdii_data, other_bdii_data, server, unique_ids, bad_bdii_entries)
 
 if 'GLIDEIN_FACTORY_DIR' in os.environ:
     gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+# try rpm location
+elif os.path.isdir('/var/lib/gwms-factory/work-dir'):
+    gfactory_dir='/var/lib/gwms-factory/work-dir'
 else:
     gfactory_dir="."
 
@@ -183,7 +182,7 @@ for entry in cparams.entries.keys():
                 key = "%s,%s" % (host,jm)
             else:
                 if rsl is not None and "queue" in rsl:
-                    queue = re.search(r"queue=(\w+)\)", rsl).group(1)
+                    queue = re.search(r"queue=([^)]+)", rsl).group(1)
                 # try pulling queue from infosys if there
                 elif len(cparams.entries[entry]['infosys_refs']) > 0:
                     dn = cparams.entries[entry]['infosys_refs'][0]['ref']

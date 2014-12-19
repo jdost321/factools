@@ -6,9 +6,11 @@ source ~/.bash_profile
 if [ -z "$GLIDEIN_MAIL_REPLY_TO" ]; then
     exit 1
 fi
-# Fail if factory dir is not set
+# try rpm location if factory dir is not set
 if [ -z "$GLIDEIN_FACTORY_DIR" ]; then
-    exit 1
+  conf=/var/lib/gwms-factory/work-dir/glideinWMS.xml
+else
+  conf=${GLIDEIN_FACTORY_DIR}/glideinWMS.xml
 fi
 if [ -n "GLIDEIN_FACTORY_NAME" ];then
     factory_name="$GLIDEIN_FACTORY_NAME "
@@ -16,7 +18,6 @@ fi
 
 emails=$1
 subject="${factory_name}Infosys Report `date +%m-%d-%Y`"
-conf=${GLIDEIN_FACTORY_DIR}/glideinWMS.xml
 script_dir=`dirname $0`
 body=`${script_dir}/../libexec/check_infosys.py $conf`
 
