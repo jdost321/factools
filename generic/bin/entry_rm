@@ -10,16 +10,13 @@
 import os
 import sys
 STARTUP_DIR=sys.path[0]
+#sys.path.append(os.path.join(STARTUP_DIR,"../../../"))
 
-#sys.path.append(os.path.join(STARTUP_DIR,".."))
 # get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
-    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'], "factory"))
-else:
-    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
-    sys.exit(1)
+    sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
 
-import glideFactoryConfig
+from glideinwms.factory import glideFactoryConfig
 
 USAGE="Usage: entry_rm entry|-l [-dir <dir>] [-printschedd] [condor_rm options]"
 
@@ -43,6 +40,9 @@ def main(argv):
     # Try GLIDEIN_FACTORY_DIR env var first
     if 'GLIDEIN_FACTORY_DIR' in os.environ:
         gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+    # is it an rpm install?
+    elif os.path.isdir("/var/lib/gwms-factory/work-dir"):
+        gfactory_dir="/var/lib/gwms-factory/work-dir"
     else:
         gfactory_dir="."
 
