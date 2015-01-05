@@ -7,13 +7,13 @@ import time
 def get_dt_format(t_struct):
   return time.strftime("%Y-%m-%dT%H:%M:%S+0:00", t_struct)
 
+downtimes = {}
+
 ###### OSG downtimes xml parsing variables and callbacks
 
 # only collect downtimes if services are relevant
 # 1 = CE
-relevant_services = set(['1'])
-
-downtimes = {}
+relevant_osg_services = set(['1'])
 
 in_services = False
 in_descript = False
@@ -57,7 +57,7 @@ def osg_end_element(name):
   if name == 'Downtime':
     relevant = False
     for s in services:
-      if s in relevant_services:
+      if s in relevant_osg_services:
         relevant = True
         break
 
@@ -73,6 +73,47 @@ def osg_end_element(name):
     descript = "".join(desc_arr)
 
 ###### END OSG downtimes xml parsing variables and callbacks
+
+###### EGI downtimes xml parsing variables and callbacks
+
+relevant_egi_services = set(['CREAM-CE','ARC-CE'])
+
+def egi_start_element(name, attrs):
+  global cur_el
+  cur_el = name
+
+def egi_char_data(data):
+  global start_time
+  global end_time
+  global hostname
+  global descript
+  global service
+
+  if cur_el == 'HOSTNAME':
+    hostname = data
+  elif cur_el == 'START_DATE':
+    #print "sd: %s" % data
+    #print "sd: %s" % float(data)
+    start_time = time.gmtime(float(data))
+  elif cur_el == 'END_DATE':
+    end_time = time.gmtime(float(data))
+  elif cur_el == 'DESCRIPTION':
+    descript = data
+  elif cur_el == 'SERVICE_TYPE':
+    service = data
+
+def egi_end_element(name):
+  global cur_el
+  if name == 'DOWNTIME' and service in relevant_egi_services:
+    if hostname not in downtimes:
+      downtimes[hostname] = []
+    downtimes[hostname].append({'start': start_time, 'end': end_time, 'desc': descript})
+  # if not in DOWNTIME end tag, assume leaving a child element
+  else:
+    cur_el = 'DOWNTIME'
+
+###### END EGI downtimes xml parsing variables and callbacks
+
 ###### glideinWMS.xml parsing variables and callbacks
 
 def gwms_start_element(name, attrs):
@@ -106,7 +147,18 @@ xmlparser.ParseFile(dt_xml)
 
 dt_xml.close()
 
-#print downtimes
+#egi_url = 'https://goc.egi.eu/gocdbpi/public/?method=get_downtime&ongoing_only=yes'
+
+dt_xml = open("egi_down.xml")
+
+xmlparser = xml.parsers.expat.ParserCreate()
+xmlparser.StartElementHandler = egi_start_element
+xmlparser.EndElementHandler = egi_end_element
+xmlparser.CharacterDataHandler = egi_char_data
+
+xmlparser.ParseFile(dt_xml)
+
+dt_xml.close()
 
 gwms_xml = open("glideinWMS.xml")
 xmlparser = xml.parsers.expat.ParserCreate()
