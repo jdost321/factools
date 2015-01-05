@@ -4,6 +4,11 @@ import urllib2
 import xml.parsers.expat
 import time
 
+def get_dt_format(t_struct):
+  return time.strftime("%Y-%m-%dT%H:%M:%S+0:00", t_struct)
+
+###### OSG downtimes xml parsing variables and callbacks
+
 # only collect downtimes if services are relevant
 # 1 = CE
 relevant_services = set(['1'])
@@ -13,7 +18,7 @@ downtimes = {}
 in_services = False
 in_descript = False
 
-def start_element(name, attrs):
+def osg_start_element(name, attrs):
   global cur_el
   global services
   global in_services
@@ -28,7 +33,7 @@ def start_element(name, attrs):
     in_descript = True
     desc_arr = []
   
-def char_data(data):
+def osg_char_data(data):
   global start_time
   global end_time
   global hostname
@@ -44,7 +49,7 @@ def char_data(data):
   elif in_descript:
     desc_arr.append(data)
 
-def end_element(name):
+def osg_end_element(name):
   global in_services
   global in_descript
   global descript
@@ -66,6 +71,23 @@ def end_element(name):
   elif name == 'Description' and not in_services:
     in_descript = False
     descript = "".join(desc_arr)
+
+###### END OSG downtimes xml parsing variables and callbacks
+###### glideinWMS.xml parsing variables and callbacks
+
+def gwms_start_element(name, attrs):
+  if name == 'entry' and attrs['enabled'] == 'True':
+    if attrs['gridtype'] == 'gt2' or attrs['gridtype'] == 'gt5' or attrs['gridtype'] == 'cream':
+      hostname = attrs['gatekeeper'].split(':')[0]
+    # works for nordugrid and condor-ce
+    else:
+      hostname = attrs['gatekeeper'].split()[0]
+
+    if hostname in downtimes:
+      for dt in downtimes[hostname]:
+        print "%s %s %s All All # _ad_ %s" % (get_dt_format(dt['start']), get_dt_format(dt['end']), attrs['name'], ";".join(dt['desc'].split('\n')))
+
+###### END glideinWMS.xml parsing variables and callbacks
     
 url = 'http://myosg.grid.iu.edu/rgdowntime/xml?summary_attrs_showservice=on&summary_attrs_showrsvstatus=on&summary_attrs_showfqdn=on&gip_status_attrs_showtestresults=on&downtime_attrs_showpast=&account_type=cumulative_hours&ce_account_type=gip_vo&se_account_type=vo_transfer_volume&bdiitree_type=total_jobs&bdii_object=service&bdii_server=is-osg&start_type=7daysago&end_type=now&all_resources=on&facility_sel[]=10009&gridtype=on&gridtype_1=on&active=on&active_value=1&disable_value=1'
 
@@ -76,12 +98,19 @@ dt_xml = open("down.xml")
 #  print line,
 
 xmlparser = xml.parsers.expat.ParserCreate()
-xmlparser.StartElementHandler = start_element
-xmlparser.EndElementHandler = end_element
-xmlparser.CharacterDataHandler = char_data
+xmlparser.StartElementHandler = osg_start_element
+xmlparser.EndElementHandler = osg_end_element
+xmlparser.CharacterDataHandler = osg_char_data
 
 xmlparser.ParseFile(dt_xml)
 
 dt_xml.close()
 
-print downtimes
+#print downtimes
+
+gwms_xml = open("glideinWMS.xml")
+xmlparser = xml.parsers.expat.ParserCreate()
+xmlparser.StartElementHandler = gwms_start_element
+xmlparser.ParseFile(gwms_xml)
+
+gwms_xml.close()
