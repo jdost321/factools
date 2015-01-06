@@ -211,3 +211,5 @@ for dt in manual_dts:
   new_dt_file.write(dt)
 
 new_dt_file.close()
+
+os.rename(os.path.join(gfactory_dir, "glideinWMS.downtimes.tmp"), os.path.join(gfactory_dir, "glideinWMS.downtimes"))
