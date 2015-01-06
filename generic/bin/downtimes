@@ -3,6 +3,7 @@
 import urllib2
 import xml.parsers.expat
 import time
+import os
 
 def get_dt_format(t_struct):
   return time.strftime("%Y-%m-%dT%H:%M:%S+00:00", t_struct)
@@ -132,13 +133,29 @@ def gwms_start_element(name, attrs):
 
 ###### END glideinWMS.xml parsing variables and callbacks
     
+# Try GLIDEIN_FACTORY_DIR env var first
+if 'GLIDEIN_FACTORY_DIR' in os.environ:
+  gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+# is it an rpm install?
+elif os.path.isdir("/var/lib/gwms-factory/work-dir"):
+  gfactory_dir="/var/lib/gwms-factory/work-dir"
+else:
+  gfactory_dir="."
+
 url = 'http://myosg.grid.iu.edu/rgdowntime/xml?summary_attrs_showservice=on&summary_attrs_showrsvstatus=on&summary_attrs_showfqdn=on&gip_status_attrs_showtestresults=on&downtime_attrs_showpast=&account_type=cumulative_hours&ce_account_type=gip_vo&se_account_type=vo_transfer_volume&bdiitree_type=total_jobs&bdii_object=service&bdii_server=is-osg&start_type=7daysago&end_type=now&all_resources=on&facility_sel[]=10009&gridtype=on&gridtype_1=on&active=on&active_value=1&disable_value=1'
 
-#dt_xml = urllib2.urlopen(url)
-dt_xml = open("down.xml")
+dt_xml = urllib2.urlopen(url)
+#dt_xml = open("down.xml")
 
 #for line in dt_xml:
 #  print line,
+
+#fout = open('osg_debug.xml','w')
+#for line in dt_xml:
+#  fout.write(line)
+
+#fout.close()
+#dt_xml.seek(0)
 
 xmlparser = xml.parsers.expat.ParserCreate()
 xmlparser.StartElementHandler = osg_start_element
@@ -149,9 +166,10 @@ xmlparser.ParseFile(dt_xml)
 
 dt_xml.close()
 
-#egi_url = 'https://goc.egi.eu/gocdbpi/public/?method=get_downtime&ongoing_only=yes'
+egi_url = 'https://goc.egi.eu/gocdbpi/public/?method=get_downtime&ongoing_only=yes'
 
-dt_xml = open("egi_down.xml")
+#dt_xml = open("egi_down.xml")
+dt_xml = urllib2.urlopen(egi_url)
 
 xmlparser = xml.parsers.expat.ParserCreate()
 xmlparser.StartElementHandler = egi_start_element
@@ -162,14 +180,14 @@ xmlparser.ParseFile(dt_xml)
 
 dt_xml.close()
 
-gwms_xml = open("glideinWMS.xml")
+gwms_xml = open(os.path.join(gfactory_dir, "glideinWMS.xml"))
 xmlparser = xml.parsers.expat.ParserCreate()
 xmlparser.StartElementHandler = gwms_start_element
 xmlparser.ParseFile(gwms_xml)
 
 gwms_xml.close()
 
-dt_file = open("glideinWMS.downtimes")
+dt_file = open(os.path.join(gfactory_dir, "glideinWMS.downtimes"))
 manual_dts = []
 
 for line in dt_file:
@@ -188,7 +206,7 @@ for line in dt_file:
 
 dt_file.close()
 
-new_dt_file = open("glideinWMS.downtimes2", 'w')
+new_dt_file = open(os.path.join(gfactory_dir, "glideinWMS.downtimes.tmp"), 'w')
 for entry in sorted(entry_downtimes):
   for dt in entry_downtimes[entry]:
     new_dt_file.write("%s %s %s All All # _ad_ %s\n" % (get_dt_format(dt['start']), get_dt_format(dt['end']), entry, ";".join(dt['desc'].split('\n'))))
