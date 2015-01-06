@@ -10,6 +10,7 @@ def get_dt_format(t_struct):
 
 downtimes = {}
 entry_downtimes = {}
+str_buf = []
 
 ###### OSG downtimes xml parsing variables and callbacks
 
@@ -18,42 +19,30 @@ entry_downtimes = {}
 relevant_osg_services = set(['1'])
 
 in_services = False
-in_descript = False
 
 def osg_start_element(name, attrs):
   global cur_el
   global services
   global in_services
-  global in_descript
-  global desc_arr
+  global str_buf
 
   cur_el = name
+
   if name == 'Services':
     services = []
     in_services = True
-  elif name == 'Description' and not in_services:
-    in_descript = True
-    desc_arr = []
+  elif name == 'ResourceFQDN' or name == 'StartTime' or name == 'EndTime' or name == 'ID' or name == 'Description':
+    str_buf = []
   
 def osg_char_data(data):
-  global start_time
-  global end_time
-  global hostname
-
-  if cur_el == 'ResourceFQDN':
-    hostname = data
-  elif cur_el == 'StartTime':
-    start_time = time.strptime(data, "%b %d, %Y %H:%M:%S UTC")
-  elif cur_el == 'EndTime':
-    end_time = time.strptime(data, "%b %d, %Y %H:%M:%S UTC")
-  elif cur_el == 'ID' and in_services:
-    services.append(data)
-  elif in_descript:
-    desc_arr.append(data)
+  if cur_el == 'ResourceFQDN' or cur_el == 'StartTime' or cur_el == 'EndTime' or cur_el == 'ID' or cur_el == 'Description':
+    str_buf.append(data)
 
 def osg_end_element(name):
   global in_services
-  global in_descript
+  global hostname
+  global start_time
+  global end_time
   global descript
 
   if name == 'Downtime':
@@ -68,11 +57,18 @@ def osg_end_element(name):
         downtimes[hostname] = []
       downtimes[hostname].append({'start': start_time, 'end': end_time, 'desc': descript})
 
+  elif name == 'ResourceFQDN':
+    hostname = "".join(str_buf)
+  elif name == 'StartTime':
+    start_time = time.strptime("".join(str_buf), "%b %d, %Y %H:%M:%S UTC")
+  elif name == 'EndTime':
+    end_time = time.strptime("".join(str_buf), "%b %d, %Y %H:%M:%S UTC")
+  elif name == 'ID' and in_services:
+    services.append("".join(str_buf))
+  elif name == 'Description' and not in_services:
+    descript = "".join(str_buf)
   elif name == 'Services':
     in_services = False
-  elif name == 'Description' and not in_services:
-    in_descript = False
-    descript = "".join(desc_arr)
 
 ###### END OSG downtimes xml parsing variables and callbacks
 
@@ -82,37 +78,38 @@ relevant_egi_services = set(['CREAM-CE','ARC-CE'])
 
 def egi_start_element(name, attrs):
   global cur_el
+  global str_buf
+
   cur_el = name
 
+  if name == 'HOSTNAME' or name == 'START_DATE' or name == 'END_DATE' or name == 'DESCRIPTION' or name == 'SERVICE_TYPE':
+    str_buf = []
+
 def egi_char_data(data):
+  if cur_el == 'HOSTNAME' or cur_el == 'START_DATE' or cur_el == 'END_DATE' or cur_el == 'DESCRIPTION' or cur_el == 'SERVICE_TYPE':
+    str_buf.append(data)
+
+def egi_end_element(name):
+  global hostname
   global start_time
   global end_time
-  global hostname
   global descript
   global service
 
-  if cur_el == 'HOSTNAME':
-    hostname = data
-  elif cur_el == 'START_DATE':
-    #print "sd: %s" % data
-    #print "sd: %s" % float(data)
-    start_time = time.gmtime(float(data))
-  elif cur_el == 'END_DATE':
-    end_time = time.gmtime(float(data))
-  elif cur_el == 'DESCRIPTION':
-    descript = data
-  elif cur_el == 'SERVICE_TYPE':
-    service = data
-
-def egi_end_element(name):
-  global cur_el
   if name == 'DOWNTIME' and service in relevant_egi_services:
     if hostname not in downtimes:
       downtimes[hostname] = []
     downtimes[hostname].append({'start': start_time, 'end': end_time, 'desc': descript})
-  # if not in DOWNTIME end tag, assume leaving a child element
-  else:
-    cur_el = 'DOWNTIME'
+  elif name == 'HOSTNAME':
+    hostname = "".join(str_buf)
+  elif name == 'START_DATE':
+    start_time = time.gmtime(float("".join(str_buf)))
+  elif name == 'END_DATE':
+    end_time = time.gmtime(float("".join(str_buf)))
+  elif name == 'DESCRIPTION':
+    descript = "".join(str_buf)
+  elif name == 'SERVICE_TYPE':
+    service = "".join(str_buf)
 
 ###### END EGI downtimes xml parsing variables and callbacks
 
