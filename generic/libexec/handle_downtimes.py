@@ -1,7 +1,17 @@
 #!/usr/bin/python
 
+import sys
 import time
 import calendar
+import xml.sax.saxutils
+import xml.sax.xmlreader
+
+DEL_T = 5 * 60
+# truncate to scheduled interval in case
+# there is a delay when this script is actually started
+NOW = int(time.time()) / DEL_T * DEL_T
+
+EMPTY_ATTRS = xml.sax.xmlreader.AttributesImpl({})
 
 # get time since epoch in UTC assuming format like:
 # 2012-10-18T12:49:27-07:00
@@ -9,11 +19,46 @@ def get_epoch(s):
   tz = int(s[-6:].split(':')[0]) * 3600
   return calendar.timegm(time.strptime(s[:-6], "%Y-%m-%dT%H:%M:%S")) - tz
 
-dt = 5 * 60
-# truncate to scheduled interval in case
-# there is a delay when this script is actually started
-now = int(time.time()) / dt * dt
+def write_dt_end_item(xgen, entry, url, start, end, desc):
+  xgen.characters(u"  ")
+  xgen.startElement(u"item", EMPTY_ATTRS)
 
+  xgen.characters(u"\n    ")
+  xgen.startElement(u"title", EMPTY_ATTRS)
+  xgen.characters(u"%s downtime ended" % entry)
+  xgen.endElement(u"title")
+
+  xgen.characters(u"\n    ")
+  xgen.startElement(u"link", EMPTY_ATTRS)
+  xgen.characters(url)
+  xgen.endElement(u"link")
+
+  xgen.characters(u"\n    ")
+  xgen.startElement(u"description", EMPTY_ATTRS)
+  xgen.characters(u'''
+<table>
+  <tr>
+    <td><b>Entry:</b></td>
+    <td>%s</td>
+  </tr>
+  <tr>
+    <td><b>Start:</b></td>
+    <td>%s</td>
+  </tr>
+  <tr>
+    <td><b>End:</b></td>
+    <td>%s</td>
+  </tr>
+</table>
+<br />%s
+    ''' % (entry,start,end,desc))
+  xgen.endElement(u"description")
+
+  xgen.characters(u"\n  ")
+  xgen.endElement(u"item")
+  xgen.characters(u"\n")
+
+downtimes = []
 dt_file = open("glideinWMS.downtimes")
 
 for line in dt_file:
@@ -29,14 +74,58 @@ for line in dt_file:
   end_time = get_epoch(fields[1])
   entry = fields[2]
 
-  comment = line.split('#')[1]
+  comment = line.split('#')[1].strip()
 
-  #print "now:", now
+  #print "now:", NOW
   #print "start_time:", start_time
   #print "end_time:", end_time
-  #print "next:", now + dt
+  #print "next:", NOW + DEL_T
 
-  if now >= start_time and now < end_time and now + dt >= end_time:
-    print "%s: %s %s #%s" % (entry, start_time, end_time, comment),
+  if NOW >= start_time and NOW < end_time and NOW + DEL_T >= end_time:
+    downtimes.append({'entry': unicode(entry), 'start': unicode(fields[0]),
+      'end':unicode(fields[1]), 'comment':unicode(comment)})
 
 dt_file.close()
+
+if len(downtimes) == 0:
+  exit
+
+#for dt in downtimes:
+#  print "%s: %s %s # %s" % (dt['entry'], dt['start'], dt['end'], dt['comment'])
+
+xgen = xml.sax.saxutils.XMLGenerator(sys.stdout, 'utf-8')
+
+xgen.startDocument()
+
+xgen.startElement(u"rss", xml.sax.xmlreader.AttributesImpl({u"version":u"2.0"}))
+
+xgen.characters(u"\n")
+xgen.startElement(u'channel', EMPTY_ATTRS)
+
+xgen.characters(u"\n  ")
+xgen.startElement(u"title", EMPTY_ATTRS)
+xgen.characters(u'GlideinWMS Factory Downtimes Advertisements')
+xgen.endElement(u"title")
+
+xgen.characters(u"\n  ")
+xgen.startElement(u"link", EMPTY_ATTRS)
+xgen.characters(u'http://gfactory-1.t2.ucsd.edu/factory/monitor/factoryStatusNow.html')
+xgen.endElement(u"link")
+
+xgen.characters(u"\n  ")
+xgen.startElement(u"description", EMPTY_ATTRS)
+xgen.characters(u'Entry downtimes notifications')
+xgen.endElement(u"description")
+xgen.characters(u'\n')
+
+for dt in downtimes:
+  write_dt_end_item(xgen, dt['entry'],
+    u'http://gfactory-1.t2.ucsd.edu/factory/monitor/factoryEntryStatusNow.html?entry=%s' % dt['entry'],
+    dt['start'], dt['end'], dt['comment'])
+
+xgen.endElement(u'channel')
+xgen.characters(u'\n')
+xgen.endElement(u"rss")
+xgen.characters(u'\n')
+
+xgen.endDocument()
