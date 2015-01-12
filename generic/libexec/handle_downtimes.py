@@ -60,7 +60,11 @@ def write_dt_end_item(xgen, entry, url, start, end, desc):
   xgen.characters(u"\n")
 
 downtimes = []
-dt_file = open("glideinWMS.downtimes")
+
+if 'GLIDEIN_FACTORY_DIR' in os.environ:
+  dt_file = open("%s/glideinWMS.downtimes" % os.environ['GLIDEIN_FACTORY_DIR'])
+else:
+  dt_file = open('/var/lib/gwms-factory/work-dir/glideinWMS.downtimes')
 
 for line in dt_file:
   if line.startswith('#'):
