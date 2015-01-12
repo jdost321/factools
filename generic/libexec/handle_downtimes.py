@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import os
 import time
 import calendar
 import xml.sax.saxutils
@@ -88,12 +89,17 @@ for line in dt_file:
 dt_file.close()
 
 if len(downtimes) == 0:
-  exit
+  sys.exit(0)
 
 #for dt in downtimes:
 #  print "%s: %s %s # %s" % (dt['entry'], dt['start'], dt['end'], dt['comment'])
 
-xgen = xml.sax.saxutils.XMLGenerator(sys.stdout, 'utf-8')
+if 'GLIDEIN_FACTORY_DIR' in os.environ:
+  fout = open("%s/monitor/rss_downtimes.xml" % os.environ['GLIDEIN_FACTORY_DIR'], 'w')
+else:
+  fout = open('/var/lib/gwms-factory/work-dir/monitor/rss_downtimes.xml', 'w')
+
+xgen = xml.sax.saxutils.XMLGenerator(fout, 'utf-8')
 
 xgen.startDocument()
 
@@ -109,7 +115,10 @@ xgen.endElement(u"title")
 
 xgen.characters(u"\n  ")
 xgen.startElement(u"link", EMPTY_ATTRS)
-xgen.characters(u'http://gfactory-1.t2.ucsd.edu/factory/monitor/factoryStatusNow.html')
+
+if 'GLIDEIN_MON_URL' in os.environ:
+  xgen.characters(u"%s/factoryStatusNow.html" % os.environ['GLIDEIN_MON_URL'])
+
 xgen.endElement(u"link")
 
 xgen.characters(u"\n  ")
@@ -119,9 +128,13 @@ xgen.endElement(u"description")
 xgen.characters(u'\n')
 
 for dt in downtimes:
-  write_dt_end_item(xgen, dt['entry'],
-    u'http://gfactory-1.t2.ucsd.edu/factory/monitor/factoryEntryStatusNow.html?entry=%s' % dt['entry'],
-    dt['start'], dt['end'], dt['comment'])
+  entry_stat_page=u''
+  if 'GLIDEIN_MON_URL' in os.environ:
+    entry_stats_page=u"%s/factoryEntryStatusNow.html?entry=%s" % (os.environ['GLIDEIN_MON_URL'], dt['entry'])
+  else:
+    entry_stats_page=u''
+
+  write_dt_end_item(xgen, dt['entry'], entry_stats_page, dt['start'], dt['end'], dt['comment'])
 
 xgen.endElement(u'channel')
 xgen.characters(u'\n')
@@ -129,3 +142,5 @@ xgen.endElement(u"rss")
 xgen.characters(u'\n')
 
 xgen.endDocument()
+
+fout.close()
