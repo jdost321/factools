@@ -68,11 +68,11 @@ def get_glue2_vo_mappings(ldap_obj, dn, vo_regex):
 
   return mappings
 
-def get_glue2_hosts(bdii_serv):
+def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   l = ldap.open(bdii_serv, 2170)
 
   l.simple_bind_s('','')
-  res = l.search_s('GLUE2GroupID=grid,o=glue', ldap.SCOPE_SUBTREE, '(&(objectClass=GLUE2ComputingService)(|(GLUE2ServiceType=org.glite.ce.CREAM)(GLUE2ServiceType=org.nordugrid.arex)(GLUE2ServiceType=org.globus.gram)))',attrlist=['GLUE2ServiceID','GLUE2ServiceType'])
+  res = l.search_s(base_dn, ldap.SCOPE_SUBTREE, '(&(objectClass=GLUE2ComputingService)(|(GLUE2ServiceType=org.glite.ce.CREAM)(GLUE2ServiceType=org.nordugrid.arex)(GLUE2ServiceType=org.globus.gram)))',attrlist=['GLUE2ServiceID','GLUE2ServiceType'])
 
   hosts = {}
   for r in res:
@@ -103,11 +103,11 @@ def get_glue2_hosts(bdii_serv):
   l.unbind()
   return hosts
 
-def get_glue1_hosts(bdii_serv):
+def get_glue1_hosts(bdii_serv, base_dn='Mds-Vo-name=local,o=grid'):
   l = ldap.open(bdii_serv, 2170)
 
   l.simple_bind_s('','')
-  res = l.search_s('Mds-Vo-name=local,o=grid', ldap.SCOPE_SUBTREE, '(&(objectClass=gluece)(|(GlueCEImplementationName=cream)(GlueCEImplementationName=arc-ce)(GlueCEImplementationName=globus)))', attrlist=['GlueCEAccessControlBaseRule','GlueCEInfoHostName','GlueCEName','GlueCEImplementationName'])
+  res = l.search_s(base_dn, ldap.SCOPE_SUBTREE, '(&(objectClass=gluece)(|(GlueCEImplementationName=cream)(GlueCEImplementationName=arc-ce)(GlueCEImplementationName=globus)))', attrlist=['GlueCEAccessControlBaseRule','GlueCEInfoHostName','GlueCEName','GlueCEImplementationName'])
 
   l.unbind()
 
@@ -146,22 +146,23 @@ def get_osg_hosts(coll_serv):
 
   return hosts
   
-# order matters. last queries overwrite previous ce info
-# so save most relevant calls for last
-hosts = get_glue1_hosts('exp-bdii.cern.ch')
-hosts.update(get_glue1_hosts('is.grid.iu.edu'))
-hosts.update(get_glue2_hosts('exp-bdii.cern.ch'))
-hosts.update(get_osg_hosts('collector.opensciencegrid.org'))
+if __name__ == '__main__':
+  # order matters. last queries overwrite previous ce info
+  # so save most relevant calls for last
+  hosts = get_glue1_hosts('exp-bdii.cern.ch')
+  hosts.update(get_glue1_hosts('is.grid.iu.edu'))
+  hosts.update(get_glue2_hosts('exp-bdii.cern.ch'))
+  hosts.update(get_osg_hosts('collector.opensciencegrid.org'))
 
-'''for h in hosts:
-  print h
-  print hosts[h]['gridtype']
-  for q in hosts[h]['queues']:
-    print "%s: %s" % (q,hosts[h]['queues'][q])
-  print
-'''
-  
-fout = open('infocache.pkl','w')
-pickle.dump(hosts, fout)
-fout.close()
+  '''for h in hosts:
+    print h
+    print hosts[h]['gridtype']
+    for q in hosts[h]['queues']:
+      print "%s: %s" % (q,hosts[h]['queues'][q])
+    print
+  '''
+    
+  fout = open('infocache.pkl','w')
+  pickle.dump(hosts, fout)
+  fout.close()
 
