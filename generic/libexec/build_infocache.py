@@ -90,15 +90,16 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
         queues[q_name] = []
 
       queues[q_name] += vo_map[1]
-      serv_type = r[1]['GLUE2ServiceType'][0]
-      if serv_type == 'org.glite.ce.CREAM':
-        gt = 'cream'
-      elif serv_type == 'org.nordugrid.arex':
-        gt = 'nordugrid'
-      else:
-        gt = 'gt5'
 
-      hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues, 'gridtype': gt}
+    serv_type = r[1]['GLUE2ServiceType'][0]
+    if serv_type == 'org.glite.ce.CREAM':
+      gt = 'cream'
+    elif serv_type == 'org.nordugrid.arex':
+      gt = 'nordugrid'
+    else:
+      gt = 'gt5'
+
+    hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues, 'gridtype': gt}
 
   l.unbind()
   return hosts
