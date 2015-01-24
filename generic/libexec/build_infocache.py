@@ -68,6 +68,12 @@ def get_glue2_vo_mappings(ldap_obj, dn, vo_regex):
 
   return mappings
 
+def get_glue2_qname(ldap_obj, dn):
+  return ldap_obj.search_s(dn, ldap.SCOPE_BASE, attrlist=['GLUE2ComputingShareMappingQueue'])[0][1]['GLUE2ComputingShareMappingQueue'][0]
+
+def get_glue2_jm(ldap_obj, dn):
+  return ldap_obj.search_s(dn, ldap.SCOPE_ONELEVEL, '(objectclass=GLUE2Manager)', attrlist=['GLUE2ManagerProductName'])[0][1]['GLUE2ManagerProductName'][0]
+
 def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   l = ldap.open(bdii_serv, 2170)
 
@@ -85,7 +91,7 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
     for vo_map in vo_mappings:
       dn_arr = vo_map[0].split(',')
       share_dn = ','.join(dn_arr[1:])
-      q_name = l.search_s(share_dn, ldap.SCOPE_BASE, attrlist=['GLUE2ComputingShareMappingQueue'])[0][1]['GLUE2ComputingShareMappingQueue'][0]
+      q_name = get_glue2_qname(l, share_dn)
       if q_name not in queues:
         queues[q_name] = []
 
@@ -99,7 +105,9 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
     else:
       gt = 'gt5'
 
-    hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues, 'gridtype': gt}
+    jm = get_glue2_jm(l, dn)
+    hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues,
+      'gridtype': gt, 'job_manager': jm}
 
   l.unbind()
   return hosts
