@@ -68,11 +68,43 @@ def get_glue2_vo_mappings(ldap_obj, dn, vo_regex):
 
   return mappings
 
-def get_glue2_qname(ldap_obj, dn):
-  return ldap_obj.search_s(dn, ldap.SCOPE_BASE, attrlist=['GLUE2ComputingShareMappingQueue'])[0][1]['GLUE2ComputingShareMappingQueue'][0]
+def get_glue2_q_attrs(ldap_obj, dn, gridtype):
+  contact_str = None
+
+  if gridtype == 'cream':
+    res = ldap_obj.search_s(dn, ldap.SCOPE_BASE, attrlist=['GLUE2ComputingShareMappingQueue',
+      'GLUE2ComputingShareMaxWallTime','GLUE2ComputingShareMaxCPUTime','GLUE2EntityOtherInfo'])[0][1]
+    if 'GLUE2EntityOtherInfo' in res:
+      for oi in res['GLUE2EntityOtherInfo']:
+        if oi.startswith('CREAMCEId='):
+          contact_str = oi[10:]
+          break
+  else:
+    res = ldap_obj.search_s(dn, ldap.SCOPE_BASE, attrlist=['GLUE2ComputingShareMappingQueue',
+      'GLUE2ComputingShareMaxWallTime','GLUE2ComputingShareMaxCPUTime'])[0][1]
+
+  q_name = res['GLUE2ComputingShareMappingQueue'][0]
+  #if 'GLUE2ComputingShareMaxWallTime' not in res and 'GLUE2ComputingShareMaxCPUTime' not in res:
+  #  print "queue does not define walltime: %s" % dn
+
+  max_wall = None
+  max_cpu = None
+
+  if 'GLUE2ComputingShareMaxWallTime' in res:
+    max_wall = int(res['GLUE2ComputingShareMaxWallTime'][0])
+  if 'GLUE2ComputingShareMaxCPUTime' in res:
+    max_cpu = int(res['GLUE2ComputingShareMaxCPUTime'][0])
+
+  if max_cpu is not None and (max_wall is None or max_cpu < max_wall):
+    max_wall = max_cpu
+
+  return (q_name, max_cpu, contact_str)
 
 def get_glue2_jm(ldap_obj, dn):
-  return ldap_obj.search_s(dn, ldap.SCOPE_ONELEVEL, '(objectclass=GLUE2Manager)', attrlist=['GLUE2ManagerProductName'])[0][1]['GLUE2ManagerProductName'][0]
+  res = ldap_obj.search_s(dn, ldap.SCOPE_ONELEVEL, '(objectclass=GLUE2Manager)', attrlist=['GLUE2ManagerProductName'])
+  if len(res) == 0:
+    return None
+  return res[0][1]['GLUE2ManagerProductName'][0]
 
 def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   l = ldap.open(bdii_serv, 2170)
@@ -83,19 +115,13 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   hosts = {}
   for r in res:
     dn = r[0]
+    jm = get_glue2_jm(l, dn)
+    #if jm is None:
+    #  print "resource does not define jm: %s" % dn
+
     vo_mappings = get_glue2_vo_mappings(l, dn, VO_REGEX)
     if len(vo_mappings) == 0:
       continue
-
-    queues = {}
-    for vo_map in vo_mappings:
-      dn_arr = vo_map[0].split(',')
-      share_dn = ','.join(dn_arr[1:])
-      q_name = get_glue2_qname(l, share_dn)
-      if q_name not in queues:
-        queues[q_name] = []
-
-      queues[q_name] += vo_map[1]
 
     serv_type = r[1]['GLUE2ServiceType'][0]
     if serv_type == 'org.glite.ce.CREAM':
@@ -105,7 +131,19 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
     else:
       gt = 'gt5'
 
-    jm = get_glue2_jm(l, dn)
+    queues = {}
+    for vo_map in vo_mappings:
+      dn_arr = vo_map[0].split(',')
+      share_dn = ','.join(dn_arr[1:])
+      q_name, max_wall, contact_str = get_glue2_q_attrs(l, share_dn, gt)
+      if q_name not in queues:
+        if contact_str is not None:
+          queues[q_name] = {'max_walltime': max_wall, 'vos': [], 'contact_str': contact_str}
+        else:
+          queues[q_name] = {'max_walltime': max_wall, 'vos': []}
+
+      queues[q_name]['vos'] += vo_map[1]
+
     hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues,
       'gridtype': gt, 'job_manager': jm}
 
@@ -163,6 +201,7 @@ if __name__ == '__main__':
   hosts.update(get_glue2_hosts('exp-bdii.cern.ch'))
   hosts.update(get_osg_hosts('collector.opensciencegrid.org'))
 
+  #hosts = get_glue2_hosts('exp-bdii.cern.ch')
   '''for h in hosts:
     print h
     print hosts[h]['gridtype']
