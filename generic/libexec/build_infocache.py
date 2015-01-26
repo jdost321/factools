@@ -203,11 +203,19 @@ def get_glue1_hosts(bdii_serv, base_dn='Mds-Vo-name=local,o=grid'):
 
 def get_osg_hosts(coll_serv):
   col = htcondor.Collector("%s:9619" % coll_serv)
-  res = col.query(htcondor.AdTypes.Schedd, "true", ['Name'])
-  hosts = set()
+  res = col.query(htcondor.AdTypes.Schedd, "true", ['Name','OSG_BatchSystems','OSG_ResourceGroup'])
   hosts = {}
   for r in res:
-    hosts[r['Name']] = {'queues':{}, 'gridtype':'condor'}
+    if 'OSG_BatchSystems' in r:
+      jm = r['OSG_BatchSystems']
+    else:
+      jm = None
+    if 'OSG_ResourceGroup' in r:
+      site_name = r['OSG_ResourceGroup']
+    else:
+      site_name = None
+    hosts[r['Name']] = {'queues':{}, 'gridtype':'condor', 'job_manager': jm,
+      'site_name': site_name, 'info_type': 'condor', 'info_server': coll_serv}
 
   return hosts
   
@@ -219,7 +227,9 @@ if __name__ == '__main__':
   hosts.update(get_glue2_hosts('exp-bdii.cern.ch'))
   hosts.update(get_osg_hosts('collector.opensciencegrid.org'))
 
+  #hosts = get_glue1_hosts('exp-bdii.cern.ch')
   #hosts = get_glue2_hosts('exp-bdii.cern.ch')
+  #hosts = get_osg_hosts('collector.opensciencegrid.org')
   '''for h in hosts:
     print h
     print hosts[h]['gridtype']
