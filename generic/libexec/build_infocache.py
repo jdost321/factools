@@ -6,33 +6,6 @@ import htcondor
 import re
 import pickle
 
-VOS = ['vo:cdf','voms:/cdf','voms:/cdf/*',
-           'vo:cigi',
-           'vo:cms','voms:/cms','voms:/cms/*',
-           'vo:fermilab',
-           'vo:glow',
-           'vo:gluex',
-           'vo:hcc','voms:/hcc','voms:/hcc/*',
-           'vo:lsst',
-           'vo:nanohub',
-           'vo:nees',
-           'vo:osg',
-           'vo:sbgrid',
-           'vo:uc3']
-VO_PATTERNS = ['vo:cdf$|voms:/cdf$|voms:/cdf/',
-           'vo:cigi$',
-           'vo:cms$|voms:/cms$|voms:/cms/',
-           'vo:fermilab$',
-           'vo:glow$',
-           'vo:gluex$',
-           'vo:hcc$|voms:/hcc$|voms:/hcc/',
-           'vo:lsst$',
-           'vo:nanohub$',
-           'vo:nees$',
-           'vo:osg$',
-           'vo:sbgrid$',
-           'vo:uc3$']
-
 VO_REGEXES = {'cdf': re.compile('vo:cdf$|voms:/cdf$|voms:/cdf/', re.I),
            'cigi': re.compile('vo:cigi$', re.I),
            'cms': re.compile('vo:cms$|voms:/cms$|voms:/cms/', re.I),
@@ -46,9 +19,6 @@ VO_REGEXES = {'cdf': re.compile('vo:cdf$|voms:/cdf$|voms:/cdf/', re.I),
            'osg': re.compile('vo:osg$', re.I),
            'sbgrid': re.compile('vo:sbgrid$', re.I),
            'uc3': re.compile('vo:uc3$', re.I)}
-
-VO_FULL_PATTERN = '|'.join(VO_PATTERNS)
-VO_REGEX = re.compile(VO_FULL_PATTERN, re.I)
 
 # string manip to extract hostname in GLUE2
 # serv_id is GLUE2ServiceID
@@ -178,10 +148,12 @@ def get_glue1_hosts(bdii_serv, base_dn='Mds-Vo-name=local,o=grid'):
 
   hosts = {}
   for r in res:
-    vos = []
+    vos = set([])
     for rule in r[1]['GlueCEAccessControlBaseRule']:
-      if VO_REGEX.match(rule):
-        vos.append(rule)
+      for vo in VO_REGEXES:
+        if VO_REGEXES[vo].match(rule):
+          vos.add(vo)
+          break
     if len(vos) == 0:
       continue
 
