@@ -214,6 +214,12 @@ def get_osg_hosts(coll_serv):
   for r in res:
     if 'OSG_BatchSystems' in r:
       jm = r['OSG_BatchSystems']
+
+      for jmr in JM_REGEXES:
+        if JM_REGEXES[jmr].match(jm):
+          jm = jmr
+          break
+
     else:
       jm = None
     if 'OSG_ResourceGroup' in r:
