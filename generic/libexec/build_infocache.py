@@ -20,6 +20,11 @@ VO_REGEXES = {'cdf': re.compile('vo:cdf$|voms:/cdf$|voms:/cdf/', re.I),
            'sbgrid': re.compile('vo:sbgrid$', re.I),
            'uc3': re.compile('vo:uc3$', re.I)}
 
+JM_REGEXES = {'pbs': re.compile('pbs$|torque$', re.I),
+            'condor': re.compile('condor$', re.I),
+            'slurm': re.compile('slurm$', re.I),
+            'sge': re.compile('sge$|sungridengine$', re.I)}
+
 # string manip to extract hostname in GLUE2
 # serv_id is GLUE2ServiceID
 # serv_type is GLUE2ServiceType
@@ -90,7 +95,14 @@ def get_glue2_jm(ldap_obj, dn):
   res = ldap_obj.search_s(dn, ldap.SCOPE_ONELEVEL, '(objectclass=GLUE2Manager)', attrlist=['GLUE2ManagerProductName'])
   if len(res) == 0:
     return None
-  return res[0][1]['GLUE2ManagerProductName'][0]
+
+  jm_res = res[0][1]['GLUE2ManagerProductName'][0]
+  for jm in JM_REGEXES:
+    if JM_REGEXES[jm].match(jm_res):
+      jm_res = jm
+      break
+
+  return jm_res
 
 def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   l = ldap.open(bdii_serv, 2170)
