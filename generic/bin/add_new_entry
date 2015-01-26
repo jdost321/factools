@@ -142,13 +142,13 @@ if __name__ == '__main__':
     oldname="template"
             
     try:
-        tmpl_params=cgWParams.GlideinParams("",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["",tmpl_fname])
+        tmpl_params=cgWParams.GlideinParams("","",["",tmpl_fname])
     except RuntimeError,e:
         print "Failed to load the file: %s"%tmpl_fname
         print e
         sys.exit(1)
     try:
-        params=cgWParams.GlideinParams(usage_prefix,os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["",xml_fname])
+        params=cgWParams.GlideinParams("","",["",xml_fname])
     except RuntimeError,e:
         print "Failed to load the file: %s"%xml_fname
         print e
