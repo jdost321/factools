@@ -33,6 +33,20 @@ VO_PATTERNS = ['vo:cdf$|voms:/cdf$|voms:/cdf/',
            'vo:sbgrid$',
            'vo:uc3$']
 
+VO_REGEXES = {'cdf': re.compile('vo:cdf$|voms:/cdf$|voms:/cdf/', re.I),
+           'cigi': re.compile('vo:cigi$', re.I),
+           'cms': re.compile('vo:cms$|voms:/cms$|voms:/cms/', re.I),
+           'fermilab': re.compile('vo:fermilab$', re.I),
+           'glow': re.compile('vo:glow$', re.I),
+           'gluex': re.compile('vo:gluex$', re.I),
+           'hcc': re.compile('vo:hcc$|voms:/hcc$|voms:/hcc/', re.I),
+           'lsst': re.compile('vo:lsst$', re.I),
+           'nanohub': re.compile('vo:nanohub$', re.I),
+           'nees': re.compile('vo:nees$', re.I),
+           'osg': re.compile('vo:osg$', re.I),
+           'sbgrid': re.compile('vo:sbgrid$', re.I),
+           'uc3': re.compile('vo:uc3$', re.I)}
+
 VO_FULL_PATTERN = '|'.join(VO_PATTERNS)
 VO_REGEX = re.compile(VO_FULL_PATTERN, re.I)
 
@@ -55,14 +69,16 @@ def get_glue2_hostname(serv_id, serv_type):
         return serv_id
 
 # return list of queue mappings of given CE dn that matches vo regex
-def get_glue2_vo_mappings(ldap_obj, dn, vo_regex):
+def get_glue2_vo_mappings(ldap_obj, dn):
   vo_res = ldap_obj.search_s(dn, ldap.SCOPE_SUBTREE, '(objectclass=GLUE2MappingPolicy)', attrlist=['GLUE2PolicyRule'])
   mappings = []
   for vr in vo_res:
-    vos = []
+    vos = set()
     for rule in vr[1]['GLUE2PolicyRule']:
-      if vo_regex.match(rule):
-        vos.append(rule)
+      for vo in VO_REGEXES:
+        if VO_REGEXES[vo].match(rule):
+          vos.add(vo)
+          break
     if len(vos) > 0:
       mappings.append((vr[0], vos))
 
@@ -115,7 +131,7 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   hosts = {}
   for r in res:
     dn = r[0]
-    vo_mappings = get_glue2_vo_mappings(l, dn, VO_REGEX)
+    vo_mappings = get_glue2_vo_mappings(l, dn)
     if len(vo_mappings) == 0:
       continue
 
@@ -140,11 +156,11 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
       q_name, max_wall, contact_str = get_glue2_q_attrs(l, share_dn, gt)
       if q_name not in queues:
         if contact_str is not None:
-          queues[q_name] = {'max_walltime': max_wall, 'vos': [], 'info_ref': share_dn, 'contact_str': contact_str}
+          queues[q_name] = {'max_walltime': max_wall, 'vos': set(), 'info_ref': share_dn, 'contact_str': contact_str}
         else:
-          queues[q_name] = {'max_walltime': max_wall, 'vos': [], 'info_ref': share_dn}
+          queues[q_name] = {'max_walltime': max_wall, 'vos': set(), 'info_ref': share_dn}
 
-      queues[q_name]['vos'] += vo_map[1]
+      queues[q_name]['vos'] |= vo_map[1]
 
     hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues,
       'gridtype': gt, 'job_manager': jm, 'site_name': site_name, 'info_type': 'BDII', 'info_server': bdii_serv}
