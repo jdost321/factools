@@ -156,7 +156,7 @@ def get_glue1_hosts(bdii_serv, base_dn='Mds-Vo-name=local,o=grid'):
   l = ldap.open(bdii_serv, 2170)
 
   l.simple_bind_s('','')
-  res = l.search_s(base_dn, ldap.SCOPE_SUBTREE, '(&(objectClass=gluece)(|(GlueCEImplementationName=cream)(GlueCEImplementationName=arc-ce)(GlueCEImplementationName=globus)))', attrlist=['GlueCEAccessControlBaseRule','GlueCEInfoHostName','GlueCEName','GlueCEImplementationName'])
+  res = l.search_s(base_dn, ldap.SCOPE_SUBTREE, '(&(objectClass=gluece)(|(GlueCEImplementationName=cream)(GlueCEImplementationName=arc-ce)(GlueCEImplementationName=globus)))', attrlist=['GlueCEAccessControlBaseRule','GlueCEInfoHostName','GlueCEName','GlueCEImplementationName','GlueCEInfoJobManager','GlueCEPolicyMaxWallClockTime','GlueCEPolicyMaxCPUTime'])
 
   l.unbind()
 
@@ -179,9 +179,25 @@ def get_glue1_hosts(bdii_serv, base_dn='Mds-Vo-name=local,o=grid'):
       else:
         gt = 'gt5'
 
-      hosts[host] = {'queues':{},'gridtype': gt}
+      jm = r[1]['GlueCEInfoJobManager'][0]
+      site_name = r[0].split('Mds-Vo-name=')[1].split(',')[0]
 
-    hosts[host]['queues'][r[1]['GlueCEName'][0]] = vos
+      hosts[host] = {'queues':{}, 'gridtype': gt, 'job_manager': jm, 'site_name': site_name, 'info_type': 'BDII',
+        'info_server': bdii_serv}
+
+    max_wall = None
+    max_cpu = None
+
+    # glue 1 has traditionally been in minutes so muliply by 60
+    if 'GlueCEPolicyMaxWallClockTime' in r[1]:
+      max_wall = int(r[1]['GlueCEPolicyMaxWallClockTime'][0]) * 60
+    if 'GlueCEPolicyMaxCPUTime' in r[1]:
+      max_cpu = int(r[1]['GlueCEPolicyMaxCPUTime'][0]) * 60
+
+    if max_cpu is not None and (max_wall is None or max_cpu < max_wall):
+      max_wall = max_cpu
+
+    hosts[host]['queues'][r[1]['GlueCEName'][0]] = {'max_walltime': max_wall, 'vos': vos, 'info_ref': r[0]}
 
   return hosts
 
