@@ -180,6 +180,12 @@ def get_glue1_hosts(bdii_serv, base_dn='Mds-Vo-name=local,o=grid'):
         gt = 'gt5'
 
       jm = r[1]['GlueCEInfoJobManager'][0]
+
+      for jmr in JM_REGEXES:
+        if JM_REGEXES[jmr].match(jm):
+          jm = jmr
+          break
+
       site_name = r[0].split('Mds-Vo-name=')[1].split(',')[0]
 
       hosts[host] = {'queues':{}, 'gridtype': gt, 'job_manager': jm, 'site_name': site_name, 'info_type': 'BDII',
