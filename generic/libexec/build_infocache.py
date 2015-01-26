@@ -115,13 +115,15 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
   hosts = {}
   for r in res:
     dn = r[0]
-    jm = get_glue2_jm(l, dn)
-    #if jm is None:
-    #  print "resource does not define jm: %s" % dn
-
     vo_mappings = get_glue2_vo_mappings(l, dn, VO_REGEX)
     if len(vo_mappings) == 0:
       continue
+
+    site_name = dn.split('GLUE2DomainID=')[1].split(',')[0]
+
+    jm = get_glue2_jm(l, dn)
+    #if jm is None:
+    #  print "resource does not define jm: %s" % dn
 
     serv_type = r[1]['GLUE2ServiceType'][0]
     if serv_type == 'org.glite.ce.CREAM':
@@ -138,14 +140,14 @@ def get_glue2_hosts(bdii_serv, base_dn='GLUE2GroupID=grid,o=glue'):
       q_name, max_wall, contact_str = get_glue2_q_attrs(l, share_dn, gt)
       if q_name not in queues:
         if contact_str is not None:
-          queues[q_name] = {'max_walltime': max_wall, 'vos': [], 'contact_str': contact_str}
+          queues[q_name] = {'max_walltime': max_wall, 'vos': [], 'info_ref': share_dn, 'contact_str': contact_str}
         else:
-          queues[q_name] = {'max_walltime': max_wall, 'vos': []}
+          queues[q_name] = {'max_walltime': max_wall, 'vos': [], 'info_ref': share_dn}
 
       queues[q_name]['vos'] += vo_map[1]
 
     hosts[get_glue2_hostname(r[1]['GLUE2ServiceID'][0],r[1]['GLUE2ServiceType'][0])] = {'queues': queues,
-      'gridtype': gt, 'job_manager': jm}
+      'gridtype': gt, 'job_manager': jm, 'site_name': site_name, 'info_type': 'BDII', 'info_server': bdii_serv}
 
   l.unbind()
   return hosts
