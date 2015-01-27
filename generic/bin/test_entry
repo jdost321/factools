@@ -15,9 +15,6 @@ STARTUP_DIR=sys.path[0]
 # get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
     sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
-else:
-    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
-    sys.exit(1)
 
 from glideinwms.factory import glideFactoryConfig
 from glideinwms.lib import condorPrivsep
@@ -169,9 +166,9 @@ def priv_submit(username, sub_file, x509_proxy_fname, env=(), init_dir=".", sche
     cluster,count=glideFactoryLib.extractJobId(submit_out)
     return submit_out,cluster,count
 
-def get_proxy_dir(glide_desc, job_desc, user):
-    return "%s/user_%s/glidein_%s/entry_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
-        glide_desc.data['GlideinName'],job_desc.data['EntryName'])
+def get_proxy_dir(glide_desc, user):
+    return "%s/user_%s/glidein_%s" %(glide_desc.data['ClientProxiesBaseDir'],user,
+        glide_desc.data['GlideinName'])
 
 # return long list of proxies; time sorted
 def proxy_lslt(user, proxy_dir):
@@ -257,6 +254,9 @@ if __name__ == "__main__":
     # Try GLIDEIN_FACTORY_DIR env var first
     if 'GLIDEIN_FACTORY_DIR' in os.environ:
         gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+    # is it an rpm install?
+    elif os.path.isdir("/var/lib/gwms-factory/work-dir"):
+      gfactory_dir="/var/lib/gwms-factory/work-dir"
     else:
         gfactory_dir="."
 
@@ -329,7 +329,7 @@ if __name__ == "__main__":
             mode = "int"
 
     if interact_proxy:
-        proxy_dir = get_proxy_dir(glide_desc, job_desc, user)
+        proxy_dir = get_proxy_dir(glide_desc, user)
 
         out = proxy_lslt(user, proxy_dir)
 
@@ -342,7 +342,7 @@ if __name__ == "__main__":
         
         proxy_select_list = []
         for line in out[1:]:
-            if not line.endswith('.old'):
+            if not line.startswith('d') and not line.endswith('.old') and not line.endswith('_compressed'):
                 proxies.append(line.split()[8])
                 proxy_select_list.append("[%s] %s" % (count,line))
                 count += 1
