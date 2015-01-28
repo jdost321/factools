@@ -45,9 +45,9 @@ def write_ent_attrs(out, el):
   out.write('</attrs>')
 
 def write_entry(out, el):
-  attrs = get_sorted_attrs(entry)
+  attrs = get_sorted_attrs(el)
   out.write(u"      <entry %s>" % u" ".join(['%s="%s"' % a for a in attrs]))
-  children = entry.childNodes
+  children = el.childNodes
   for c in children:
     if c.nodeType == c.ELEMENT_NODE and c.tagName == 'attrs':
       write_ent_attrs(out, c)

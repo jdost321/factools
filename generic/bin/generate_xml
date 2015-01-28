@@ -2,55 +2,10 @@
 
 from xml.dom.minidom import parse
 import sys
-
-def insert_empty_el(doc, el, tag_name, attr_dict):
-  newline = doc.createTextNode('\n            ')
-  el.insertBefore(newline, el.lastChild)
-  ent_attr = doc.createElement(tag_name)
-  for k in attr_dict:
-    ent_attr.setAttribute(k, attr_dict[k])
-  el.insertBefore(ent_attr, el.lastChild)
-
-# return attrs as list of tuples sorted 
-# starting with name followed by the rest in alphabetical
-def get_sorted_attrs(el):
-  attrs = []
-  attrs.append((u'name', el.getAttribute('name')))
-
-  other_attrs = []
-  for i in range(el.attributes.length):
-    attr_name = el.attributes.item(i).name
-    if attr_name != 'name':
-      other_attrs.append((attr_name, el.attributes.item(i).value))
-
-  other_attrs.sort()
-  attrs += other_attrs
-  return attrs
-
-def write_ent_attr(out, el):
-  attrs = get_sorted_attrs(el)
-  out.write(u"<attr %s/>" % u" ".join(['%s="%s"' % a for a in attrs]))
-
-def write_ent_attrs(out, el):
-  out.write('<attrs>')
-  attrs_children = el.childNodes
-  for ac in attrs_children:
-    if ac.nodeType == ac.ELEMENT_NODE:
-      write_ent_attr(out, ac)
-    else:
-      ac.writexml(out)
-  out.write('</attrs>')
-
-def write_entry(out, el):
-  attrs = get_sorted_attrs(entry)
-  out.write(u"      <entry %s>" % u" ".join(['%s="%s"' % a for a in attrs]))
-  children = entry.childNodes
-  for c in children:
-    if c.nodeType == c.ELEMENT_NODE and c.tagName == 'attrs':
-      write_ent_attrs(out, c)
-    else:
-      c.writexml(out)
-  out.write(u"</entry>")
+STARTUP_DIR=sys.path[0]
+import os
+sys.path.append(os.path.join(STARTUP_DIR, '../lib'))
+import conf_util
 
 doc = parse('../share/tmpl.xml')
 
@@ -69,7 +24,7 @@ entry.setAttribute(u'work_dir', u'Condor')
 
 attrs_el = entry.getElementsByTagName('attrs')[0]
 
-insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Max_Walltime",
+conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Max_Walltime",
   u'const':u"True",
   u'glidein_publish':u"False",
   u'job_publish':u"False",
@@ -78,7 +33,7 @@ insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Max_Walltime",
   u'type':u"int",
   u'value':u"171000"})
 
-insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_ResourceName",
+conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_ResourceName",
   u'const':u"True",
   u'glidein_publish':u"True",
   u'job_publish':u"True",
@@ -87,7 +42,7 @@ insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_ResourceName",
   u'type':u"string",
   u'value':u"UCSDT2"})
 
-insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Supported_VOs",
+conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Supported_VOs",
   u'const':u"True",
   u'glidein_publish':u"False",
   u'job_publish':u"False",
@@ -98,11 +53,11 @@ insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Supported_VOs",
 
 infosys_el = entry.getElementsByTagName('infosys_refs')[0]
 
-insert_empty_el(doc, infosys_el, u'infosys_ref',
+conf_util.insert_empty_el(doc, infosys_el, u'infosys_ref',
   {u'ref':u"GlueCEUniqueID=osg-gw-7.t2.ucsd.edu:2119/jobmanager-condor-default,Mds-Vo-name=UCSDT2,Mds-Vo-name=local,o=grid",
     u'server':u'is.grid.iu.edu',
     u'type':u"BDII"})
 
-write_entry(sys.stdout, entry)
+conf_util.write_entry(sys.stdout, entry)
 print
 doc.unlink()
