@@ -52,7 +52,7 @@ def write_entry(out, el):
       c.writexml(out)
   out.write(u"</entry>")
 
-doc = parse('tmpl.xml')
+doc = parse('../share/tmpl.xml')
 
 entry = doc.documentElement
 #entry.writexml(sys.stdout)
