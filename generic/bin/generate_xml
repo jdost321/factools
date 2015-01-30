@@ -1,90 +1,101 @@
 #!/usr/bin/python
 
-from xml.dom.minidom import parse
+from xml.dom.minidom import parseString
 import sys
+import pickle
+
 STARTUP_DIR=sys.path[0]
 import os
 sys.path.append(os.path.join(STARTUP_DIR, '../lib'))
 import conf_util
 
-#entry.writexml(sys.stdout)
+f = open('../share/tmpl.xml')
+entry_tmpl = f.read()
+f.close()
 
-#for c in children:
-#  print c.nodeType
-host = 'red-gw1.unl.edu' 
-d={'gridtype': 'condor', 'job_manager': 'condor', 'site_name': 'Nebraska', 'queues': {'default': {'info_ref': 'red-gw1.unl.edu'}}, 'info_server': 'collector.opensciencegrid.org', 'info_type': 'condor'}
+f = open('infocache.pkl')
+#infocache1 = pickle.load(f)
+infocache = pickle.load(f)
+f.close()
 
-for q in d['queues']:
-  doc = parse('../share/tmpl.xml')
+'''infocache = {}
+for host in infocache1:
+  if infocache1[host]['site_name'] == 'UCSDT2':
+    infocache[host] = infocache1[host]
+'''
 
-  entry = doc.documentElement
-  entry.setAttribute(u'name', unicode(d['site_name']))
-  entry.setAttribute(u'comment', u'Added 2015-01-29 --Jeff')
+for host in infocache:
+  for q in infocache[host]['queues']:
+    doc = parseString(entry_tmpl)
 
-  if d['gridtype'] == 'gt5':
-    entry.setAttribute(u'gatekeeper', u'%s:2119/jobmanager-%s' % (host, d['job_manager']))
-    entry.setAttribute(u'gridtype', u'gt5')
-    entry.setAttribute(u'rsl', u'(queue=%s)(jobtype=single)' % q)
-  elif d['gridtype'] == 'cream':
-    if 'contact_str' in d['queues'][q]:
-      entry.setAttribute(u'gatekeeper', d['queues'][q]['contact_str'])
+    entry = doc.documentElement
+    entry.setAttribute(u'name', unicode(infocache[host]['site_name']))
+    entry.setAttribute(u'comment', u'Added 2015-01-29 --Jeff')
+
+    if infocache[host]['gridtype'] == 'gt5':
+      entry.setAttribute(u'gatekeeper', u'%s:2119/jobmanager-%s' % (host, infocache[host]['job_manager']))
+      entry.setAttribute(u'gridtype', u'gt5')
+      entry.setAttribute(u'rsl', u'(queue=%s)(jobtype=single)' % q)
+    elif infocache[host]['gridtype'] == 'cream':
+      if 'contact_str' in infocache[host]['queues'][q]:
+        entry.setAttribute(u'gatekeeper', infocache[host]['queues'][q]['contact_str'])
+      else:
+        entry.setAttribute(u'gatekeeper', u'%s:8443/cream-%s-%s' % (host,infocache[host]['job_manager'],q))
+      entry.setAttribute(u'gridtype', u'cream')
+    elif infocache[host]['gridtype'] == 'nordugrid':
+      entry.setAttribute(u'gatekeeper', unicode(host))
+      entry.setAttribute(u'gridtype', u'nordugrid')
+      entry.setAttribute(u'rsl', u'(queue=%s)(runtimeenvironment=ENV/GLITE)' % q)
+    elif infocache[host]['gridtype'] == 'condor':
+      entry.setAttribute(u'gatekeeper', u"%s %s:9619" % (host,host))
+      entry.setAttribute(u'gridtype', u'condor')
+
+    if infocache[host]['job_manager'] == 'condor':
+      entry.setAttribute(u'work_dir', u'Condor')
+    elif (infocache[host]['info_server'] == 'is.grid.iu.edu' or
+        infocache[host]['info_server'] == 'collector.opensciencegrid.org'):
+      entry.setAttribute(u'work_dir', u'OSG')
     else:
-      entry.setAttribute(u'gatekeeper', u'%s:8443/cream-%s-%s' % (host,d['job_manager'],q))
-    entry.setAttribute(u'gridtype', u'cream')
-  elif d['gridtype'] == 'nordugrid':
-    entry.setAttribute(u'gatekeeper', unicode(host))
-    entry.setAttribute(u'gridtype', u'nordugrid')
-    entry.setAttribute(u'rsl', u'(queue=%s)(runtimeenvironment=ENV/GLITE)' % q)
-  elif d['gridtype'] == 'condor':
-    entry.setAttribute(u'gatekeeper', u"%s %s:9619" % (host,host))
-    entry.setAttribute(u'gridtype', u'condor')
+      entry.setAttribute(u'work_dir', u'.')
 
-  if d['job_manager'] == 'condor':
-    entry.setAttribute(u'work_dir', u'Condor')
-  elif (d['info_server'] == 'is.grid.iu.edu' or
-      d['info_server'] == 'collector.opensciencegrid.org'):
-    entry.setAttribute(u'work_dir', u'OSG')
-  else:
-    entry.setAttribute(u'work_dir', u'.')
+    attrs_el = entry.getElementsByTagName('attrs')[0]
 
-  attrs_el = entry.getElementsByTagName('attrs')[0]
+    if infocache[host]['gridtype'] != 'condor':
+      conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Max_Walltime",
+        u'const':u"True",
+        u'glidein_publish':u"False",
+        u'job_publish':u"False",
+        u'parameter':u"True",
+        u'publish':u"True",
+        u'type':u"int",
+        u'value':u"%s" % infocache[host]['queues'][q]['max_walltime']})
 
-  if d['gridtype'] != 'condor':
-    conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Max_Walltime",
+    conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_ResourceName",
       u'const':u"True",
-      u'glidein_publish':u"False",
-      u'job_publish':u"False",
-      u'parameter':u"True",
-      u'publish':u"True",
-      u'type':u"int",
-      u'value':u"%s" % d['queues'][q]['max_walltime']})
-
-  conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_ResourceName",
-    u'const':u"True",
-    u'glidein_publish':u"True",
-    u'job_publish':u"True",
-    u'parameter':u"True",
-    u'publish':u"True",
-    u'type':u"string",
-    u'value':u"%s" % d['site_name']})
-
-  if d['gridtype'] != 'condor':
-    conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Supported_VOs",
-      u'const':u"True",
-      u'glidein_publish':u"False",
-      u'job_publish':u"False",
+      u'glidein_publish':u"True",
+      u'job_publish':u"True",
       u'parameter':u"True",
       u'publish':u"True",
       u'type':u"string",
-      u'value':u"%s" % ','.join(sorted(d['queues'][q]['vos']))})
+      u'value':u"%s" % infocache[host]['site_name']})
 
-  infosys_el = entry.getElementsByTagName('infosys_refs')[0]
+    if infocache[host]['gridtype'] != 'condor':
+      conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Supported_VOs",
+        u'const':u"True",
+        u'glidein_publish':u"False",
+        u'job_publish':u"False",
+        u'parameter':u"True",
+        u'publish':u"True",
+        u'type':u"string",
+        u'value':u"%s" % ','.join(sorted(infocache[host]['queues'][q]['vos']))})
 
-  conf_util.insert_empty_el(doc, infosys_el, u'infosys_ref',
-    {u'ref':unicode(d['queues'][q]['info_ref']),
-      u'server':unicode(d['info_server']),
-      u'type':unicode(d['info_type'])})
+    infosys_el = entry.getElementsByTagName('infosys_refs')[0]
 
-  conf_util.write_entry(sys.stdout, entry)
-  print
-  doc.unlink()
+    conf_util.insert_empty_el(doc, infosys_el, u'infosys_ref',
+      {u'ref':unicode(infocache[host]['queues'][q]['info_ref']),
+        u'server':unicode(infocache[host]['info_server']),
+        u'type':unicode(infocache[host]['info_type'])})
+
+    conf_util.write_entry(sys.stdout, entry)
+    print
+    doc.unlink()
