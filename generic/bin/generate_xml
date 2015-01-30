@@ -29,7 +29,10 @@ for host in infocache:
     doc = parseString(entry_tmpl)
 
     entry = doc.documentElement
-    entry.setAttribute(u'name', unicode(infocache[host]['site_name']))
+    if infocache[host]['gridtype'] == 'condor':
+      entry.setAttribute(u'name', u"%s_%s" % (infocache[host]['site_name'],host.split('.')[0]))
+    else:
+      entry.setAttribute(u'name', u"%s_%s_%s" % (infocache[host]['site_name'],host.split('.')[0],q))
     entry.setAttribute(u'comment', u'Added 2015-01-29 --Jeff')
 
     if infocache[host]['gridtype'] == 'gt5':
