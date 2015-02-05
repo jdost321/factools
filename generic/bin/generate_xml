@@ -68,7 +68,8 @@ for host in infocache:
 
     attrs_el = entry.getElementsByTagName('attrs')[0]
 
-    if infocache[host]['gridtype'] != 'condor':
+    max_wall = infocache[host]['queues'][q]['max_walltime']
+    if max_wall is not None:
       conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_Max_Walltime",
         u'const':u"True",
         u'glidein_publish':u"False",
@@ -76,7 +77,7 @@ for host in infocache:
         u'parameter':u"True",
         u'publish':u"True",
         u'type':u"int",
-        u'value':u"%s" % infocache[host]['queues'][q]['max_walltime']})
+        u'value':u"%s" % max_wall})
 
     conf_util.insert_empty_el(doc, attrs_el, u'attr', {u'name':u"GLIDEIN_ResourceName",
       u'const':u"True",

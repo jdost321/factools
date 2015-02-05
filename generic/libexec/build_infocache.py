@@ -226,7 +226,8 @@ def get_osg_hosts(coll_serv):
       site_name = r['OSG_ResourceGroup']
     else:
       site_name = None
-    hosts[r['Name']] = {'queues':{'default':{'info_ref':r['Name']}}, 'gridtype':'condor', 'job_manager': jm,
+    # set max_walltime to None for now
+    hosts[r['Name']] = {'queues':{'default':{'max_walltime': None, 'info_ref':r['Name']}}, 'gridtype':'condor', 'job_manager': jm,
       'site_name': site_name, 'info_type': 'condor', 'info_server': coll_serv}
 
   return hosts
