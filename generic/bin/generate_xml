@@ -3,6 +3,7 @@
 from xml.dom.minidom import parseString
 import sys
 import pickle
+import re
 
 STARTUP_DIR=sys.path[0]
 import os
@@ -30,9 +31,13 @@ for host in infocache:
 
     entry = doc.documentElement
     if infocache[host]['gridtype'] == 'condor':
-      entry.setAttribute(u'name', u"%s_%s" % (infocache[host]['site_name'],host.split('.')[0]))
+      entry_name = u"%s_%s" % (infocache[host]['site_name'],host.split('.')[0])
     else:
-      entry.setAttribute(u'name', u"%s_%s_%s" % (infocache[host]['site_name'],host.split('.')[0],q))
+      entry_name = u"%s_%s_%s" % (infocache[host]['site_name'],host.split('.')[0],q)
+
+    # sanitize illegal chars from entry name
+    entry_name = re.sub(r'@| ', '_', entry_name)
+    entry.setAttribute(u'name', entry_name)
     entry.setAttribute(u'comment', u'Added 2015-01-29 --Jeff')
 
     if infocache[host]['gridtype'] == 'gt5':
