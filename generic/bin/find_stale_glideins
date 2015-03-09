@@ -8,9 +8,6 @@ import time
 # get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
     sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
-else:
-    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
-    sys.exit(1)
 
 from glideinwms.factory import glideFactoryConfig
 from glideinwms.creation.lib import cgWParams
@@ -33,6 +30,9 @@ OPTIONS:
 # Try GLIDEIN_FACTORY_DIR env var first
 if 'GLIDEIN_FACTORY_DIR' in os.environ:
     gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
+# is it an rpm install?
+elif os.path.isdir("/var/lib/gwms-factory/work-dir"):
+    gfactory_dir="/var/lib/gwms-factory/work-dir"
 else:
     gfactory_dir="."
 
@@ -64,7 +64,7 @@ if len(sys.argv) > 1:
         sys.exit(1)
     
 conf_file=os.path.join(gfactory_dir,"glideinWMS.xml")
-cparams=cgWParams.GlideinParams("",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["",conf_file])
+cparams=cgWParams.GlideinParams("","",["",conf_file])
 
 schedds = {}
 entries = {}
