@@ -6,12 +6,22 @@ if [ -e $ft_env ];then
     . $ft_env
 fi
 
-. /etc/profile.d/condor.sh
+if [ -n "$GLIDEIN_FACTORY_DIR" ];then
+  factory_dir=$GLIDEIN_FACTORY_DIR
+else
+  factory_dir=/var/lib/gwms-factory/work-dir
+fi
+
+[ -e /etc/profile.d/condor.sh ] && . /etc/profile.d/condor.sh
 now=`date +%s`
-age=$1
+age=30
 sleep=1200
 
-pushd $GLIDEIN_FACTORY_DIR > /dev/null
+if [ "$#" -ge 1 ];then
+  age=$1
+fi
+
+pushd $factory_dir > /dev/null
 schedds=`head -n 1 glideinWMS.xml | sed 's/^.*schedd_name="\([^"]\+\)".*/\1/' | tr , ' '`
 popd > /dev/null
 
