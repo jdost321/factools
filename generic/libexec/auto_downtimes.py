@@ -61,17 +61,11 @@ def osg_end_element(name):
     hostname = "".join(str_buf)
   elif name == 'StartTime':
     st = "".join(str_buf)
-    if 'AM' in st:
-      start_time = time.strptime(st, "%b %d, %Y %H:%M AM UTC")
-    else:
-      start_time = time.strptime(st, "%b %d, %Y %H:%M PM UTC")
+    start_time = time.strptime(st, "%b %d, %Y %H:%M %p UTC")
       
   elif name == 'EndTime':
     et = "".join(str_buf)
-    if 'AM' in et:
-      end_time = time.strptime(et, "%b %d, %Y %H:%M AM UTC")
-    else:
-      end_time = time.strptime(et, "%b %d, %Y %H:%M PM UTC")
+    end_time = time.strptime(et, "%b %d, %Y %H:%M %p UTC")
 
   elif name == 'ID' and in_services:
     services.append("".join(str_buf))
