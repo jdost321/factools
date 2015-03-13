@@ -60,9 +60,19 @@ def osg_end_element(name):
   elif name == 'ResourceFQDN':
     hostname = "".join(str_buf)
   elif name == 'StartTime':
-    start_time = time.strptime("".join(str_buf), "%b %d, %Y %H:%M:%S UTC")
+    st = "".join(str_buf)
+    if 'AM' in st:
+      start_time = time.strptime(st, "%b %d, %Y %H:%M AM UTC")
+    else:
+      start_time = time.strptime(st, "%b %d, %Y %H:%M PM UTC")
+      
   elif name == 'EndTime':
-    end_time = time.strptime("".join(str_buf), "%b %d, %Y %H:%M:%S UTC")
+    et = "".join(str_buf)
+    if 'AM' in et:
+      end_time = time.strptime(et, "%b %d, %Y %H:%M AM UTC")
+    else:
+      end_time = time.strptime(et, "%b %d, %Y %H:%M PM UTC")
+
   elif name == 'ID' and in_services:
     services.append("".join(str_buf))
   elif name == 'Description' and not in_services:
