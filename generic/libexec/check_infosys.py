@@ -150,7 +150,7 @@ finally:
     down_file.close()
 
 conf = sys.argv[1]
-cparams=cgWParams.GlideinParams("dummy",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["dummy",conf])
+cparams=cgWParams.GlideinParams("","",["",conf])
 server_osg="is.grid.iu.edu"
 server_cern="exp-bdii.cern.ch"
 bdii_obj=ldapMonitor.BDIICEQuery(bdii_url=server_osg)

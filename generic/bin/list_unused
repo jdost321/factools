@@ -13,9 +13,6 @@ STARTUP_DIR=sys.path[0]
 # get source dir from env var until we push upstream to glideinWMS
 if 'GLIDEIN_SRC_DIR' in os.environ:
     sys.path.append(os.path.join(os.environ['GLIDEIN_SRC_DIR'],"../"))
-else:
-    print '"GLIDEIN_SRC_DIR" not defined. exiting.'
-    sys.exit(1)
 
 from glideinwms.creation.lib import cgWParams
 from glideinwms.lib import ldapMonitor
@@ -41,7 +38,7 @@ def open_no_value(bl_file):
 
 def build_site_dict(conf_file):
     sites = {}
-    cparams=cgWParams.GlideinParams("",os.path.join(os.environ['GLIDEIN_SRC_DIR'],"creation/web_base"),["",conf_file])
+    cparams=cgWParams.GlideinParams("","",["",conf_file])
 
     for entry in cparams.entries.keys():
         if (eval(cparams.entries[entry]['enabled']) and len(cparams.entries[entry]['infosys_refs']) > 0
