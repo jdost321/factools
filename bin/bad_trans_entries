@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+import time
+import os
+import sys
+import subprocess
+import re
+
+#rrd_file = "/var/lib/gwms-factory/web-area/monitor/entry_CMS_T3_US_Baylor/total/Status_Attributes.rrd"
+MON_DIR = "/var/lib/gwms-factory/web-area/monitor"
+RRD_FILE = "total/Status_Attributes.rrd"
+PERIOD = 24 * 3600
+
+def test_entry(entry_name, start, end, threshold, results):
+    rrd_file = "%s/entry_%s/%s" % (MON_DIR, entry_name, RRD_FILE)
+    try:
+        os.stat(rrd_file)
+    except OSError:
+        return
+    p = subprocess.Popen(['rrdtool', 'xport', '-s', str(int(start)), '-e', str(int(end)), "DEF:run=%s:StatusRunning:AVERAGE" % rrd_file, "DEF:reg=%s:ClientGlideTotal:AVERAGE" % rrd_file, 'XPORT:run', 'XPORT:reg'], stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+
+    time_arr = []
+    run_arr = []
+    reg_arr = []
+    for line in output.splitlines():
+        #print line
+        match = re.match(r' *<row><t>([^<]+)</t><v>([^<]+)</v><v>([^<]+)</v>', line)
+        if match is not None:
+            # skip NaN points for now; but skip might cause false positives
+            if match.group(2) == 'NaN' or match.group(3) == 'NaN':
+                continue
+            time_arr.append(int(match.group(1)))
+            run_arr.append(float(match.group(2)))
+            reg_arr.append(float(match.group(3)))
+
+    bad_region = False
+    for i in range(len(time_arr)):
+        if not bad_region:
+            if reg_arr[i] > 0.0 and run_arr[i] == 0.0:
+                start = i
+                bad_region = True
+        else:
+            if reg_arr[i] == 0.0 or run_arr[i] > 0.0:
+                bad_region = False
+                if time_arr[i - 1] - time_arr[start] > threshold:
+                    results.append((entry_name, time_arr[start], time_arr[i - 1]))
+                return
+
+if __name__ == '__main__':
+    threshold = float(sys.argv[1]) * 3600
+    end = time.time()
+    start = end - PERIOD
+    entries = []
+    for f in os.listdir(MON_DIR):
+        if f.startswith('entry_'):
+            entries.append(f[6:])
+    results = []
+    for e in entries:
+        test_entry(e, start, end, threshold, results) 
+
+    max_width = 0
+    for line in results:
+        if len(line[0]) >  max_width:
+            max_width = len(line[0])
+        
+    print "%-*s   %-24s" % (max_width, "Entry", "Duration")
+    for line in results:
+        print "%-*s   %s - %s" % (max_width, line[0], time.asctime(time.localtime(line[1])),
+            time.asctime(time.localtime(line[2])))
+
+    print
+    print "Total Entries: %i" % len(entries)
+    print "Entries in bad state at least %i hrs: %i" % (threshold / 3600, len(results))
