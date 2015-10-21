@@ -2,18 +2,6 @@ factools
 --------
 A repository of tools for GlideinWMS Factory Operations
 
-Repo Overview
--------------
-Scripts are sorted into two types of directories:
-- generic/ - contains scripts that can be used at any factory without
-modification.
-- <factory name>/ - (e.g. UCSD/, GOC-ITB/, etc) contains scripts that have
-hardcoded values dependent on the factory it was developed for.
-
-Ultimately the goal is to make all scripts eventually become generic and move
-away from the factory specific dirs.  Scripts in generic/ may also become
-possible candidates to be contributed back to glideinWMS.
-
 Usage
 -----
 In this document and other READMEs $FACTOOLS is used for installation location.
@@ -23,7 +11,7 @@ To install the repo and make the scripts available in a working factory:
 git clone git://github.com/jdost321/factools.git
 
 2. edit .bash_profile for factory user (likely gfactory) and add:
-export PATH=$FACTOOLS/generic/bin/:$PATH
+export PATH=$FACTOOLS/bin/:$PATH
 
 3. create $FACTOOLS/etc/factools-env.sh and define some env vars:
 export GLIDEIN_MAIL_REPLY_TO=<email to put in Reply-to: field of reports>

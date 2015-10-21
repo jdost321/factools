@@ -22,4 +22,4 @@ interval (in hours):
 168
 
 2. set line in crontab, e.g. to run at 7:01 am every day:
-1 7 * * * $FACTOOLS/generic/cron/bulk_mail_reports.sh $FACTOOLS/etc/ae_morning.conf> /dev/null 2>&1
+1 7 * * * $FACTOOLS/cron/bulk_mail_reports.sh $FACTOOLS/etc/ae_morning.conf> /dev/null 2>&1
