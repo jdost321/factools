@@ -9,7 +9,7 @@ import re
 #rrd_file = "/var/lib/gwms-factory/web-area/monitor/entry_CMS_T3_US_Baylor/total/Status_Attributes.rrd"
 MON_DIR = "/var/lib/gwms-factory/web-area/monitor"
 RRD_FILE = "total/Status_Attributes.rrd"
-PERIOD = 24 * 3600
+PERIOD = 48 * 3600
 
 def test_entry(entry_name, start, end, threshold, results):
     rrd_file = "%s/entry_%s/%s" % (MON_DIR, entry_name, RRD_FILE)
@@ -17,7 +17,7 @@ def test_entry(entry_name, start, end, threshold, results):
         os.stat(rrd_file)
     except OSError:
         return
-    p = subprocess.Popen(['rrdtool', 'xport', '-s', str(int(start)), '-e', str(int(end)), "DEF:run=%s:StatusRunning:AVERAGE" % rrd_file, "DEF:reg=%s:ClientGlideTotal:AVERAGE" % rrd_file, 'XPORT:run', 'XPORT:reg'], stdout=subprocess.PIPE)
+    p = subprocess.Popen(['rrdtool', 'xport', '-m', '740', '-s', str(int(start)), '-e', str(int(end)), "DEF:run=%s:StatusRunning:AVERAGE" % rrd_file, "DEF:reg=%s:ClientGlideTotal:AVERAGE" % rrd_file, 'XPORT:run', 'XPORT:reg'], stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
     time_arr = []
@@ -45,7 +45,7 @@ def test_entry(entry_name, start, end, threshold, results):
                 bad_region = False
                 if time_arr[i - 1] - time_arr[start] > threshold:
                     results.append((entry_name, time_arr[start], time_arr[i - 1]))
-                return
+                    return
 
 if __name__ == '__main__':
     threshold = float(sys.argv[1]) * 3600
