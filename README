@@ -19,6 +19,6 @@ export GLIDEIN_FACTORY_NAME=<factory name to appear in reports> # optional
 export GLIDEIN_MON_URL=<url of current factory instance monitor dir>
 
 4. add the following to .bash_profile:
-. /opt/factools/etc/factools-env.sh
+. $FACTOOLS/etc/factools-env.sh
 
 5. check doc/ dir for tool specific READMEs and follow further instructions
