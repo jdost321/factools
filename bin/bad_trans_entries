@@ -49,12 +49,16 @@ def test_entry(entry_name, start, end, threshold, results):
 
 if __name__ == '__main__':
     threshold = float(sys.argv[1]) * 3600
-    end = time.time()
-    start = end - PERIOD
-    entries = []
+    '''entries = []
     for f in os.listdir(MON_DIR):
         if f.startswith('entry_'):
             entries.append(f[6:])
+    '''
+    ent_file = open(sys.argv[2])
+    entries = ent_file.read().splitlines()
+    ent_file.close()
+    end = time.time()
+    start = end - PERIOD
     results = []
     for e in entries:
         test_entry(e, start, end, threshold, results) 
