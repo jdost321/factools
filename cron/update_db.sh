@@ -9,7 +9,7 @@ else
     debug=false
 fi
 
-conf=${script_dir}/../../etc/cms_sitedb.conf
+conf=${script_dir}/../etc/cms_sitedb.conf
 source $conf
 log_file=${log_dir}/update.log
 mkdir -p $data_dir

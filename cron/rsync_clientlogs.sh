@@ -1,8 +1,8 @@
 #!/bin/bash
 
 script_dir=`dirname $0`
-conf=${script_dir}/../../etc/rsync_clientlogs.conf
-lock=${script_dir}/../../var/lock/rsync_clientlogs.lock
+conf=${script_dir}/../etc/rsync_clientlogs.conf
+lock=${script_dir}/../var/lock/rsync_clientlogs.lock
 
 [ -e $lock ] && exit 0
 

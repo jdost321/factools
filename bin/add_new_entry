@@ -25,7 +25,7 @@ import getopt
     
 ################################################################################
 
-CONF_DIR = os.path.join(STARTUP_DIR, "../../etc/add_entry")
+CONF_DIR = os.path.join(STARTUP_DIR, "../etc/add_entry")
 
 def main(params,tmpl_params,bdii_data,bdii_srv,
          oldname,newname,

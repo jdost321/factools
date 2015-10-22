@@ -19,7 +19,7 @@ from glideinwms.lib import ldapMonitor
 
 # globals
 VERBOSE=False
-CONF = os.path.join(STARTUP_DIR, "../../etc/list_unused.blacklist")
+CONF = os.path.join(STARTUP_DIR, "../etc/list_unused.blacklist")
 
 # returns processed file object that allows for non-value ini options
 # needed until we get the ConfigParser allow_no_value option in python 2_7
