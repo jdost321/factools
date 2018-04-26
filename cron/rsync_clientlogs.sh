@@ -18,7 +18,7 @@ while read line; do
     dest=$1
     shift
 
-    su $user -c "/usr/bin/rsync -e 'ssh' --include '/entry_*/' --include '/entry_*/job.*.out' --include '/entry_*/job.*.err' --exclude '*' --min-size 1 -axv $src $dest >/tmp/rsync_${user}.log"
+    su $user -c "/usr/bin/rsync -e 'ssh' --include '/entry_*/' --include '/entry_*/job.*.out' --include '/entry_*/job.*.err' --exclude '*' --min-size 1 -axv --chmod=+r $src $dest >/tmp/rsync_${user}.log"
   fi
 done < $conf
 
