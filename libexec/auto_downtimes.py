@@ -141,7 +141,7 @@ elif os.path.isdir("/var/lib/gwms-factory/work-dir"):
 else:
   gfactory_dir="."
 
-url = 'http://myosg.grid.iu.edu/rgdowntime/xml?summary_attrs_showservice=on&summary_attrs_showrsvstatus=on&summary_attrs_showfqdn=on&gip_status_attrs_showtestresults=on&downtime_attrs_showpast=&account_type=cumulative_hours&ce_account_type=gip_vo&se_account_type=vo_transfer_volume&bdiitree_type=total_jobs&bdii_object=service&bdii_server=is-osg&start_type=7daysago&end_type=now&all_resources=on&facility_sel[]=10009&gridtype=on&gridtype_1=on&active=on&active_value=1&disable_value=1'
+url = 'https://topology.opensciencegrid.org/rgdowntime/xml'
 
 dt_xml = urllib2.urlopen(url)
 #dt_xml = open("down.xml")
