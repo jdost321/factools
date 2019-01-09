@@ -5,6 +5,8 @@ import xml.parsers.expat
 import time
 import os
 
+from glideinwms.creation.lib import factoryXmlConfig
+
 def get_dt_format(t_struct):
   return time.strftime("%Y-%m-%dT%H:%M:%S+00:00", t_struct)
 
@@ -115,23 +117,6 @@ def egi_end_element(name):
 
 ###### END EGI downtimes xml parsing variables and callbacks
 
-###### glideinWMS.xml parsing variables and callbacks
-
-def gwms_start_element(name, attrs):
-  if name == 'entry' and attrs['enabled'] == 'True':
-    if attrs['gridtype'] == 'gt2' or attrs['gridtype'] == 'gt5' or attrs['gridtype'] == 'cream':
-      hostname = attrs['gatekeeper'].split(':')[0]
-    # works for nordugrid and condor-ce
-    else:
-      hostname = attrs['gatekeeper'].split()[0]
-
-    if hostname in downtimes:
-      entry_downtimes[attrs['name']] = downtimes[hostname]
-      #for dt in downtimes[hostname]:
-      #  print "%s %s %s All All # _ad_ %s" % (get_dt_format(dt['start']), get_dt_format(dt['end']), attrs['name'], ";".join(dt['desc'].split('\n')))
-
-###### END glideinWMS.xml parsing variables and callbacks
-    
 # Try GLIDEIN_FACTORY_DIR env var first
 if 'GLIDEIN_FACTORY_DIR' in os.environ:
   gfactory_dir=os.environ['GLIDEIN_FACTORY_DIR']
@@ -179,12 +164,21 @@ xmlparser.ParseFile(dt_xml)
 
 dt_xml.close()
 
-gwms_xml = open(os.path.join(gfactory_dir, "glideinWMS.xml"))
-xmlparser = xml.parsers.expat.ParserCreate()
-xmlparser.StartElementHandler = gwms_start_element
-xmlparser.ParseFile(gwms_xml)
+conf_path = "/etc/gwms-factory/glideinWMS.xml"
+conf = factoryXmlConfig.parse(conf_path)
 
-gwms_xml.close()
+for entry in conf.get_child_list('entries'):
+  if entry['enabled'] == 'True':
+    if entry['gridtype'] == 'gt2' or entry['gridtype'] == 'gt5' or entry['gridtype'] == 'cream': 
+      hostname = entry['gatekeeper'].split(':')[0]
+    # works for nordugrid and condor-ce
+    else:
+      hostname = entry['gatekeeper'].split()[0]
+
+    if hostname in downtimes:
+      entry_downtimes[entry['name']] = downtimes[hostname]
+      #for dt in downtimes[hostname]:
+      #  print "%s %s %s All All # _ad_ %s" % (get_dt_format(dt['start']), get_dt_format(dt['end']), attrs['name'], ";".join(dt['desc'].split('\n')))
 
 dt_file = open(os.path.join(gfactory_dir, "glideinWMS.downtimes"))
 manual_dts = []
