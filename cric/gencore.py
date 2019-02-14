@@ -1,9 +1,9 @@
 import json
-import pprint
 import yaml
+import pprint
 
 #https://cms-cric.cern.ch/api/core/ce/query/?json
-sites = json.load(open('core.json'))
+sites = json.load(open("core.json"))
 
 result = {}
 
