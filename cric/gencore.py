@@ -1,9 +1,19 @@
+import sys
 import json
 import yaml
 import pprint
+import requests
+
+
+url = "https://papa-cric.cern.ch/api/core/ce/query/?json"
+response = requests.get(url)
+if response.status_code != 200:
+    print "ERROR. Can not get information from CRIC (%s)" % url
+    sys.exit(-1)
+sites = response.json()
 
 #https://cms-cric.cern.ch/api/core/ce/query/?json
-sites = json.load(open("core.json"))
+#sites = json.load(open("core.json"))
 
 result = {}
 
@@ -17,15 +27,16 @@ for site, cel in sites.items(): # cel = ce list
 #    import pdb;pdb.set_trace()
 #    print site
     result[site] = {}
-    result[site]["attrs"] = {} 
     for ce in cel:
         if ce["flavour"] == "CREAM-CE":
             continue
         print "****", ce["endpoint"]
 #        result[site]["enabled"] = "True"
-        result[site]["gatekeeper"] = ce["endpoint"]
-        result[site]["gridtype"] = flavour_map[ce["flavour"]]
-        result[site]["attrs"]["GLIDIEN_ResourceName"] = site
+        gatekeeper = ce["endpoint"]
+        result[site][gatekeeper] = {}
+        result[site][gatekeeper]["gridtype"] = flavour_map[ce["flavour"]]
+        result[site][gatekeeper]["attrs"] = {}
+        result[site][gatekeeper]["attrs"]["GLIDIEN_ResourceName"] = site
 #        result[site]["GLIDEIN_Supported_VOs"] = "CMS"
 
 with open("1category.yml", "w") as outfile:
