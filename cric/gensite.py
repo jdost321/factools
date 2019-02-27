@@ -32,7 +32,13 @@ for _, siteinfo in sites.items():
         result[site][gatekeeper]["attrs"] = {}
         result[site][gatekeeper]["attrs"]["GLIDEIN_REQUIRED_OS"] = entry["GLIDEIN_REQUIRED_OS"]
         result[site][gatekeeper]["attrs"]["GLIDEIN_CPUS"] = entry["GLIDEIN_CPUS"]
-        result[site][gatekeeper]["attrs"]["GLIDEIN_MaxMemMBs"] = entry["GLIDEIN_MaxMemMBs"]
+        result[site][gatekeeper]["attrs"]["GLIDEIN_MaxMemMBs"] = entry["GLIDEIN_MaxMemMBs"] or 2500
+        # Category 4
+        result[site][gatekeeper]["rsl"] = entry["rsl"]
+        result[site][gatekeeper]["attrs"]["GLIDEIN_CMSSite"] = entry["GLIDEIN_CMSSite"]
+        result[site][gatekeeper]["attrs"]["GLIDEIN_Site"] = site
+#        result[site][gatekeeper]["attrs"]["GLIDEIN_Supported_VOs"] = "CMS"
+#        result[site][gatekeeper]["trust_domain"] = "grid"
 
 with open("2category.yml", "w") as outfile:
     yaml.safe_dump(result, outfile, default_flow_style=False)

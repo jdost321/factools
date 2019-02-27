@@ -37,6 +37,7 @@ for site, cel in sites.items(): # cel = ce list
         result[site][gatekeeper]["gridtype"] = flavour_map[ce["flavour"]]
         result[site][gatekeeper]["attrs"] = {}
         result[site][gatekeeper]["attrs"]["GLIDIEN_ResourceName"] = site
+        result[site][gatekeeper]["attrs"]["GLIDIEN_Country"] = ce["country_code"]
 #        result[site]["GLIDEIN_Supported_VOs"] = "CMS"
 
 with open("1category.yml", "w") as outfile:
