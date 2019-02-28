@@ -1,0 +1,12 @@
+DEFAULT_SITE:
+    # No attributes can be defined here (for the time being)
+    DEFAULT_GETEKEEPER:
+        work_dir: '.'
+        enabled: 'True'
+        trust_domain: 'grid'
+        attrs:
+            GLIDIEN_Country:
+              const: 'True'
+            GLEXEC_BIN : 'NONE'
+            GLIDEIN_Supported_VOs:
+              value: 'CMS'
