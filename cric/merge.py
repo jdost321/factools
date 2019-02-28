@@ -52,7 +52,7 @@ class MergeError(Exception):
 
 def update(d, u, overwrite=True):
     for k, v in u.items():
-        if v == None:
+        if v == None:# and overwrite:
             if k in d:
                 del d[k]
         elif isinstance(v, collections.Mapping):
@@ -89,14 +89,15 @@ def get_dict(site, gatekeeper, ceinfo):
     out = {}
     out["gatekeeper"] = gatekeeper
     out.update(ceinfo)
-    out['entry_name'] = "CMS_" + site + "_" + out["attrs"]["GLIDEIN_CMSSite"] + "_" + out["gatekeeper"].split('.')[0]
+    out['entry_name'] = "CMS_" + site + "_" + out["attrs"]["GLIDEIN_CMSSite"]["value"] + "_" + out["gatekeeper"].split('.')[0]
     return out
 
 def get_attr_str(attrs):
-   out = ""
-   for n, v in sorted(attrs.items()):
-        out += '<attr name="%s" const="True" glidein_publish="True" job_publish="True" parameter="True" publish="True" type="string" value="%s"/>\n' % (n, v)
-   return out[:-1]
+    out = ""
+    for name, d in sorted(attrs.items()):
+        d["name"] = name
+        out += '<attr name="%s" const="%(const)s" glidein_publish="(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % d
+    return out[:-1]
 
 def main():
     out_conf = ""

@@ -35,14 +35,11 @@ for site, cel in sites.items(): # cel = ce list
         result[site][gatekeeper] = {}
         result[site][gatekeeper]["gridtype"] = flavour_map[ce["flavour"]]
         result[site][gatekeeper]["attrs"] = {}
-        result[site][gatekeeper]["attrs"]["GLIDIEN_ResourceName"] = { "value" : site }
-        result[site][gatekeeper]["attrs"]["GLIDIEN_Country"] = { "value" : ce["country_code"] }
+        result[site][gatekeeper]["attrs"]["GLIDEIN_ResourceName"] = { "value" : site }
+        result[site][gatekeeper]["attrs"]["GLIDEIN_Country"] = { "value" : ce["country_code"] }
 
 with open("1category.yml", "w") as outfile:
     yaml.safe_dump(result, outfile, default_flow_style=False)
-
-pprint.pprint(result)
-print(len(result))
 
 """
         for queue, _ in ce["queues"].items():
@@ -60,6 +57,6 @@ print(len(result))
 
         # Queue (not for condor)
         # Max walltime
-        # GLIDIEN_ResourceName (the name)
+        # GLIDEIN_ResourceName (the name)
         # GLIDEIN_Supported_VOs (did not find it in the CRIC api)
         # result[site][""] = ""
