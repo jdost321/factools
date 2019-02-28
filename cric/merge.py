@@ -2,6 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 import glob
 import json
 import yaml
@@ -39,6 +40,16 @@ entry_stub = """       <entry name="%(entry_name)s" auth_method="grid_proxy" com
       </entry>
 """
 
+class MergeError(Exception):
+    """ Class to handle error in the merge script. Error codes:
+    """
+    codes_map = {
+        1 : "default.yaml file not found",
+    }
+
+    def __init__(self, code):
+        self.code = code
+
 def update(d, u, overwrite=True):
     for k, v in u.items():
         if v == None:
@@ -55,12 +66,14 @@ def merge_yaml():
     out = {}
     for cfg in sorted(glob.glob("*.yml")):
         if cfg == "default.yml":
-            continue
+            raise MergeError(1)
         with open(cfg) as fd:
             cfg_obj = yaml.load(fd)
             update(out, cfg_obj)
 
-    # Merging defaults (will use update with overwrite False).
+    # Merging defaults (will use update with overwrite False)
+    if not os.path.isfile("default.yml"):
+        return out
     with open("default.yml") as fd:
         defaults = yaml.load(fd)
 
@@ -87,22 +100,24 @@ def get_attr_str(attrs):
 
 def main():
     out_conf = ""
-    
+
     cfg_all = merge_yaml()
     for site, cel in cfg_all.items():
         for gatekeeper, ceinfo in cel.items():
             conf_dict = get_dict(site, gatekeeper, ceinfo)
             conf_dict["attrs"] = get_attr_str(conf_dict["attrs"])
             out_conf += entry_stub % conf_dict
-    print "<glidein>"
-    print "    <entries>"
-    print out_conf[:-1]
-    print "    </entries>"
-    print "    <entry_sets>"
-    print "    </entry_sets>"
-    print "</glidein>"
-            
-          
+    print("<glidein>")
+    print("    <entries>")
+    print(out_conf[:-1])
+    print("    </entries>")
+    print("    <entry_sets>")
+    print("    </entry_sets>")
+    print("</glidein>")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except MergeError as me:
+        print(MergeError.codes_map[me.code])
+        sys.exit(me.code)
