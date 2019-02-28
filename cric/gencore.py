@@ -11,7 +11,7 @@ import requests
 url = "https://papa-cric.cern.ch/api/core/ce/query/?json"
 response = requests.get(url)
 if response.status_code != 200:
-    print "ERROR. Can not get information from CRIC (%s)" % url
+    print("ERROR. Can not get information from CRIC (%s)" % url)
     sys.exit(-1)
 sites = response.json()
 
@@ -27,27 +27,22 @@ flavour_map = {
 }
 
 for site, cel in sites.items(): # cel = ce list
-#    import pdb;pdb.set_trace()
-#    print site
     result[site] = {}
     for ce in cel:
         if ce["flavour"] == "CREAM-CE":
             continue
-        print "****", ce["endpoint"]
-#        result[site]["enabled"] = "True"
         gatekeeper = ce["endpoint"]
         result[site][gatekeeper] = {}
         result[site][gatekeeper]["gridtype"] = flavour_map[ce["flavour"]]
         result[site][gatekeeper]["attrs"] = {}
-        result[site][gatekeeper]["attrs"]["GLIDIEN_ResourceName"] = site
-        result[site][gatekeeper]["attrs"]["GLIDIEN_Country"] = ce["country_code"]
-#        result[site]["GLIDEIN_Supported_VOs"] = "CMS"
+        result[site][gatekeeper]["attrs"]["GLIDIEN_ResourceName"] = { "value" : site }
+        result[site][gatekeeper]["attrs"]["GLIDIEN_Country"] = { "value" : ce["country_code"] }
 
 with open("1category.yml", "w") as outfile:
     yaml.safe_dump(result, outfile, default_flow_style=False)
 
 pprint.pprint(result)
-print len(result)
+print(len(result))
 
 """
         for queue, _ in ce["queues"].items():
