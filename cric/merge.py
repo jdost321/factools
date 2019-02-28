@@ -66,14 +66,14 @@ def merge_yaml():
     out = {}
     for cfg in sorted(glob.glob("*.yml")):
         if cfg == "default.yml":
-            raise MergeError(1)
+            continue
         with open(cfg) as fd:
             cfg_obj = yaml.load(fd)
             update(out, cfg_obj)
 
     # Merging defaults (will use update with overwrite False)
     if not os.path.isfile("default.yml"):
-        return out
+        raise MergeError(1)
     with open("default.yml") as fd:
         defaults = yaml.load(fd)
 
