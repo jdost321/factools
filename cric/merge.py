@@ -8,8 +8,6 @@ import json
 import yaml
 import collections
 
-import pdb
-
 entry_stub = """       <entry name="%(entry_name)s" auth_method="grid_proxy" comment="Entry automatically generated" enabled="%(enabled)s" gatekeeper="%(gatekeeper)s" gridtype="%(gridtype)s" rsl="%(rsl)s" proxy_url="OSG" trust_domain="grid" verbosity="std" work_dir="%(work_dir)s">
          <config>
             <max_jobs>
@@ -22,14 +20,15 @@ entry_stub = """       <entry name="%(entry_name)s" auth_method="grid_proxy" com
             <remove max_per_cycle="5" sleep="0.2"/>
             <restrictions require_glidein_glexec_use="False" require_voms_proxy="False"/>
             <submit cluster_size="10" max_per_cycle="25" sleep="2" slots_layout="fixed">
-               <!--submit_attrs>(SUBMIT_ATTRS)s
-               </submit_attrs-->
+               <submit_attrs>
+%(submit_attrs)s
+               </submit_attrs>
             </submit>
          </config>
          <allow_frontends>
          </allow_frontends>
          <attrs>
-            %(attrs)s
+%(attrs)s
          </attrs>
          <files>
          </files>
@@ -96,7 +95,13 @@ def get_attr_str(attrs):
     out = ""
     for name, d in sorted(attrs.items()):
         d["name"] = name
-        out += '<attr name="%s" const="%(const)s" glidein_publish="(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % d
+        out += '            <attr name="%(name)s" const="%(const)s" glidein_publish="%(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % d
+    return out[:-1]
+
+def get_submit_attr_str(submit_attrs):
+    out = ""
+    for n, v in sorted(submit_attrs.items()):
+        out += '                   <submit_attr name="%s" value="%s"/>\n' % (n, v)
     return out[:-1]
 
 def main():
@@ -107,6 +112,7 @@ def main():
         for gatekeeper, ceinfo in cel.items():
             conf_dict = get_dict(site, gatekeeper, ceinfo)
             conf_dict["attrs"] = get_attr_str(conf_dict["attrs"])
+            conf_dict["submit_attrs"] = get_submit_attr_str(conf_dict["submit_attrs"])
             out_conf += entry_stub % conf_dict
     print("<glidein>")
     print("    <entries>")
