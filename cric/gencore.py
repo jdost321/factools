@@ -33,10 +33,11 @@ for site, cel in sites.items(): # cel = ce list
             continue
         gatekeeper = ce["endpoint"]
         result[site][gatekeeper] = {}
-        result[site][gatekeeper]["gridtype"] = flavour_map[ce["flavour"]]
-        result[site][gatekeeper]["attrs"] = {}
-        result[site][gatekeeper]["attrs"]["GLIDEIN_ResourceName"] = { "value" : site }
-        result[site][gatekeeper]["attrs"]["GLIDEIN_Country"] = { "value" : ce["country_code"] }
+        result[site][gatekeeper]["DEFAULT_ENTRY"] = {}
+        result[site][gatekeeper]["DEFAULT_ENTRY"]["gridtype"] = flavour_map[ce["flavour"]]
+        result[site][gatekeeper]["DEFAULT_ENTRY"]["attrs"] = {}
+        result[site][gatekeeper]["DEFAULT_ENTRY"]["attrs"]["GLIDEIN_ResourceName"] = { "value" : site }
+        result[site][gatekeeper]["DEFAULT_ENTRY"]["attrs"]["GLIDEIN_Country"] = { "value" : ce["country_code"] }
 
 with open("1category.yml", "w") as outfile:
     yaml.safe_dump(result, outfile, default_flow_style=False)
