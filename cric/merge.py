@@ -114,8 +114,12 @@ def get_attr_str(attrs):
     out = ""
     for name, d in sorted(attrs.items()):
         d["name"] = name
-        if "value" in d: 
-            out += '            <attr name="%(name)s" const="%(const)s" glidein_publish="%(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % d
+        if "comment" not in d:
+            d["comment"] = ""
+        else:
+            d["comment"] = " comment=\"" + d["comment"]  + "\""
+        if "value" in d:
+            out += '            <attr name="%(name)s"%(comment)s const="%(const)s" glidein_publish="%(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % d
     return out[:-1]
 
 def get_submit_attr_str(submit_attrs):
