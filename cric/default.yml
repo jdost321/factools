@@ -1,91 +1,91 @@
 DEFAULT_SITE:
-    # No attributes can be defined here (for the time being)
-    DEFAULT_GETEKEEPER:
-        DEFAULT_ENTRY:
-            work_dir: '.'
-            enabled: 'True'
-            trust_domain: 'grid'
-            attrs:
-                GLEXEC_BIN:
-                    const: 'True'
-                    glidein_publish: 'False'
-                    job_publish: 'False'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                    value: 'NONE'
-                GLIDEIN_CMSSite:
-                    const: 'True'
-                    glidein_publish: 'True'
-                    job_publish: 'True'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                GLIDEIN_Country:
-                    const: 'True'
-                    glidein_publish: 'True'
-                    job_publish: 'True'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                GLIDEIN_CPUS:
-                    const: 'True'
-                    glidein_publish: 'False'
-                    job_publish: 'True'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                    value: '1'
-                GLIDEIN_MaxMemMBs:
-                    const: 'True'
-                    glidein_publish: 'True'
-                    job_publish: 'False'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'int'
-                    value: '2500'
-                GLIDEIN_Max_Walltime:
-                    const: 'True'
-                    glidein_publish: 'False'
-                    job_publish: 'False'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'int'
-                GLIDEIN_Retire_Time:
-                    const: 'True'
-                    glidein_publish: 'False'
-                    job_publish: 'False'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'int'
-                    value: '21600'
-                GLIDEIN_REQUIRED_OS:
-                    const: 'True'
-                    glidein_publish: 'True'
-                    job_publish: 'False'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                    value: 'rhel6'
-                GLIDEIN_Site:
-                    const: 'True'
-                    glidein_publish: 'True'
-                    job_publish: 'True'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                GLIDEIN_Supported_VOs:
-                    const: 'True'
-                    glidein_publish: 'False'
-                    job_publish: 'False'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
-                    value: 'CMS'
-                GLIDEIN_ResourceName:
-                    const: 'True'
-                    glidein_publish: 'True'
-                    job_publish: 'True'
-                    parameter: 'True'
-                    publish: 'True'
-                    type: 'string'
+  # No attributes can be defined here (for the time being)
+  DEFAULT_GETEKEEPER:
+    DEFAULT_ENTRY:
+      work_dir: .
+      enabled: True
+      trust_domain: grid
+      attrs:
+        GLEXEC_BIN:
+          const: True
+          glidein_publish: False
+          job_publish: False
+          parameter: True
+          publish: True
+          type: string
+          value: NONE
+        GLIDEIN_CMSSite:
+          const: True
+          glidein_publish: True
+          job_publish: True
+          parameter: True
+          publish: True
+          type: string
+        GLIDEIN_Country:
+          const: True
+          glidein_publish: True
+          job_publish: True
+          parameter: True
+          publish: True
+          type: string
+        GLIDEIN_CPUS:
+          const: True
+          glidein_publish: False
+          job_publish: True
+          parameter: True
+          publish: True
+          type: string
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          const: True
+          glidein_publish: True
+          job_publish: False
+          parameter: True
+          publish: True
+          type: int
+          value: 2500
+        GLIDEIN_Max_Walltime:
+          const: True
+          glidein_publish: False
+          job_publish: False
+          parameter: True
+          publish: True
+          type: int
+        GLIDEIN_Retire_Time:
+          const: True
+          glidein_publish: False
+          job_publish: False
+          parameter: True
+          publish: True
+          type: int
+          value: 21600
+        GLIDEIN_REQUIRED_OS:
+          const: True
+          glidein_publish: True
+          job_publish: False
+          parameter: True
+          publish: True
+          type: string
+          value: rhel6
+        GLIDEIN_Site:
+          const: True
+          glidein_publish: True
+          job_publish: True
+          parameter: True
+          publish: True
+          type: string
+        GLIDEIN_Supported_VOs:
+          const: True
+          glidein_publish: False
+          job_publish: False
+          parameter: True
+          publish: True
+          type: string
+          value: CMS
+        GLIDEIN_ResourceName:
+          const: True
+          glidein_publish: True
+          job_publish: True
+          parameter: True
+          publish: True
+          type: string
