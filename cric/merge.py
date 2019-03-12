@@ -43,8 +43,10 @@ class MergeError(Exception):
     """ Class to handle error in the merge script. Error codes:
     """
     codes_map = {
-        1 : "default.yml file not found",
-        2 : "1category.yml file not found",
+        1 : "1category.yml file not found",
+        2 : "2category.yml file not found",
+        3 : "3category.yml file not found",
+        4 : "default.yml file not found",
     }
 
     def __init__(self, code):
@@ -62,38 +64,31 @@ def update(d, u, overwrite=True):
                 d[k] = v
     return d
 
+def get_yaml_file_info(file_name, error_code):
+    if not os.path.isfile(file_name):
+        raise MergeError(error_code)
+    with open(file_name) as fd:
+        out = yaml.load(fd)
+
+    return out
+
 def merge_yaml():
     out = {}
-    for cfg in sorted(glob.glob("*.yml")):
-        if cfg == "default.yml" or cfg == "1category.yml":
-            continue
-        with open(cfg) as fd:
-            cfg_obj = yaml.load(fd)
-            update(out, cfg_obj)
 
-    if not os.path.isfile("1category.yml"):
-        raise MergeError(2)
-    with open("1category.yml") as fd:
-        entries_defaults = yaml.load(fd)
+    out = get_yaml_file_info("3category.yml", 3)
+    gensites_info = get_yaml_file_info("2category.yml", 2)
+    gencore_info = get_yaml_file_info("1category.yml", 1)
+    defaults_info = get_yaml_file_info("default.yml", 4)
 
     for site, cel in out.items():
         for gatekeeper, ceinfo in cel.items():
             for entry, entryinfo in ceinfo.items():
-                update(entryinfo, entries_defaults[site][gatekeeper]["DEFAULT_ENTRY"])
-                update(entryinfo["attrs"], entries_defaults[site][gatekeeper]["DEFAULT_ENTRY"]["attrs"])
-
-    # Merging defaults (will use update with overwrite False)
-    if not os.path.isfile("default.yml"):
-        raise MergeError(1)
-    with open("default.yml") as fd:
-        defaults = yaml.load(fd)
-
-    for site, cel in out.items():
-        for gatekeeper, ceinfo in cel.items():
-            for entry, entryinfo in ceinfo.items():
-                update(entryinfo, defaults["DEFAULT_SITE"]["DEFAULT_GETEKEEPER"]["DEFAULT_ENTRY"], overwrite=False)
-                update(entryinfo["attrs"], defaults["DEFAULT_SITE"]["DEFAULT_GETEKEEPER"]["DEFAULT_ENTRY"]["attrs"], 
-                       overwrite=False)
+                if entryinfo == None:
+                    out[site][gatekeeper][entry] = gensites_info[site][gatekeeper][entry]
+                else:
+                    update(entryinfo, gensites_info[site][gatekeeper][entry])
+                update(entryinfo, gencore_info[site][gatekeeper]["DEFAULT_ENTRY"])
+                update(entryinfo, defaults_info["DEFAULT_SITE"]["DEFAULT_GETEKEEPER"]["DEFAULT_ENTRY"], overwrite=False)
 
     return out
 
