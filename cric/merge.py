@@ -97,17 +97,11 @@ def merge_yaml():
 
     return out
 
-def get_dict(site, gatekeeper, ceinfo, entry_number):
+def get_dict(gatekeeper, entry, entryinfo):
     out = {}
     out["gatekeeper"] = gatekeeper
-    out.update(ceinfo)
-    entry_name = "CMSHTPC_"
-    try:
-        if int(out["attrs"]["GLIDEIN_CPUS"]["value"]) == 1:
-            entry_name = "CMS_"
-    except ValueError:
-        pass
-    out['entry_name'] = entry_name + out["attrs"]["GLIDEIN_CMSSite"]["value"] + "_" + out["gatekeeper"].split('.')[0] + ("_" + str(entry_number) if entry_number > 1 else "")
+    out["entry_name"] = entry
+    out.update(entryinfo)
     return out
 
 def get_attr_str(attrs):
@@ -135,7 +129,7 @@ def main():
     for site, cel in cfg_all.items():
         for gatekeeper, ceinfo in cel.items():
             for entry, entryinfo in ceinfo.items():
-                conf_dict = get_dict(site, gatekeeper, entryinfo, entry)
+                conf_dict = get_dict(gatekeeper, entry, entryinfo)
                 conf_dict["attrs"] = get_attr_str(conf_dict["attrs"])
                 conf_dict["submit_attrs"] = get_submit_attr_str(conf_dict["submit_attrs"])
                 if conf_dict["gridtype"] == "condor":
