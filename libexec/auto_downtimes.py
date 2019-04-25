@@ -202,7 +202,14 @@ dt_file.close()
 new_dt_file = open(os.path.join(gfactory_dir, "glideinWMS.downtimes.tmp"), 'w')
 for entry in sorted(entry_downtimes):
   for dt in entry_downtimes[entry]:
-    new_dt_file.write("%s %s %s All All # _ad_ %s\n" % (get_dt_format(dt['start']), get_dt_format(dt['end']), entry, ";".join(dt['desc'].split('\n'))))
+    new_dt_file.write("%s %s %s All All # _ad_ " % (get_dt_format(dt['start']), get_dt_format(dt['end']), entry))
+    desc_str = ";".join(dt['desc'].split('\n'))
+    try:
+      new_dt_file.write("%s\n" % desc_str)
+    except UnicodeEncodeError as ue:
+      print "Unicode not allowed; skipping description: %s: %s" % (desc_str, ue)
+      new_dt_file.write("\n")
+
 for dt in manual_dts:
   new_dt_file.write(dt)
 
