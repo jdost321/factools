@@ -1,2 +1,3 @@
 # for now ignore real config files
 *.conf
+factools-env.sh
