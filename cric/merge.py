@@ -20,8 +20,7 @@ entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comm
             <remove max_per_cycle="5" sleep="0.2"/>
             <restrictions require_glidein_glexec_use="False" require_voms_proxy="False"/>
             <submit cluster_size="10" max_per_cycle="25" sleep="2" slots_layout="fixed">
-               <submit_attrs>
-%(submit_attrs)s
+               <submit_attrs>%(submit_attrs)s
                </submit_attrs>
             </submit>
          </config>
@@ -85,6 +84,7 @@ def merge_yaml():
             for entry, entryinfo in ceinfo.items():
                 if entryinfo == None:
                     out[site][gatekeeper][entry] = gensites_info[site][gatekeeper][entry]
+                    entryinfo = out[site][gatekeeper][entry]
                 else:
                     update(entryinfo, gensites_info[site][gatekeeper][entry], overwrite=False)
                 update(entryinfo, gencore_info[site][gatekeeper]["DEFAULT_ENTRY"])
@@ -114,8 +114,8 @@ def get_attr_str(attrs):
 def get_submit_attr_str(submit_attrs):
     out = ""
     for n, v in sorted(submit_attrs.items()):
-        out += '                  <submit_attr name="%s" value="%s"/>\n' % (n, v)
-    return out[:-1]
+        out += '\n                  <submit_attr name="%s" value="%s"/>' % (n, v)
+    return out
 
 def main():
     out_conf = ""
@@ -126,7 +126,10 @@ def main():
             for entry, entryinfo in ceinfo.items():
                 conf_dict = get_dict(gatekeeper, entry, entryinfo)
                 conf_dict["attrs"] = get_attr_str(conf_dict["attrs"])
-                conf_dict["submit_attrs"] = get_submit_attr_str(conf_dict["submit_attrs"])
+                if 'submit_attrs' in conf_dict:
+                    conf_dict["submit_attrs"] = get_submit_attr_str(conf_dict["submit_attrs"])
+                else:
+                    conf_dict["submit_attrs"] = ""
                 if conf_dict["gridtype"] == "condor":
                     gatekeeper = conf_dict["gatekeeper"]
                     conf_dict["gatekeeper"] = gatekeeper.split(":")[0] + " " + gatekeeper
