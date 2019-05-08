@@ -207,7 +207,7 @@ for entry in sorted(entry_downtimes):
     try:
       new_dt_file.write("%s\n" % desc_str)
     except UnicodeEncodeError as ue:
-      print ("Unicode not allowed; skipping description: %s: %s" % (desc_str, ue)).encode('ascii', 'ignore').decode('ascii')
+      print "Unicode not allowed; skipping description for %s: %s" % (entry, ue)
       new_dt_file.write("\n")
 
 for dt in manual_dts:
