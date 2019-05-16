@@ -38,6 +38,15 @@ entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comm
       </entry>
 """
 
+default_attr = {
+    "const"           : "True",
+    "glidein_publish" : "True",
+    "job_publish"     : "False",
+    "parameter"       : "True",
+    "publish"         : "True",
+    "type"            : "string"
+}
+
 class MergeError(Exception):
     """ Class to handle error in the merge script. Error codes:
     """
@@ -103,6 +112,7 @@ def get_attr_str(attrs):
     out = ""
     for name, d in sorted(attrs.items()):
         d["name"] = name
+        update(d, default_attr, overwrite=False)
         if "comment" not in d:
             d["comment"] = ""
         else:
