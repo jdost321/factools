@@ -1,13 +1,14 @@
 from __future__ import division
 from __future__ import print_function
 
+
 import os
 import sys
-import glob
-import json
 import yaml
 import collections
 
+
+# Template of entry configuration
 entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comment="Entry automatically generated" enabled="%(enabled)s" gatekeeper="%(gatekeeper)s" gridtype="%(gridtype)s"%(rsl)s proxy_url="OSG" trust_domain="grid" verbosity="std" work_dir="%(work_dir)s">
          <config>
             <max_jobs>
@@ -38,40 +39,47 @@ entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comm
       </entry>
 """
 
+
+# Default values of parameters attributes
 default_attr = {
-    "const"           : "True",
-    "glidein_publish" : "True",
-    "job_publish"     : "False",
-    "parameter"       : "True",
-    "publish"         : "True",
-    "type"            : "string"
+    "const": "True",
+    "glidein_publish": "True",
+    "job_publish": "False",
+    "parameter": "True",
+    "publish": "True",
+    "type": "string"
 }
 
+
+# Class to handle error in the merge script
 class MergeError(Exception):
-    """ Class to handle error in the merge script. Error codes:
-    """
     codes_map = {
-        1 : "1category.yml file not found",
-        2 : "2category.yml file not found",
-        3 : "3category.yml file not found",
-        4 : "default.yml file not found",
+        1: "1category.yml file not found",
+        2: "2category.yml file not found",
+        3: "3category.yml file not found",
+        4: "default.yml file not found"
     }
 
     def __init__(self, code):
         self.code = code
 
-def update(d, u, overwrite=True):
-    for k, v in u.items():
-        if v == None:# and overwrite:
-            if k in d:
-                del d[k]
-        elif isinstance(v, collections.Mapping):
-            d[k] = update(d.get(k, {}), v, overwrite)
-        else:
-            if overwrite or k not in d:
-                d[k] = v
-    return d
 
+# Update dictionary values
+def update(data, update_data, overwrite=True):
+    for key, value in update_data.items():
+        if value == None:
+            if key in data:
+                del data[key]
+        elif isinstance(value, collections.Mapping):
+            data[key] = update(data.get(key, {}), value, overwrite)
+        else:
+            if overwrite or key not in data:
+                data[key] = value
+
+    return data
+
+
+# Get data from yaml file
 def get_yaml_file_info(file_name, error_code):
     if not os.path.isfile(file_name):
         raise MergeError(error_code)
@@ -80,80 +88,96 @@ def get_yaml_file_info(file_name, error_code):
 
     return out
 
+
+# Merge data from all yaml files
 def merge_yaml():
     out = {}
-
     out = get_yaml_file_info("3category.yml", 3)
     gensites_info = get_yaml_file_info("2category.yml", 2)
     gencore_info = get_yaml_file_info("1category.yml", 1)
     defaults_info = get_yaml_file_info("default.yml", 4)
 
-    for site, cel in out.items():
-        for gatekeeper, ceinfo in cel.items():
-            for entry, entryinfo in ceinfo.items():
-                if entryinfo == None:
+    for site, ce_list in out.items():
+        for gatekeeper, ce_info in ce_list.items():
+            for entry, entry_info in ce_info.items():
+                if entry_info == None:
                     out[site][gatekeeper][entry] = gensites_info[site][gatekeeper][entry]
-                    entryinfo = out[site][gatekeeper][entry]
+                    entry_info = out[site][gatekeeper][entry]
                 else:
-                    update(entryinfo, gensites_info[site][gatekeeper][entry], overwrite=False)
-                update(entryinfo, gencore_info[site][gatekeeper]["DEFAULT_ENTRY"])
-                update(entryinfo, defaults_info["DEFAULT_SITE"]["DEFAULT_GETEKEEPER"]["DEFAULT_ENTRY"], overwrite=False)
+                    update(entry_info, gensites_info[site][gatekeeper][entry], overwrite=False)
+                update(entry_info, gencore_info[site][gatekeeper]["DEFAULT_ENTRY"])
+                update(entry_info, defaults_info["DEFAULT_SITE"]["DEFAULT_GETEKEEPER"]["DEFAULT_ENTRY"], overwrite=False)
 
     return out
 
-def get_dict(gatekeeper, entry, entryinfo):
+
+# Make dictionary to populate entry_stub variable
+def get_dict(gatekeeper, entry, entry_info):
     out = {}
     out["gatekeeper"] = gatekeeper
     out["entry_name"] = entry
-    out.update(entryinfo)
+    out.update(entry_info)
+
     return out
 
+
+# Collect all attributes
 def get_attr_str(attrs):
     out = ""
-    for name, d in sorted(attrs.items()):
-        d["name"] = name
-        update(d, default_attr, overwrite=False)
-        if "comment" not in d:
-            d["comment"] = ""
+    for name, data in sorted(attrs.items()):
+        data["name"] = name
+        update(data, default_attr, overwrite=False)
+        if "comment" not in data:
+            data["comment"] = ""
         else:
-            d["comment"] = " comment=\"" + d["comment"]  + "\""
-        if "value" in d:
-            out += '            <attr name="%(name)s"%(comment)s const="%(const)s" glidein_publish="%(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % d
+            data["comment"] = ' comment="' + data["comment"]  + '"'
+        if "value" in data:
+            out += '            <attr name="%(name)s"%(comment)s const="%(const)s" glidein_publish="%(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % data
+
     return out[:-1]
 
+
+# Collect all submit attributes
 def get_submit_attr_str(submit_attrs):
     out = ""
-    for n, v in sorted(submit_attrs.items()):
-        out += '\n                  <submit_attr name="%s" value="%s"/>' % (n, v)
+    for name, value in sorted(submit_attrs.items()):
+        out += '\n                  <submit_attr name="%s" value="%s"/>' % (name, value)
+
     return out
+
+
+# Create entries configuration file
+def write_to_file(file_name, data):
+    with open(file_name, "w") as outfile:
+        outfile.write("<glidein>\n")
+        outfile.write("   <entries>\n")
+        outfile.write(data)
+        outfile.write("   </entries>\n")
+        outfile.write("   <entry_sets>\n")
+        outfile.write("   </entry_sets>\n")
+        outfile.write("</glidein>\n")
+
 
 def main():
     out_conf = ""
-
     cfg_all = merge_yaml()
-    for site, cel in cfg_all.items():
-        for gatekeeper, ceinfo in cel.items():
-            for entry, entryinfo in ceinfo.items():
-                conf_dict = get_dict(gatekeeper, entry, entryinfo)
+    for site, ce_list in cfg_all.items():
+        for gatekeeper, ce_info in ce_list.items():
+            for entry, entry_info in ce_info.items():
+                conf_dict = get_dict(gatekeeper, entry, entry_info)
                 conf_dict["attrs"] = get_attr_str(conf_dict["attrs"])
-                if 'submit_attrs' in conf_dict:
+                if "submit_attrs" in conf_dict:
                     conf_dict["submit_attrs"] = get_submit_attr_str(conf_dict["submit_attrs"])
                 else:
                     conf_dict["submit_attrs"] = ""
                 if conf_dict["gridtype"] == "condor":
                     gatekeeper = conf_dict["gatekeeper"]
                     conf_dict["gatekeeper"] = gatekeeper.split(":")[0] + " " + gatekeeper
-                rsl = conf_dict["rsl"]
-                if rsl != "":
-                    conf_dict["rsl"] = " rsl=\"" + rsl + "\""
+                if conf_dict["gridtype"] == "nordugrid":
+                    conf_dict["rsl"] = ' rsl="' + conf_dict["rsl"] + '"'
                 out_conf += entry_stub % conf_dict
-    print("<glidein>")
-    print("   <entries>")
-    print(out_conf[:-1])
-    print("   </entries>")
-    print("   <entry_sets>")
-    print("   </entry_sets>")
-    print("</glidein>")
+    write_to_file("automatically_generated.xml", out_conf)
+
 
 if __name__ == "__main__":
     try:
@@ -161,3 +185,4 @@ if __name__ == "__main__":
     except MergeError as me:
         print(MergeError.codes_map[me.code])
         sys.exit(me.code)
+
