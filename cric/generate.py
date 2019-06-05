@@ -43,13 +43,15 @@ def select_core_information(sites):
 
 
 # Select necessary information for entries
-def select_entries_information(sites):
+def select_entries_information(sites, production):
     result = {}
     for _, site_info in sites.items():
         site = site_info["rebus-site"]["name"]
         if site not in result:
             result[site] = {}
         for entry in site_info["glideinentries"]:
+            if production and entry["queue_status"] != "Production":
+                continue
             grid_type = entry["gridtype"]
             if grid_type == "cream":
                 continue
@@ -102,11 +104,18 @@ def write_to_file(file_name, information):
 
 
 def main():
+    production = False
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--production":
+            production = True
+        else:
+            print("Usage: generate.py [--production]")
+            sys.exit(1)
     sites = get_information("https://papa-cric.cern.ch/api/core/ce/query/?json")
     result = select_core_information(sites)
     write_to_file("1category.yml", result)
     sites = get_information("https://papa-cric.cern.ch/api/cms/computeunit/query/?json")
-    result = select_entries_information(sites)
+    result = select_entries_information(sites, production)
     write_to_file("2category.yml", result)
 
 
