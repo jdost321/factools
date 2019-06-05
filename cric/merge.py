@@ -71,7 +71,9 @@ def update(data, update_data, overwrite=True):
             if key in data:
                 del data[key]
         elif isinstance(value, collections.Mapping):
-            data[key] = update(data.get(key, {}), value, overwrite)
+            sub_data = data.get(key, {})
+            if sub_data is not None:
+                data[key] = update(sub_data, value, overwrite)
         else:
             if overwrite or key not in data:
                 data[key] = value
@@ -125,6 +127,8 @@ def get_dict(gatekeeper, entry, entry_info):
 def get_attr_str(attrs):
     out = ""
     for name, data in sorted(attrs.items()):
+        if data is None:
+            continue
         data["name"] = name
         update(data, default_attr, overwrite=False)
         if "comment" not in data:
