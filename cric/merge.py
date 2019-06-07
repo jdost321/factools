@@ -107,7 +107,7 @@ def merge_yaml():
                     entry_info = out[site][gatekeeper][entry]
                 else:
                     update(entry_info, gensites_info[site][gatekeeper][entry], overwrite=False)
-                update(entry_info, gencore_info[site][gatekeeper]["DEFAULT_ENTRY"])
+                update(entry_info, gencore_info[site][gatekeeper]["DEFAULT_ENTRY"], overwrite=False)
                 update(entry_info, defaults_info["DEFAULT_SITE"]["DEFAULT_GETEKEEPER"]["DEFAULT_ENTRY"], overwrite=False)
 
     return out
