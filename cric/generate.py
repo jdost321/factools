@@ -5,9 +5,10 @@ from __future__ import print_function
 import sys
 import json
 import yaml
+import logging
 import requests
 
-from utils import CRIC_CORE, CRIC_CMS
+from utils import CRIC_CORE, CRIC_CMS, CRIC_CMS_LINK, CRIC_CORE_LINK
  
 
 # Get information from CRIC
@@ -47,15 +48,18 @@ def select_core_information(sites):
 # Select necessary information for entries
 def select_entries_information(sites, production):
     result = {}
-    for _, site_info in sites.items():
+    for cu, site_info in sites.items():
+        logging.debug("Processing %s", cu)
         site = site_info["rebus-site"]["name"]
         if site not in result:
             result[site] = {}
         for entry in site_info["glideinentries"]:
+            logging.debug("  processing %s", entry)
             if production and entry["queue_status"] != "Production":
                 continue
             grid_type = entry["gridtype"]
             if grid_type == "cream":
+                logging.debug("Skipping cream ce")
                 continue
             glidein_cpus = entry["GLIDEIN_CPUS"]
             glidein_max_mem = entry["GLIDEIN_MaxMemMBs"]
@@ -105,7 +109,11 @@ def write_to_file(file_name, information):
         yaml.safe_dump(information, outfile, default_flow_style=False)
 
 
+def set_logging():
+    logging.basicConfig(filename='cric.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+
 def main():
+    set_logging()
     production = False
     if len(sys.argv) > 1:
         if sys.argv[1] == "--production":
@@ -113,10 +121,13 @@ def main():
         else:
             print("Usage: generate.py [--production]")
             sys.exit(1)
-    sites = get_information("https://papa-cric.cern.ch/api/core/ce/query/?json")
+    logging.info("Getting information from core cric")
+    sites = get_information(CRIC_CORE_LINK)
     result = select_core_information(sites)
     write_to_file(CRIC_CORE, result)
-    sites = get_information("https://papa-cric.cern.ch/api/cms/computeunit/query/?json")
+
+    logging.info("Getting information from cms cric")
+    sites = get_information(CRIC_CMS_LINK)
     result = select_entries_information(sites, production)
     write_to_file(CRIC_CMS, result)
 
