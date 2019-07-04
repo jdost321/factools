@@ -7,6 +7,8 @@ import sys
 import yaml
 import collections
 
+from utils import CRIC_CORE, CRIC_CMS, FACT_OVERRIDE, DEFAULT
+
 
 # Template of entry configuration
 entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comment="Entry automatically generated" enabled="%(enabled)s" gatekeeper="%(gatekeeper)s" gridtype="%(gridtype)s"%(rsl)s proxy_url="OSG" trust_domain="grid" verbosity="std" work_dir="%(work_dir)s">
@@ -54,10 +56,10 @@ default_attr = {
 # Class to handle error in the merge script
 class MergeError(Exception):
     codes_map = {
-        1: "1category.yml file not found",
-        2: "2category.yml file not found",
-        3: "3category.yml file not found",
-        4: "default.yml file not found"
+        1: "%s file not found" % CRIC_CORE,
+        2: "%s file not found" % CRIC_CMS,
+        3: "%s file not found" % FACT_OVERRIDE,
+        4: "%s file not found" % DEFAULT
     }
 
     def __init__(self, code):
@@ -94,10 +96,10 @@ def get_yaml_file_info(file_name, error_code):
 # Merge data from all yaml files
 def merge_yaml():
     out = {}
-    out = get_yaml_file_info("3category.yml", 3)
-    gensites_info = get_yaml_file_info("2category.yml", 2)
-    gencore_info = get_yaml_file_info("1category.yml", 1)
-    defaults_info = get_yaml_file_info("default.yml", 4)
+    out = get_yaml_file_info(FACT_OVERRIDE, 3)
+    gensites_info = get_yaml_file_info(CRIC_CMS, 2)
+    gencore_info = get_yaml_file_info(CRIC_CORE, 1)
+    defaults_info = get_yaml_file_info(DEFAULT, 4)
 
     for site, ce_list in out.items():
         for gatekeeper, ce_info in ce_list.items():

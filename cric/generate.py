@@ -7,6 +7,8 @@ import json
 import yaml
 import requests
 
+from utils import CRIC_CORE, CRIC_CMS
+ 
 
 # Get information from CRIC
 def get_information(url):
@@ -113,10 +115,10 @@ def main():
             sys.exit(1)
     sites = get_information("https://papa-cric.cern.ch/api/core/ce/query/?json")
     result = select_core_information(sites)
-    write_to_file("1category.yml", result)
+    write_to_file(CRIC_CORE, result)
     sites = get_information("https://papa-cric.cern.ch/api/cms/computeunit/query/?json")
     result = select_entries_information(sites, production)
-    write_to_file("2category.yml", result)
+    write_to_file(CRIC_CMS, result)
 
 
 if __name__ == "__main__":
