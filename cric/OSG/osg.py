@@ -192,7 +192,7 @@ def main():
     # Queries the OSG collector
     result = get_information(OSG_COLLECTOR)
     # Write the received information to the OSG.yml file
-    write_to_yaml_file("OSG_YAML", result)
+    write_to_yaml_file(OSG_YAML, result)
     # Merges different yaml files: the defaults, the generated one, and the factory overrides
     result = merge_yaml()
     # Convert the resoruce dictionary obtained this way into a string (xml)
