@@ -1,0 +1,33 @@
+DEFAULT_SITE:
+  DEFAULT_GETEKEEPER:
+    DEFAULT_ENTRY:
+      work_dir: OSG 
+      enabled: True
+      trust_domain: grid
+      attrs:
+        GLEXEC_BIN:
+          glidein_publish: False
+          value: NONE
+        GLIDEIN_CMSSite:
+          job_publish: True
+#        GLIDEIN_Country:
+#          job_publish: True
+        GLIDEIN_CPUS:
+          glidein_publish: False
+          job_publish: True
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          type: int
+          value: 2500
+        GLIDEIN_Max_Walltime:
+          glidein_publish: False
+          type: int
+        GLIDEIN_REQUIRED_OS:
+          value: rhel6
+        GLIDEIN_Site:
+          job_publish: True
+        GLIDEIN_Supported_VOs:
+          glidein_publish: False
+          value: CMS
+        GLIDEIN_ResourceName:
+          job_publish: True

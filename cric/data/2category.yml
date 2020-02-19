@@ -1,0 +1,2334 @@
+BEIJING-LCG2: {}
+BEgrid-ULB-VUB: {}
+BG05-SUGrid: {}
+BUDAPEST: {}
+Baylor-Kodiak:
+  kodiak-ce.baylor.edu:
+    CMSHTPC_T3_US_Baylor_kodiak-ce:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_Baylor
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 57344
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Baylor-Kodiak
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 57344
+        +xcount: '8'
+      work_dir: OSG
+    CMSHTPC_T3_US_Baylor_kodiak-ce_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_Baylor
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16384
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: Baylor-Kodiak
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16384
+        +xcount: '8'
+      work_dir: OSG
+BelGrid-UCL: {}
+CERN-PROD:
+  ce503.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce503:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce504.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce504:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce505.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce505:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce506.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce506:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce507.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce507:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce508.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce508:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce509.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce509:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce510.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce510:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce511.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce511:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce512.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce512:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce513.cern.ch:
+    CMSHTPC_T2_CH_CERN_ce513:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  ce514.cern.ch:
+    CMSHTPC_T3_CH_CERN_CAF_ce514:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_CH_CERN_CAF
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+    CMSHTPC_T3_CH_CERN_CAF_ce514_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '10'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '10'
+      work_dir: Condor
+  cet01.cern.ch:
+    CMSHTPC_T2_CH_CERN_cet01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '12'
+        GLIDEIN_MaxMemMBs:
+          value: 29500
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 29500
+        +xcount: '12'
+      work_dir: Condor
+    CMSHTPC_T2_CH_CERN_cet01_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '18'
+        GLIDEIN_MaxMemMBs:
+          value: 43200
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 43200
+        +xcount: '18'
+      work_dir: Condor
+  cet02.cern.ch:
+    CMSHTPC_T2_CH_CERN_cet02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '12'
+        GLIDEIN_MaxMemMBs:
+          value: 29500
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 29500
+        +xcount: '12'
+      work_dir: Condor
+    CMSHTPC_T2_CH_CERN_cet02_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CERN
+        GLIDEIN_CPUS:
+          value: '18'
+        GLIDEIN_MaxMemMBs:
+          value: 43200
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CERN-PROD
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 43200
+        +xcount: '18'
+      work_dir: Condor
+CIEMAT-LCG2:
+  condorce1.ciemat.es:9619:
+    CMSHTPC_T2_ES_CIEMAT_condorce1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_ES_CIEMAT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CIEMAT-LCG2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: .
+  condorce2.ciemat.es:
+    CMSHTPC_T2_ES_CIEMAT_condorce2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_ES_CIEMAT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CIEMAT-LCG2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: .
+CIT_CMS_T2:
+  cit-gatekeeper.ultralight.org:
+    CMSHTPC_T2_US_Caltech_cit-gatekeeper:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Caltech
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CIT_CMS_T2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  cit-gatekeeper2.ultralight.org:
+    CMSHTPC_T2_US_Caltech_cit-gatekeeper2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Caltech
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CIT_CMS_T2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  cit-gatekeeper3.ultralight.org:9619:
+    CMSHTPC_T2_US_Caltech_cit-gatekeeper3:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Caltech
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CIT_CMS_T2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+CSCS-LCG2:
+  arc01.lcg.cscs.ch:2811:
+    CMSHTPC_T2_CH_CSCS_arc01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CSCS
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CSCS-LCG2
+      rsl: (queue=arc01)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)(count=8)(memory=2048)
+      work_dir: .
+  arc02.lcg.cscs.ch:2811:
+    CMSHTPC_T2_CH_CSCS_arc02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CSCS
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CSCS-LCG2
+      rsl: (queue=arc02)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)(count=8)(memory=2048)
+      work_dir: .
+  arc03.lcg.cscs.ch:2811:
+    CMSHTPC_T2_CH_CSCS_arc03:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CSCS
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CSCS-LCG2
+      rsl: (queue=arc03)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)(count=8)(memory=2048)
+      work_dir: .
+  arc04.lcg.cscs.ch:2811:
+    CMSHTPC_T2_CH_CSCS_HPC_arc04:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_CH_CSCS_HPC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16384
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CSCS-LCG2
+      rsl: (queue=wlcg)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)(count=8)(memory=2048)
+      work_dir: .
+  arc06.lcg.cscs.ch:
+    CMSHTPC_T0_CH_CSCS_HPC_arc06:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T0_CH_CSCS_HPC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16384
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: CSCS-LCG2
+      rsl: (runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)(count=8)(memory=2048)
+      work_dir: .
+DESY-HH:
+  grid-arcce0.desy.de:2811:
+    CMSHTPC_T2_DE_DESY_grid-arcce0:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_DE_DESY
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: DESY-HH
+      rsl: (queue=gridel7)(count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+  grid-arcce1.desy.de:2811:
+    CMSHTPC_T2_DE_DESY_grid-arcce1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_DE_DESY
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: DESY-HH
+      rsl: (queue=gridel7)(count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+FI_HIP_T2:
+  alcyone-cms.grid.helsinki.fi:2811:
+    CMSHTPC_T2_FI_HIP_alcyone-cms:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_FI_HIP
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FI_HIP_T2
+      rsl: (queue=gridcms)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+FZK-LCG2:
+  arc-1-kit.gridka.de:2811:
+    CMSHTPC_T1_DE_KIT_arc-1-kit:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_DE_KIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FZK-LCG2
+      rsl: (queue=grid)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-2-kit.gridka.de:2811:
+    CMSHTPC_T1_DE_KIT_arc-2-kit:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_DE_KIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FZK-LCG2
+      rsl: (queue=grid)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-3-kit.gridka.de:2811:
+    CMSHTPC_T1_DE_KIT_arc-3-kit:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_DE_KIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FZK-LCG2
+      rsl: (queue=grid)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-4-kit.gridka.de:2811:
+    CMSHTPC_T1_DE_KIT_arc-4-kit:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_DE_KIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FZK-LCG2
+      rsl: (queue=grid)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-5-kit.gridka.de:2811:
+    CMSHTPC_T1_DE_KIT_arc-5-kit:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_DE_KIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FZK-LCG2
+      rsl: (queue=grid)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-6-kit.gridka.de:2811:
+    CMSHTPC_T1_DE_KIT_arc-6-kit:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_DE_KIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: FZK-LCG2
+      rsl: (queue=grid)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+GLOW:
+  cmsgrid01.hep.wisc.edu:9619:
+    CMSHTPC_T2_US_Wisconsin_cmsgrid01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Wisconsin
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: GLOW
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  cmsgrid02.hep.wisc.edu:9619:
+    CMSHTPC_T2_US_Wisconsin_cmsgrid02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Wisconsin
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: GLOW
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  cmsgrid03.hep.wisc.edu:9619:
+    CMSHTPC_T2_US_Wisconsin_cmsgrid03:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Wisconsin
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: GLOW
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+GR-07-UOI-HEPLAB: {}
+GRIF:
+  node16.datagrid.cea.fr:2811:
+    CMSHTPC_T2_FR_GRIF_IRFU_node16:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_FR_GRIF_IRFU
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: GRIF
+      rsl: (queue=mcore)(count=8)(memory=3000)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+Hephy-Vienna: {}
+ICM: {}
+IFCA-LCG2: {}
+IN2P3-CC: {}
+IN2P3-CC-T2: {}
+IN2P3-IPNL: {}
+IN2P3-IRES: {}
+INDIACMS-TIFR: {}
+INFN-BARI: {}
+INFN-LNL-2: {}
+INFN-PERUGIA: {}
+INFN-PISA: {}
+INFN-ROMA1-CMS: {}
+INFN-T1: {}
+INFN-TRIESTE: {}
+IR-IPM-HEP: {}
+ITEP: {}
+JINR-LCG2: {}
+JINR-T1: {}
+KR-KISTI-GSDC-02:
+  cms-t2-ce01.sdfarm.kr:
+    CMSHTPC_T2_KR_KISTI_cms-t2-ce01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_KR_KISTI
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: KR-KISTI-GSDC-02
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+KR-KNU-T3: {}
+KR-UOS-SSCC: {}
+Kharkov-KIPT-LCG2: {}
+MIT_CMS:
+  CE01.CMSAF.MIT.EDU:9619:
+    CMSHTPC_T2_US_MIT_CE01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_MIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: MIT_CMS
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  CE02.CMSAF.MIT.EDU:9619:
+    CMSHTPC_T2_US_MIT_CE02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_MIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: MIT_CMS
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  CE03.CMSAF.MIT.EDU:9619:
+    CMSHTPC_T2_US_MIT_CE03:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_MIT
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: MIT_CMS
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+NCBJ-CIS: {}
+NCG-INGRID-PT: {}
+NCP-LCG2:
+  htcondor-ce.ncp.edu.pk:
+    CMSHTPC_T2_PK_NCP_htcondor-ce:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_PK_NCP
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: NCP-LCG2
+      rsl: ''
+      work_dir: Condor
+'NULL':
+  ce515.cern.ch:
+    CMSHTPC_T3_CH_CERN_HelixNebula_REHA_ce515:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_CH_CERN_HelixNebula_REHA
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16384
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16384
+        +xcount: '8'
+      work_dir: Condor
+    CMSHTPC_T3_CH_CERN_HelixNebula_REHA_ce515_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_CH_CERN_HelixNebula
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16384
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16384
+        +xcount: '8'
+      work_dir: Condor
+  ce516.cern.ch:
+    CMSHTPC_T3_CH_CERN_HelixNebula_ce516:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_CH_CERN_HelixNebula
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 80000
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 80000
+        +xcount: '8'
+      work_dir: Condor
+  crane-gw1.unl.edu:9619:
+    CMSHTPC_T3_US_OSG_crane-gw1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: '4'
+        GLIDEIN_MaxMemMBs:
+          value: 8000
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 8000
+        +xcount: '4'
+      work_dir: OSG
+  gate02.grid.umich.edu:9619:
+    CMSHTPC_T3_US_OSG_gate02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+  gridgk01.racf.bnl.gov:9619:
+    CMSHTPC_T3_US_OSG_gridgk01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 3000
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+  gridgk02.racf.bnl.gov:9619:
+    CMSHTPC_T3_US_OSG_gridgk02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 3000
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+  iut2-gk.mwt2.org:9619:
+    CMSHTPC_T3_US_OSG_iut2-gk:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 1920
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+    CMSHTPC_T3_US_OSG_iut2-gk_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16000
+        GLIDEIN_REQUIRED_OS:
+          value: rhel7
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16000
+        +xcount: '8'
+      work_dir: Condor
+  mwt2-gk.campuscluster.illinois.edu:9619:
+    CMSHTPC_T3_US_OSG_mwt2-gk:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 1920
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+    CMSHTPC_T3_US_OSG_mwt2-gk_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16000
+        +xcount: '8'
+      work_dir: Condor
+  osg-ce.clemson.edu:
+    CMSHTPC_T3_US_OSG_osg-ce:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2048
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: OSG
+    CMSHTPC_T3_US_OSG_osg-ce_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 14000
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 14000
+        +xcount: '8'
+      work_dir: OSG
+  osg-gk.mwt2.org:9619:
+    CMSHTPC_T3_US_OSG_osg-gk:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 1920
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+    CMSHTPC_T3_US_OSG_osg-gk_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16000
+        +xcount: '8'
+      work_dir: Condor
+  osg-gw-6.t2.ucsd.edu:9619:
+    CMSHTPC_T3_US_SDSC_osg-gw-6:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_SDSC
+        GLIDEIN_CPUS:
+          value: '24'
+        GLIDEIN_MaxMemMBs:
+          value: 98304
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 98304
+        +xcount: '24'
+      work_dir: Condor
+  uct2-gk.mwt2.org:9619:
+    CMSHTPC_T3_US_OSG_uct2-gk:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 1920
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      work_dir: Condor
+    CMSHTPC_T3_US_OSG_uct2-gk_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_OSG
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 16000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: 'NULL'
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 16000
+        +xcount: '8'
+      work_dir: Condor
+NWICG_NDCMS:
+  deepthought.crc.nd.edu:9619:
+    CMSHTPC_T3_US_NotreDame_deepthought:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_NotreDame
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 32784
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: NWICG_NDCMS
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 32784
+        +xcount: '8'
+      work_dir: Condor
+Nebraska:
+  crane-gw1.unl.edu:9619:
+    CMSHTPC_T2_US_Nebraska_crane-gw1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 4096
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: OSG
+  red-gw1.unl.edu:9619:
+    CMSHTPC_T2_US_Nebraska_red-gw1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_MaxMemMBs:
+          value: 0
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: Condor
+  red-gw2.unl.edu:9619:
+    CMSHTPC_T2_US_Nebraska_red-gw2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_MaxMemMBs:
+          value: 0
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: Condor
+  red.unl.edu:9619:
+    CMSHTPC_T2_US_Nebraska_red:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_MaxMemMBs:
+          value: 0
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: Condor
+  sandhills-ce1.unl.edu:
+    CMSHTPC_T2_US_Nebraska_sandhills-ce1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: OSG
+  tusker-gw1.unl.edu:9619:
+    CMSHTPC_T2_US_Nebraska_tusker-gw1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: OSG
+    CMSHTPC_T2_US_Nebraska_tusker-gw1_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Nebraska
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Nebraska
+      rsl: ''
+      work_dir: OSG
+Purdue-Conte:
+  brown-osg.rcac.purdue.edu:9619:
+    CMSHTPC_T2_US_Purdue_brown-osg:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: '24'
+        GLIDEIN_MaxMemMBs:
+          value: 94000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 94000
+        +xcount: '24'
+      work_dir: OSG
+  hadoop-osg.rcac.purdue.edu:9619:
+    CMSHTPC_T2_US_Purdue_hadoop-osg:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2048
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      work_dir: Condor
+  halstead-osg.rcac.purdue.edu:9619:
+    CMSHTPC_T2_US_Purdue_halstead-osg:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: '20'
+        GLIDEIN_MaxMemMBs:
+          value: 128000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 128000
+        +xcount: '20'
+      work_dir: OSG
+  hammer-osg.rcac.purdue.edu:9619:
+    CMSHTPC_T2_US_Purdue_hammer-osg:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: '20'
+        GLIDEIN_MaxMemMBs:
+          value: 64000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 64000
+        +xcount: '20'
+      work_dir: OSG
+    CMSHTPC_T2_US_Purdue_hammer-osg_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: '24'
+        GLIDEIN_MaxMemMBs:
+          value: 96000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 96000
+        +xcount: '24'
+      work_dir: OSG
+    CMSHTPC_T2_US_Purdue_hammer-osg_3:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: '20'
+        GLIDEIN_MaxMemMBs:
+          value: 64000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 64000
+        +xcount: '20'
+      work_dir: OSG
+  rice-osg.rcac.purdue.edu:9619:
+    CMSHTPC_T2_US_Purdue_rice-osg:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Purdue
+        GLIDEIN_CPUS:
+          value: '20'
+        GLIDEIN_MaxMemMBs:
+          value: 64000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Purdue-Conte
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 64000
+        +xcount: '20'
+      work_dir: OSG
+RAL-LCG2:
+  arc-ce01.gridpp.rl.ac.uk:2811:
+    CMSHTPC_T1_UK_RAL_arc-ce01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_UK_RAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: RAL-LCG2
+      rsl: (queue=EL7)(count=8)(memory=3072)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-ce02.gridpp.rl.ac.uk:2811:
+    CMSHTPC_T1_UK_RAL_arc-ce02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_UK_RAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: RAL-LCG2
+      rsl: (queue=EL7)(count=8)(memory=3072)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-ce03.gridpp.rl.ac.uk:2811:
+    CMSHTPC_T1_UK_RAL_arc-ce03:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_UK_RAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: RAL-LCG2
+      rsl: (queue=EL7)(count=8)(memory=3072)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  arc-ce04.gridpp.rl.ac.uk:2811:
+    CMSHTPC_T1_UK_RAL_arc-ce04:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_UK_RAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: RAL-LCG2
+      rsl: (queue=EL7)(count=8)(memory=3072)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+RU-Protvino-IHEP: {}
+RWTH-Aachen: {}
+Rice:
+  bonner06.rice.edu:
+    CMSHTPC_T3_US_Rice_bonner06:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_Rice
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: Rice
+      rsl: ''
+      work_dir: Condor
+Ru-Troitsk-INR-LCG2: {}
+SPRACE:
+  osg-ce.sprace.org.br:9619:
+    CMSHTPC_T2_BR_SPRACE_osg-ce:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_BR_SPRACE
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: SPRACE
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+T2_Estonia:
+  cream1.hep.kbfi.ee:2811:
+    CMSHTPC_T2_EE_Estonia_cream1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_EE_Estonia
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: T2_Estonia
+      rsl: (count=8)(memory=2048)(queue=main)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  cream2.hep.kbfi.ee:2811:
+    CMSHTPC_T2_EE_Estonia_cream2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_EE_Estonia
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: T2_Estonia
+      rsl: (count=8)(memory=2048)(queue=main)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+T3_HU_Debrecen: {}
+T3_IN_TIFRCloud:
+  cream-ce02.indiacms.res.in:
+    CMSHTPC_T3_IN_TIFRCloud_cream-ce02:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_IN_TIFRCloud
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 32768
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: T3_IN_TIFRCloud
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 32768
+        +xcount: '8'
+      work_dir: Condor
+TAMU_BRAZOS:
+  ce01.brazos.tamu.edu:9619:
+    CMSHTPC_T3_US_TAMU_ce01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_TAMU
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: TAMU_BRAZOS
+      rsl: ''
+      work_dir: TMPDIR
+TR-03-METU: {}
+TW-NCHC:
+  ce01.grid.nchc.org.tw:
+    CMSHTPC_T2_TW_NCHC_ce01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_TW_NCHC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: TW-NCHC
+      rsl: (queue=condorpool)(count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: .
+TW-NCUHEP: {}
+TW-NTU-HEP: {}
+UCR-HEP:
+  top.ucr.edu:9619:
+    CMSHTPC_T3_US_UCR_top:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_UCR
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: UCR-HEP
+      rsl: ''
+      work_dir: Condor
+UCSDT2:
+  osg-gw-2.t2.ucsd.edu:9619:
+    CMSHTPC_T2_US_UCSD_osg-gw-2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_UCSD
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UCSDT2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  osg-gw-4.t2.ucsd.edu:9619:
+    CMSHTPC_T2_US_UCSD_osg-gw-4:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_UCSD
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UCSDT2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+    CMSHTPC_T2_US_UCSD_osg-gw-4_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_UCSD
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UCSDT2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 8192
+        +xcount: '8'
+      work_dir: Condor
+  osg-gw-6.t2.ucsd.edu:9619:
+    CMSHTPC_T2_US_UCSD_osg-gw-6:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_UCSD
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UCSDT2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+  osg-gw-7.t2.ucsd.edu:9619:
+    CMSHTPC_T2_US_UCSD_osg-gw-7:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_UCSD
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UCSDT2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: Condor
+    CMSHTPC_T2_US_UCSD_osg-gw-7_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_UCSD
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UCSDT2
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 8192
+        +xcount: '8'
+      work_dir: Condor
+UColorado_HEP:
+  heposg01.colorado.edu:9619:
+    CMSHTPC_T3_US_Colorado_heposg01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_Colorado
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UColorado_HEP
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: OSG
+UFlorida-HPC:
+  cms.rc.ufl.edu:
+    CMSHTPC_T2_US_Florida_cms:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Florida
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20480
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UFlorida-HPC
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20480
+        +xcount: '8'
+      work_dir: OSG
+  cslrm.rc.ufl.edu:9619:
+    CMSHTPC_T2_US_Florida_cslrm:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Florida
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20480
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UFlorida-HPC
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20480
+        +xcount: '8'
+      work_dir: OSG
+  osg.rc.ufl.edu:
+    CMSHTPC_T2_US_Florida_osg:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Florida
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20480
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UFlorida-HPC
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20480
+        +xcount: '8'
+      work_dir: OSG
+UKI-LT2-Brunel:
+  dc2-grid-21.brunel.ac.uk:2811:
+    CMSHTPC_T2_UK_London_Brunel_dc2-grid-21:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_London_Brunel
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-LT2-Brunel
+      rsl: (count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  dc2-grid-22.brunel.ac.uk:2811:
+    CMSHTPC_T2_UK_London_Brunel_dc2-grid-22:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_London_Brunel
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-LT2-Brunel
+      rsl: (count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  dc2-grid-26.brunel.ac.uk:2811:
+    CMSHTPC_T2_UK_London_Brunel_dc2-grid-26:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_London_Brunel
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-LT2-Brunel
+      rsl: (count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  dc2-grid-28.brunel.ac.uk:2811:
+    CMSHTPC_T2_UK_London_Brunel_dc2-grid-28:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_London_Brunel
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-LT2-Brunel
+      rsl: (count=8)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+UKI-LT2-IC-HEP:
+  cetest01.grid.hep.ph.ic.ac.uk:2811:
+    CMSHTPC_T2_UK_London_IC_cetest01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_London_IC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-LT2-IC-HEP
+      rsl: (queue=grid.q)(count=8)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)(runtimeenvironment=ENV/MC8)
+      work_dir: .
+UKI-LT2-QMUL: {}
+UKI-LT2-RHUL: {}
+UKI-SCOTGRID-GLASGOW:
+  svr009.gla.scotgrid.ac.uk:2811:
+    CMSHTPC_T3_UK_ScotGrid_GLA_svr009:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_UK_ScotGrid_GLA
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SCOTGRID-GLASGOW
+      rsl: (queue=condor_q2d)(memory=2000)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+  svr010.gla.scotgrid.ac.uk:2811:
+    CMSHTPC_T3_UK_ScotGrid_GLA_svr010:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_UK_ScotGrid_GLA
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SCOTGRID-GLASGOW
+      rsl: (queue=condor_q2d)(memory=2000)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+  svr011.gla.scotgrid.ac.uk:2811:
+    CMSHTPC_T3_UK_ScotGrid_GLA_svr011:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_UK_ScotGrid_GLA
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SCOTGRID-GLASGOW
+      rsl: (queue=condor_q2d)(memory=2000)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+  svr019.gla.scotgrid.ac.uk:2811:
+    CMSHTPC_T3_UK_ScotGrid_GLA_svr019:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_UK_ScotGrid_GLA
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SCOTGRID-GLASGOW
+      rsl: (queue=condor_q2d)(memory=2000)(runtimeenvironment=ENV/GLITE)(runtimeenvironment=ENV/PROXY)
+      work_dir: Condor
+UKI-SOUTHGRID-BRIS-HEP:
+  lcgce01.phy.bris.ac.uk:2811:
+    CMSHTPC_T2_UK_SGrid_Bristol_lcgce01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_SGrid_Bristol
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SOUTHGRID-BRIS-HEP
+      rsl: (count=8)(queue=gridAMD)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: Condor
+    CMSHTPC_T2_UK_SGrid_Bristol_lcgce01_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_SGrid_Bristol
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SOUTHGRID-BRIS-HEP
+      rsl: (queue=gridAMD)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: Condor
+UKI-SOUTHGRID-OX-HEP:
+  t2arc01.physics.ox.ac.uk:2811:
+    CMSHTPC_T3_UK_SGrid_Oxford_t2arc01:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_UK_SGrid_Oxford
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: UKI-SOUTHGRID-OX-HEP
+      rsl: (queue=gridAMD)(memory=2500)(runtimeenvironment=ENV/GLITE)
+      work_dir: Condor
+UKI-SOUTHGRID-RALPP:
+  heplnx206.pp.rl.ac.uk:2811:
+    CMSHTPC_T2_UK_SGrid_RALPP_heplnx206:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_SGrid_RALPP
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SOUTHGRID-RALPP
+      rsl: (count=8)(memory=3072)(queue=grid)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  heplnx207.pp.rl.ac.uk:2811:
+    CMSHTPC_T2_UK_SGrid_RALPP_heplnx207:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_SGrid_RALPP
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SOUTHGRID-RALPP
+      rsl: (count=8)(memory=3072)(queue=grid)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+  heplnx208.pp.rl.ac.uk:2811:
+    CMSHTPC_T2_UK_SGrid_RALPP_heplnx208:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_UK_SGrid_RALPP
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 24576
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UKI-SOUTHGRID-RALPP
+      rsl: (count=8)(memory=3072)(queue=grid)(runtimeenvironment=ENV/GLITE)
+      work_dir: TMPDIR
+UMissHEP:
+  umiss001.hep.olemiss.edu:9619:
+    CMSHTPC_T3_US_UMiss_umiss001:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_UMiss
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: UMissHEP
+      rsl: ''
+      work_dir: OSG
+UNIANDES: {}
+USCMS-FNAL-WC1:
+  cmsosgce.fnal.gov:9619:
+    CMSHTPC_T1_US_FNAL_cmsosgce:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_US_FNAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: USCMS-FNAL-WC1
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20000
+        +xcount: '8'
+      work_dir: Condor
+  cmsosgce2.fnal.gov:9619:
+    CMSHTPC_T1_US_FNAL_cmsosgce2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_US_FNAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: USCMS-FNAL-WC1
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20000
+        +xcount: '8'
+      work_dir: Condor
+  cmsosgce3.fnal.gov:9619:
+    CMSHTPC_T1_US_FNAL_cmsosgce3:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_US_FNAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: USCMS-FNAL-WC1
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20000
+        +xcount: '8'
+      work_dir: Condor
+  cmsosgce4.fnal.gov:9619:
+    CMSHTPC_T1_US_FNAL_cmsosgce4:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_US_FNAL
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: USCMS-FNAL-WC1
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20000
+        +xcount: '8'
+      work_dir: Condor
+Vanderbilt:
+  ce3.accre.vanderbilt.edu:
+    CMSHTPC_T2_US_Vanderbilt_ce3:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_MaxMemMBs:
+          value: 0
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      work_dir: OSG
+    CMSHTPC_T2_US_Vanderbilt_ce3_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: '2'
+        GLIDEIN_MaxMemMBs:
+          value: 5000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 5000
+        +xcount: '2'
+      work_dir: OSG
+    CMSHTPC_T2_US_Vanderbilt_ce3_3:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: '4'
+        GLIDEIN_MaxMemMBs:
+          value: 30720
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 30720
+        +xcount: '4'
+      work_dir: OSG
+  ce4.accre.vanderbilt.edu:
+    CMSHTPC_T2_US_Vanderbilt_ce4:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_MaxMemMBs:
+          value: 0
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      work_dir: OSG
+    CMSHTPC_T2_US_Vanderbilt_ce4_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: '4'
+        GLIDEIN_MaxMemMBs:
+          value: 30720
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 30720
+        +xcount: '4'
+      work_dir: OSG
+    CMSHTPC_T2_US_Vanderbilt_ce4_3:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: '2'
+        GLIDEIN_MaxMemMBs:
+          value: 5000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 5000
+        +xcount: '2'
+      work_dir: OSG
+    CMSHTPC_T2_US_Vanderbilt_ce4_4:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T2_US_Vanderbilt
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 28000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: Vanderbilt
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 28000
+        +xcount: '8'
+      work_dir: OSG
+cinvestav:
+  proton.fis.cinvestav.mx:9619:
+    CMSHTPC_T3_MX_Cinvestav_proton:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_MX_Cinvestav
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: ''
+        GLIDEIN_Site:
+          value: cinvestav
+      rsl: ''
+      work_dir: OSG
+pic:
+  ce13.pic.es:9619:
+    CMSHTPC_T1_ES_PIC_ce13:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_ES_PIC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: pic
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: TMPDIR
+  ce14.pic.es:9619:
+    CMSHTPC_T1_ES_PIC_ce14:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_ES_PIC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20240
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: pic
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20240
+        +xcount: '8'
+      work_dir: TMPDIR
+    CMSHTPC_T1_ES_PIC_ce14_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T1_ES_PIC
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 32768
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: pic
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 32768
+        +xcount: '8'
+      work_dir: TMPDIR
+ru-PNPI: {}
+rutgers-cms:
+  ruhex-osgce.rutgers.edu:9619:
+    CMSHTPC_T3_US_Rutgers_ruhex-osgce:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_Rutgers
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: rutgers-cms
+      rsl: ''
+      work_dir: Condor
+umd-cms:
+  hepcms-1.umd.edu:9619:
+    CMSHTPC_T3_US_UMD_hepcms-1:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_UMD
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: 2048
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: umd-cms
+      rsl: ''
+      work_dir: Condor
+uprm-cms:
+  cms-grid0.hep.uprm.edu:9619:
+    CMSHTPC_T3_US_PuertoRico_cms-grid0:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_PuertoRico
+        GLIDEIN_CPUS:
+          value: '8'
+        GLIDEIN_MaxMemMBs:
+          value: 20000
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: uprm-cms
+      rsl: ''
+      submit_attrs:
+        +maxMemory: 20000
+        +xcount: '8'
+      work_dir: Condor
+    CMSHTPC_T3_US_PuertoRico_cms-grid0_2:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_PuertoRico
+        GLIDEIN_CPUS:
+          value: ''
+        GLIDEIN_MaxMemMBs:
+          value: null
+        GLIDEIN_REQUIRED_OS:
+          value: any
+        GLIDEIN_Site:
+          value: uprm-cms
+      rsl: ''
+      work_dir: Condor

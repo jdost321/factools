@@ -1,0 +1,562 @@
+ANMH:
+  hosted-ce22.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 4
+        GLIDEIN_MaxMemMBs:
+          value: 14336
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: ANMH
+        GLIDEIN_Site:
+          value: OSG_US_AMNH_ARES
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS,Fermilab
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 14336
+        +maxWallTime: 1440
+        +xcount: 4
+BUAP:
+  hosted-ce27.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 24
+        GLIDEIN_MaxMemMBs:
+          value: 4096
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: BUAP
+        GLIDEIN_Site:
+          value: CMSHTPC_T3_MX_BUAP
+        GLIDEIN_Supported_VOs:
+          value: MIS,CMS
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 4096
+        +maxWallTime: 1440
+        +xcount: 24
+Bridges:
+  hosted-ce13.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 32
+        GLIDEIN_MaxMemMBs:
+          value: 24000
+        GLIDEIN_Max_Walltime:
+          value: 171000
+        GLIDEIN_ResourceName:
+          value: Bridges
+        GLIDEIN_Site:
+          value: OSG_US_PSC_Bridges
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 24000
+        +maxWallTime: 2880
+        +xcount: 32
+CHPC Group:
+  hosted-ce14.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 24
+        GLIDEIN_MaxMemMBs:
+          value: 64000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: CHPC Group
+        GLIDEIN_Site:
+          value: OSG_US_UUTAH_KINGSPEAK
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 64000
+        +maxWallTime: 1440
+        +xcount: 24
+  hosted-ce15.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 12
+        GLIDEIN_MaxMemMBs:
+          value: 24000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: CHPC Group
+        GLIDEIN_Site:
+          value: OSG_US_UUTAH_EMBER
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 24000
+        +maxWallTime: 1440
+        +xcount: 12
+  hosted-ce31.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 16
+        GLIDEIN_MaxMemMBs:
+          value: 48000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: CHPC Group
+        GLIDEIN_Site:
+          value: OSG_US_UUTAH_LONEPEAK
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 48000
+        +maxWallTime: 1440
+        +xcount: 16
+CometVirtualCluster:
+  hosted-ce34.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 24
+        GLIDEIN_MaxMemMBs:
+          value: 98304
+        GLIDEIN_Max_Walltime:
+          value: 171000
+        GLIDEIN_ResourceName:
+          value: CometVirtualCluster
+        GLIDEIN_Site:
+          value: CMSHTPC_US_COMET_CometVirtualCluster
+        GLIDEIN_Supported_VOs:
+          value: CMS
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 98304
+        +maxWallTime: 2880
+        +xcount: 24
+ELSA:
+  hosted-ce30.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 8
+        GLIDEIN_MaxMemMBs:
+          value: 32768
+        GLIDEIN_Max_Walltime:
+          value: 171000
+        GLIDEIN_ResourceName:
+          value: ELSA
+        GLIDEIN_Site:
+          value: OSG_US_TCNJ_ELSA
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 32768
+        +maxWallTime: 2880
+        +xcount: 8
+GRID_ce2:
+  hosted-ce33.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: GRID_ce2
+        GLIDEIN_Site:
+          value: OSG_US_WSU_GRID_ce2
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,glowVO,DUNE,Fermilab,IceCube
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 2000
+        +maxWallTime: 1440
+        +xcount: 1
+GSU_HOSTED:
+  hosted-ce04.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 32
+        GLIDEIN_MaxMemMBs:
+          value: 64000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: GSU_HOSTED
+        GLIDEIN_Site:
+          value: OSG_US_GSU_ACORE
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS,LIGO,glowVO,SBGrid
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 64000
+        +maxWallTime: 1440
+        +xcount: 32
+LSU:
+  hosted-ce23.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 20
+        GLIDEIN_MaxMemMBs:
+          value: 65536
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: LSU
+        GLIDEIN_Site:
+          value: OSG_US_LSU_SuperMIC
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 65536
+        +maxWallTime: 1440
+        +xcount: 20
+  hosted-ce29.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 20
+        GLIDEIN_MaxMemMBs:
+          value: 65536
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: LSU
+        GLIDEIN_Site:
+          value: OSG_US_LSU_QB2
+        GLIDEIN_Supported_VOs:
+          value: LIGO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 65536
+        +maxWallTime: 1440
+        +xcount: 20
+NEMO:
+  hosted-ce32.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 16
+        GLIDEIN_MaxMemMBs:
+          value: 163840
+        GLIDEIN_Max_Walltime:
+          value: 171000
+        GLIDEIN_ResourceName:
+          value: NEMO
+        GLIDEIN_Site:
+          value: OSG_US_UWM_NEMO
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 163840
+        +maxWallTime: 2880
+        +xcount: 16
+NMSU:
+  hosted-ce21.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 4
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: NMSU
+        GLIDEIN_Site:
+          value: OSG_US_NMSU_AGGIE_GRID
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS,glowVO,Fermilab,SBGrid
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 8192
+        +maxWallTime: 1440
+        +xcount: 4
+OSG:
+  hosted-ce18.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 16
+        GLIDEIN_MaxMemMBs:
+          value: 64000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: OSG
+        GLIDEIN_Site:
+          value: OSG_US_NMSU_DISCOVERY
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS,glowVO,Fermilab,SBGrid
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 64000
+        +maxWallTime: 1440
+        +xcount: 16
+  hosted-ce19.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 12
+        GLIDEIN_MaxMemMBs:
+          value: 48000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: OSG
+        GLIDEIN_Site:
+          value: OSG_US_USF_SC
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 48000
+        +maxWallTime: 1440
+        +xcount: 12
+  hosted-ce20.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 20
+        GLIDEIN_MaxMemMBs:
+          value: 48000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: OSG
+        GLIDEIN_Site:
+          value: OSG_TMP
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 48000
+        +maxWallTime: 1440
+        +xcount: 20
+OSG_IN_IUCAA_SARATHI:
+  hosted-ce08.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 24
+        GLIDEIN_MaxMemMBs:
+          value: 32768
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: OSG_IN_IUCAA_SARATHI
+        GLIDEIN_Site:
+          value: OSG_IN_IUCAA_SARATHI
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,LIGO,Fermilab
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 32768
+        +maxWallTime: 1440
+        +xcount: 24
+OSG_US_GLUEX:
+  hosted-ce07.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 48
+        GLIDEIN_MaxMemMBs:
+          value: 193500
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: OSG_US_GLUEX
+        GLIDEIN_Site:
+          value: GLUEX_US_FSU_HNPGRID
+        GLIDEIN_Supported_VOs:
+          value: GLUEX,OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 193500
+        +maxWallTime: 1440
+        +xcount: 48
+OSG_US_NDSU_CCAST_CLUSTER2:
+  hosted-ce09.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 16
+        GLIDEIN_MaxMemMBs:
+          value: 32000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: OSG_US_NDSU_CCAST_CLUSTER2
+        GLIDEIN_Site:
+          value: OSG_US_NDSU_CCAST_CLUSTER2
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS,glowVO,Fermilab,SBGrid
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 32000
+        +maxWallTime: 1440
+        +xcount: 16
+OSG_US_TACC:
+  hosted-ce10.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 48
+        GLIDEIN_MaxMemMBs:
+          value: 48000
+        GLIDEIN_Max_Walltime:
+          value: 171000
+        GLIDEIN_ResourceName:
+          value: OSG_US_TACC
+        GLIDEIN_Site:
+          value: OSG_US_TACC_STAMPEDE2
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS,glowVO,Fermilab,SBGrid
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 48000
+        +maxWallTime: 2880
+        +xcount: 48
+UCHICAGO:
+  hosted-ce01.uchicago-prod.slateci.io:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 4
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: UCHICAGO
+        GLIDEIN_Site:
+          value: UCHICAGO-SLATE
+        GLIDEIN_Supported_VOs:
+          value: GLUEX,OSGVO,LIGO,VIRGO,HCC,CMS,ATLAS,IceCube,glowVO,Fermilab
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 8192
+        +maxWallTime: 1440
+        +xcount: 4
+UConn-OSG:
+  hosted-ce25.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 32
+        GLIDEIN_MaxMemMBs:
+          value: 125000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: UConn-OSG
+        GLIDEIN_Site:
+          value: GLUEX_US_UConn_XANADU
+        GLIDEIN_Supported_VOs:
+          value: GLUEX
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 125000
+        +maxWallTime: 1440
+        +xcount: 32
+UIUC:
+  hosted-ce02.mwt2-uiuc.slateci.io:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 4
+        GLIDEIN_MaxMemMBs:
+          value: 16384
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: UIUC
+        GLIDEIN_Site:
+          value: SLATE_US_UIUC_HTC
+        GLIDEIN_Supported_VOs:
+          value: GLUEX,OSGVO,LIGO,VIRGO,HCC,CMS,ATLAS,IceCube,glowVO,Fermilab
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 16384
+        +maxWallTime: 1440
+        +xcount: 4
+UUTAH:
+  hosted-ce24.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 32
+        GLIDEIN_MaxMemMBs:
+          value: 98304
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: UUTAH
+        GLIDEIN_Site:
+          value: OSG_US_UUTAH_EMBER
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,MIS
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 98304
+        +maxWallTime: 1440
+        +xcount: 32
+VC3:
+  hosted-ce16.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2000
+        GLIDEIN_Max_Walltime:
+          value: 84600
+        GLIDEIN_ResourceName:
+          value: VC3
+        GLIDEIN_Site:
+          value: VC3_TEST_CMS
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 2000
+        +maxWallTime: 1440
+        +xcount: 1
+cedar:
+  hosted-ce28.grid.uchicago.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 24
+        GLIDEIN_MaxMemMBs:
+          value: 49152
+        GLIDEIN_Max_Walltime:
+          value: 34200
+        GLIDEIN_ResourceName:
+          value: cedar
+        GLIDEIN_Site:
+          value: GLUEX_US_UConn_cedar
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      gridtype: condor
+      submit_attrs:
+        +maxMemory: 49152
+        +maxWallTime: 600
+        +xcount: 24

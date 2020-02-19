@@ -8,8 +8,15 @@ import yaml
 import logging
 import requests
 
-from utils import CRIC_CORE, CRIC_CMS, CRIC_CMS_LINK, CRIC_CORE_LINK
+from libs.utils import CRIC_CORE, CRIC_CMS, CRIC_CMS_LINK, CRIC_CORE_LINK
  
+
+flavour_map = {
+    "CREAM-CE": "cream",
+    "ARC-CE": "nordugrid",
+    "HTCONDOR-CE": "condor"
+}
+
 
 # Get information from CRIC
 def get_information(url):
@@ -23,18 +30,16 @@ def get_information(url):
 
 # Select necessary information for core
 def select_core_information(sites):
-    flavour_map = {
-        "CREAM-CE": "cream",
-        "ARC-CE": "nordugrid",
-        "HTCONDOR-CE": "condor"
-    }
     result = {}
     for site, ce_list in sites.items():
         result[site] = {}
         for ce in ce_list:
             if ce["flavour"] == "CREAM-CE":
                 continue
-            gatekeeper = ce["endpoint"]
+            split_gk = ce["endpoint"].split(':')
+            if len(split_gk) > 1 and split_gk[1] not in ['9619', '2811']:
+                print("Non standard port (%s) used for gatekeeper %s. Standard ports are 9619 (condor-ce) and 2811 (arc-ce). The use case is not supported (yet). The configuration is going to be generated with the default port." % (split_gk[1], split_gk[0]))
+            gatekeeper = split_gk[0].lower()
             result[site][gatekeeper] = {}
             result[site][gatekeeper]["DEFAULT_ENTRY"] = {}
             result[site][gatekeeper]["DEFAULT_ENTRY"]["gridtype"] = flavour_map[ce["flavour"]]
@@ -57,32 +62,19 @@ def select_entries_information(sites, production):
             logging.debug("  processing %s", entry)
             if production and entry["queue_status"] != "Production":
                 continue
-            grid_type = entry["gridtype"]
+            grid_type = flavour_map[entry["flavour"]]
             if grid_type == "cream":
                 logging.debug("Skipping cream ce")
                 continue
             glidein_cpus = entry["GLIDEIN_CPUS"]
             glidein_max_mem = entry["GLIDEIN_MaxMemMBs"]
-            gatekeeper = entry["gatekeeper"]
+            gatekeeper = entry["gatekeeper"].lower()
             glidein_cms_site= entry["GLIDEIN_CMSSite"]
             if grid_type == "condor":
-                gatekeeper = gatekeeper.split(" ")[1]
-            if gatekeeper in result[site]:
-                last_entry_name = result[site][gatekeeper].keys()[-1]
-                last_entry_name_parts_list = last_entry_name.split("_")
-                try:
-                    entry_name = "_".join(last_entry_name_parts_list[:-1]) + "_" + str(int(last_entry_name_parts_list[-1]) + 1)
-                except ValueError:
-                    entry_name = last_entry_name + "_2"
-            else:
-                result[site][gatekeeper] = {}
-                entry_name = "CMSHTPC_"
-                try:
-                    if int(glidein_cpus) == 1:
-                        entry_name = "CMS_"
-                except ValueError:
-                    pass
-                entry_name = entry_name + glidein_cms_site + "_" + gatekeeper.split(".")[0]
+                gatekeeper = gatekeeper.split(" ")[0]
+            print(gatekeeper)
+            result[site][gatekeeper] = {}
+            entry_name = entry["cr_name"]
             result[site][gatekeeper][entry_name] = {}
             result[site][gatekeeper][entry_name]["rsl"] = entry["rsl"]
             result[site][gatekeeper][entry_name]["work_dir"] = entry["workdir"]
@@ -91,6 +83,7 @@ def select_entries_information(sites, production):
             result[site][gatekeeper][entry_name]["attrs"]["GLIDEIN_CPUS"] = {"value": glidein_cpus}
             result[site][gatekeeper][entry_name]["attrs"]["GLIDEIN_MaxMemMBs"] = {"value": glidein_max_mem}
             result[site][gatekeeper][entry_name]["attrs"]["GLIDEIN_REQUIRED_OS"] = {"value": entry["GLIDEIN_REQUIRED_OS"]}
+            result[site][gatekeeper][entry_name]["attrs"]["GLIDEIN_Supported_VOs"] = {"value": entry["GLIDEIN_Supported_VOs"]}
             result[site][gatekeeper][entry_name]["attrs"]["GLIDEIN_Site"] = {"value": site}
             try:
                 if grid_type == "condor" and int(glidein_cpus) > 1:
@@ -101,13 +94,6 @@ def select_entries_information(sites, production):
                 pass
 
     return result
-
-
-# Write collected information to file
-def write_to_file(file_name, information):
-    with open(file_name, "w") as outfile:
-        yaml.safe_dump(information, outfile, default_flow_style=False)
-
 
 def set_logging():
     logging.basicConfig(filename='cric.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)

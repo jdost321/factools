@@ -26,7 +26,7 @@ DEFAULT_SITE:
         GLIDEIN_Retire_Time:
           glidein_publish: False
           type: int
-          value: 21600
+          value: 108000
         GLIDEIN_REQUIRED_OS:
           value: rhel6
         GLIDEIN_Site:

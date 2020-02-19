@@ -1,0 +1,342 @@
+ANMH:
+  hosted-ce22.grid.uchicago.edu:
+    OSG_US_AMNH_ARES:
+      attrs:
+        GLIDEIN_MaxMemMBs:
+          value: 15360
+        GLIDEIN_ResourceName:
+          value: OSG_US_AMNH_ARES
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Supported_VOs:
+          value: OSGVO_AMNH,MIS
+      submit_attrs:
+        +maxMemory: 15360
+#BUAP:
+#  hosted-ce27.grid.uchicago.edu:
+#    DEFAULT_ENTRY:
+#Bridges:
+#  hosted-ce13.grid.uchicago.edu:
+#    DEFAULT_ENTRY:
+CHPC Group:
+#  hosted-ce14.grid.uchicago.edu:
+#    DEFAULT_ENTRY:
+  hosted-ce15.grid.uchicago.edu:
+    OSG_US_UUTAH_EMBER:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 4
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_REQUIRED_OS:
+          value: rhel7   # It does not work
+        GLIDEIN_ResourceName:
+          value: SLATE_US_UUTAH_EMBER
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Site:
+          value: SLATE_US_UUTAH_EMBER
+      enabled: False
+      submit_attrs:
+        +maxMemory: 8192
+        +xcount: 4
+#  hosted-ce31.grid.uchicago.edu:
+#    DEFAULT_ENTRY:
+CometVirtualCluster:
+  hosted-ce34.grid.uchicago.edu:
+    CMSHTPC_T3_US_SDSC_osg-comet:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_SDSC
+        GLIDEIN_Site:
+          value: CMSHTPC_T3_US_SDSC_osg-comet
+ELSA:
+  hosted-ce30.grid.uchicago.edu:
+    OSG_US_TCNJ_ELSA-gpu:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 11264
+        GLIDEIN_ResourceName:
+          value: TCNJ - ELSA
+        GLIDEIN_Resource_Slots:
+          value: GPUs,1,type=main
+        GLIDEIN_Supported_VOs:
+          value: OSGVOGPU
+      submit_attrs:
+        +maxMemory: 11264
+        +queue: "&quot;osg-gpu&quot;"
+        +xcount: 1
+        RequestCpus: 2
+        Request_GPUs: 1
+    OSG_US_TCNJ_ELSA:
+      attrs:
+        GLIDEIN_ResourceName:
+          value: TCNJ - ELSA
+      submit_attrs:
+        +queue: "&quot;osg&quot;"
+GRID_ce2:
+  hosted-ce33.grid.uchicago.edu:
+    OSG_US_WSU_GRID_ce2:
+      attrs:
+        GLIDEIN_ResourceName:
+          value: WSU - GRID_ce2
+      work_dir: TMPDIR
+GSU_HOSTED:
+  hosted-ce04.grid.uchicago.edu:
+    OSG_US_GSU_ACORE:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_ResourceName:
+          value: OSG_US_GSU_ACORE
+        GLIDEIN_Retire_Time:
+        GLIDEIN_REQUIRED_OS:
+          value: rhel7   # It does not work
+        GLIDEIN_Site:
+          value: OSG_US_GSU_ACORE
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+LSU:
+  hosted-ce23.grid.uchicago.edu:
+    LIGO_US_LSU_SuperMIC:
+      attrs:
+        GLIDEIN_MaxMemMBs:
+          value: 63000
+        GLIDEIN_Max_Walltime:
+          value: 172800
+        GLIDEIN_ResourceName:
+          value: LIGO_US_LSU_SuperMIC
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Site:
+          value: SuperMIC
+        GLIDEIN_Supported_VOs:
+          value: LIGO
+      submit_attrs:
+        +maxMemory: 63000
+        +maxWallTime: 2880
+  hosted-ce29.grid.uchicago.edu:
+    LIGO_US_LSU_QB2:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 50000
+        GLIDEIN_Max_Walltime:
+          value: 172800
+        GLIDEIN_ResourceName:
+          value: LIGO_US_LSU_QB2
+        GLIDEIN_Resource_Slots:
+          value: GPUs,2,type=main
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Site:
+          value: QB2
+        GLIDEIN_Supported_VOs:
+          value: LIGOGPU
+      submit_attrs:
+        +maxMemory: 50000
+        +maxWallTime: 2880
+        Request_GPUs: 2
+NEMO:
+  hosted-ce32.grid.uchicago.edu:
+    OSG_US_UWM_NEMO:
+      attrs:
+        GLIDEIN_ResourceName:
+          value: UWM - NEMO
+      work_dir: Condor
+NMSU:
+  hosted-ce21.grid.uchicago.edu:
+    OSG_US_NMSU_AGGIE_GRID:
+      attrs:
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_MaxMemMBs:
+          type: string
+          value: ""
+        GLIDEIN_MaxMemMBs_Estimate:
+          value: True
+        GLIDEIN_ResourceName:
+          value: OSG_US_NMSU_AGGIE_GRID
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      submit_attrs:
+        +WantWholeNode: True
+        +maxMemory:
+        +maxWallTime: 84600
+        +xcount:
+OSG:
+  hosted-ce18.grid.uchicago.edu:
+    OSG_US_NMSU_DISCOVERY:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_ResourceName:
+          value: OSG_US_NMSU_DISCOVERY
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+  hosted-ce19.grid.uchicago.edu:
+    OSG_US_USF_SC:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_ResourceName:
+          value: OSG_US_USF_SC
+        GLIDEIN_Retire_Time:
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+  hosted-ce20.grid.uchicago.edu:
+    OSG_US_ASU_DELL_M420:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_ResourceName:
+          value: OSG_US_ASU_DELL_M420
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Site:
+          value: OSG_US_ASU_DELL_M420
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+OSG_IN_IUCAA_SARATHI:
+  hosted-ce08.grid.uchicago.edu:
+    OSG_IN_IUCAA_SARATHI:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_Retire_Time:
+        GLIDEIN_REQUIRED_OS:
+          value: rhel7   # It does not work
+        GLIDEIN_Supported_VOs:
+          value: OSGVO,LIGO
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+OSG_US_GLUEX:
+  hosted-ce07.grid.uchicago.edu:
+    GLUEX_US_FSU_HNPGRID:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_ResourceName:
+          value: GLUEX_US_FSU_HNPGRID
+        GLIDEIN_Retire_Time:
+        GLIDEIN_REQUIRED_OS:
+          value: rhel7   # It does not work
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+OSG_US_NDSU_CCAST_CLUSTER2:
+  hosted-ce09.grid.uchicago.edu:
+    OSG_US_NDSU_CCAST_CLUSTER2:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_Retire_Time:
+        GLIDEIN_REQUIRED_OS:
+          value: rhel6  # It does not work
+        GLIDEIN_Supported_VOs:
+          value: OSGVO
+      enabled: False
+      submit_attrs:
+        +maxMemory: 2500
+        +xcount: 1
+#OSG_US_TACC:
+#  hosted-ce10.grid.uchicago.edu:
+#    DEFAULT_ENTRY:
+#UCHICAGO:
+#  hosted-ce01.uchicago-prod.slateci.io:
+#    DEFAULT_ENTRY:
+cedar:
+  hosted-ce28.grid.uchicago.edu:
+    GLUEX_US_UConn_cedar:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_Max_Walltime:
+          value: 36000
+        GLIDEIN_ResourceName:
+          value: GLUEX_US_UConn_cedar
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Site:
+          value: Cedar
+        GLIDEIN_Supported_VOs:
+          value: GLUEX
+      submit_attrs:
+        +maxWallTime: 600
+UConn-OSG:
+  hosted-ce25.grid.uchicago.edu:
+    GLUEX_US_UConn_xanadu:
+      attrs:
+        GLIDEIN_CPUS:
+          value: 1
+        GLIDEIN_MaxMemMBs:
+          value: 2500
+        GLIDEIN_Max_Walltime:
+          value: 86400
+        GLIDEIN_ResourceName:
+          value: GLUEX_US_UConn_xanadu
+        GLIDEIN_Retire_Time:
+        GLIDEIN_SINGULARITY_BINDPATH_DEFAULT:
+          value: /isg/gluex/gluex_software:/cvmfs
+        GLIDEIN_Site:
+          value: Xanadu
+        SINGULARITY_IMAGES_DICT:
+          value: default:/isg/gluex/gluex_containers/singularity.opensciencegrid.org/markito3/gluex_docker_devel:latest,rhel7:/isg/gluex/gluex_containers/singularity.opensciencegrid.org/rjones30/gluex:latest
+        SINGULARITY_IMAGE_RESTRICTIONS:
+          value: NONE
+      submit_attrs:
+        +maxMemory: 2500
+        +maxWallTime: 86400
+        +xcount: 1
+#UUTAH:
+#  hosted-ce24.grid.uchicago.edu:
+#    DEFAULT_ENTRY:
+VC3:
+  hosted-ce16.grid.uchicago.edu:
+    CMS_T3_US_VC3_NotreDame:
+      attrs:
+        GLIDEIN_CMSSite:
+          value: T3_US_VC3_NotreDame
+        GLIDEIN_CPUS:
+          value: 4
+        GLIDEIN_MaxMemMBs:
+          value: 8192
+        GLIDEIN_Max_Walltime:
+          value: 172800
+        GLIDEIN_REQUIRED_OS:
+          value: rhel6
+        GLIDEIN_Retire_Time:
+        GLIDEIN_Supported_VOs:
+          value: CMS
+      submit_attrs:
+        +maxMemory: 8192
+        +maxWallTime: 172800
+        +xcount: 4
+      work_dir: Condor  # It does not work
+
+# hosted-ce26.grid.uchicago.edu
+# hosted-ce01.mwt2-uiuc.slateci.io

@@ -1,0 +1,835 @@
+BEIJING-LCG2: {}
+BEgrid-ULB-VUB: {}
+BG05-SUGrid: {}
+BUDAPEST: {}
+Baylor-Kodiak:
+  kodiak-ce.baylor.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: Baylor-Kodiak
+      gridtype: condor
+BelGrid-UCL: {}
+CERN-PROD:
+  ce503.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce504.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce505.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce506.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce507.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce508.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce509.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce510.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce511.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce512.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce513.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  ce514.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  cet01.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+  cet02.cern.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CERN-PROD
+      gridtype: condor
+CIEMAT-LCG2:
+  condorce1.ciemat.es:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ES
+        GLIDEIN_ResourceName:
+          value: CIEMAT-LCG2
+      gridtype: condor
+  condorce2.ciemat.es:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ES
+        GLIDEIN_ResourceName:
+          value: CIEMAT-LCG2
+      gridtype: condor
+CIT_CMS_T2:
+  cit-gatekeeper.ultralight.org:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: CIT_CMS_T2
+      gridtype: condor
+  cit-gatekeeper2.ultralight.org:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: CIT_CMS_T2
+      gridtype: condor
+  cit-gatekeeper3.ultralight.org:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: CIT_CMS_T2
+      gridtype: condor
+CSCS-LCG2:
+  arc01.lcg.cscs.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CSCS-LCG2
+      gridtype: nordugrid
+  arc02.lcg.cscs.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CSCS-LCG2
+      gridtype: nordugrid
+  arc03.lcg.cscs.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CSCS-LCG2
+      gridtype: nordugrid
+  arc04.lcg.cscs.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CSCS-LCG2
+      gridtype: nordugrid
+  arc06.lcg.cscs.ch:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: CH
+        GLIDEIN_ResourceName:
+          value: CSCS-LCG2
+      gridtype: nordugrid
+DESY-HH:
+  grid-arcce0.desy.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: DESY-HH
+      gridtype: nordugrid
+  grid-arcce1.desy.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: DESY-HH
+      gridtype: nordugrid
+FI_HIP_T2:
+  alcyone-cms.grid.helsinki.fi:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: FI
+        GLIDEIN_ResourceName:
+          value: FI_HIP_T2
+      gridtype: nordugrid
+FZK-LCG2:
+  arc-1-kit.gridka.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: FZK-LCG2
+      gridtype: nordugrid
+  arc-2-kit.gridka.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: FZK-LCG2
+      gridtype: nordugrid
+  arc-3-kit.gridka.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: FZK-LCG2
+      gridtype: nordugrid
+  arc-4-kit.gridka.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: FZK-LCG2
+      gridtype: nordugrid
+  arc-5-kit.gridka.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: FZK-LCG2
+      gridtype: nordugrid
+  arc-6-kit.gridka.de:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: DE
+        GLIDEIN_ResourceName:
+          value: FZK-LCG2
+      gridtype: nordugrid
+GLOW:
+  cmsgrid01.hep.wisc.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: GLOW
+      gridtype: condor
+  cmsgrid02.hep.wisc.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: GLOW
+      gridtype: condor
+  cmsgrid03.hep.wisc.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: GLOW
+      gridtype: condor
+GR-07-UOI-HEPLAB: {}
+GRIF:
+  node16.datagrid.cea.fr:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: FR
+        GLIDEIN_ResourceName:
+          value: GRIF
+      gridtype: nordugrid
+Hephy-Vienna: {}
+ICM: {}
+IFCA-LCG2: {}
+IN2P3-CC: {}
+IN2P3-CC-T2: {}
+IN2P3-IPNL: {}
+IN2P3-IRES: {}
+INDIACMS-TIFR: {}
+INFN-BARI: {}
+INFN-LNL-2: {}
+INFN-PERUGIA: {}
+INFN-PISA: {}
+INFN-ROMA1-CMS: {}
+INFN-T1: {}
+INFN-TRIESTE: {}
+IR-IPM-HEP: {}
+ITEP: {}
+JINR-LCG2: {}
+JINR-T1: {}
+KR-KISTI-GSDC-02:
+  cms-t2-ce01.sdfarm.kr:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: KR
+        GLIDEIN_ResourceName:
+          value: KR-KISTI-GSDC-02
+      gridtype: condor
+KR-KNU-T3: {}
+KR-UOS-SSCC: {}
+Kharkov-KIPT-LCG2: {}
+MIT_CMS:
+  ce01.cmsaf.mit.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: MIT_CMS
+      gridtype: condor
+  ce02.cmsaf.mit.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: MIT_CMS
+      gridtype: condor
+  ce03.cmsaf.mit.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: MIT_CMS
+      gridtype: condor
+NCBJ-CIS: {}
+NCG-INGRID-PT: {}
+NCP-LCG2:
+  htcondor-ce.ncp.edu.pk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: PK
+        GLIDEIN_ResourceName:
+          value: NCP-LCG2
+      gridtype: condor
+NWICG_NDCMS:
+  deepthought.crc.nd.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: NWICG_NDCMS
+      gridtype: condor
+Nebraska:
+  red-gw1.unl.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: Nebraska
+      gridtype: condor
+  red-gw2.unl.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: Nebraska
+      gridtype: condor
+  red.unl.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: Nebraska
+      gridtype: condor
+RAL-LCG2:
+  arc-ce01.gridpp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: RAL-LCG2
+      gridtype: nordugrid
+  arc-ce02.gridpp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: RAL-LCG2
+      gridtype: nordugrid
+  arc-ce03.gridpp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: RAL-LCG2
+      gridtype: nordugrid
+  arc-ce04.gridpp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: RAL-LCG2
+      gridtype: nordugrid
+RU-Protvino-IHEP: {}
+RWTH-Aachen: {}
+Rice:
+  bonner06.rice.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: Rice
+      gridtype: condor
+Ru-Troitsk-INR-LCG2: {}
+SPRACE:
+  osg-ce.sprace.org.br:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: BR
+        GLIDEIN_ResourceName:
+          value: SPRACE
+      gridtype: condor
+T2_Estonia:
+  cream1.hep.kbfi.ee:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: EE
+        GLIDEIN_ResourceName:
+          value: T2_Estonia
+      gridtype: nordugrid
+  cream2.hep.kbfi.ee:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: EE
+        GLIDEIN_ResourceName:
+          value: T2_Estonia
+      gridtype: nordugrid
+T3_HU_Debrecen: {}
+T3_IN_TIFRCloud:
+  cream-ce02.indiacms.res.in:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: IN
+        GLIDEIN_ResourceName:
+          value: T3_IN_TIFRCloud
+      gridtype: condor
+TAMU_BRAZOS:
+  ce01.brazos.tamu.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: TAMU_BRAZOS
+      gridtype: condor
+TR-03-METU: {}
+TW-NCHC:
+  ce01.grid.nchc.org.tw:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: TW
+        GLIDEIN_ResourceName:
+          value: TW-NCHC
+      gridtype: nordugrid
+TW-NCUHEP: {}
+TW-NTU-HEP: {}
+UCR-HEP:
+  top.ucr.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: UCR-HEP
+      gridtype: condor
+UCSDT2:
+  osg-gw-2.t2.ucsd.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: UCSDT2
+      gridtype: condor
+  osg-gw-4.t2.ucsd.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: UCSDT2
+      gridtype: condor
+  osg-gw-7.t2.ucsd.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: UCSDT2
+      gridtype: condor
+UColorado_HEP:
+  heposg01.colorado.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: UColorado_HEP
+      gridtype: condor
+UFlorida-HPC:
+  cms.rc.ufl.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: UFlorida-HPC
+      gridtype: condor
+  cslrm.rc.ufl.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: UFlorida-HPC
+      gridtype: condor
+  osg.rc.ufl.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: UFlorida-HPC
+      gridtype: condor
+UKI-LT2-Brunel:
+  dc2-grid-21.brunel.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-LT2-Brunel
+      gridtype: nordugrid
+  dc2-grid-22.brunel.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-LT2-Brunel
+      gridtype: nordugrid
+  dc2-grid-26.brunel.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-LT2-Brunel
+      gridtype: nordugrid
+  dc2-grid-28.brunel.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-LT2-Brunel
+      gridtype: nordugrid
+UKI-LT2-IC-HEP:
+  cetest01.grid.hep.ph.ic.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-LT2-IC-HEP
+      gridtype: nordugrid
+UKI-LT2-QMUL: {}
+UKI-LT2-RHUL: {}
+UKI-SCOTGRID-GLASGOW:
+  svr009.gla.scotgrid.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SCOTGRID-GLASGOW
+      gridtype: nordugrid
+  svr010.gla.scotgrid.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SCOTGRID-GLASGOW
+      gridtype: nordugrid
+  svr011.gla.scotgrid.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SCOTGRID-GLASGOW
+      gridtype: nordugrid
+  svr019.gla.scotgrid.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SCOTGRID-GLASGOW
+      gridtype: nordugrid
+UKI-SOUTHGRID-BRIS-HEP:
+  lcgce01.phy.bris.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SOUTHGRID-BRIS-HEP
+      gridtype: nordugrid
+UKI-SOUTHGRID-OX-HEP:
+  t2arc01.physics.ox.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SOUTHGRID-OX-HEP
+      gridtype: nordugrid
+UKI-SOUTHGRID-RALPP:
+  heplnx206.pp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SOUTHGRID-RALPP
+      gridtype: nordugrid
+  heplnx207.pp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SOUTHGRID-RALPP
+      gridtype: nordugrid
+  heplnx208.pp.rl.ac.uk:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: GB
+        GLIDEIN_ResourceName:
+          value: UKI-SOUTHGRID-RALPP
+      gridtype: nordugrid
+UMissHEP:
+  umiss001.hep.olemiss.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: UMissHEP
+      gridtype: condor
+UNIANDES: {}
+USCMS-FNAL-WC1:
+  cmsosgce.fnal.gov:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: USCMS-FNAL-WC1
+      gridtype: condor
+  cmsosgce2.fnal.gov:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: USCMS-FNAL-WC1
+      gridtype: condor
+  cmsosgce3.fnal.gov:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: USCMS-FNAL-WC1
+      gridtype: condor
+  cmsosgce4.fnal.gov:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: USCMS-FNAL-WC1
+      gridtype: condor
+Vanderbilt:
+  ce3.accre.vanderbilt.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: Vanderbilt
+      gridtype: condor
+  ce4.accre.vanderbilt.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: Vanderbilt
+      gridtype: condor
+cinvestav:
+  proton.fis.cinvestav.mx:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: cinvestav
+      gridtype: condor
+pic:
+  ce13.pic.es:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ES
+        GLIDEIN_ResourceName:
+          value: pic
+      gridtype: condor
+  ce14.pic.es:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ES
+        GLIDEIN_ResourceName:
+          value: pic
+      gridtype: condor
+ru-Moscow-FIAN-LCG2: {}
+ru-PNPI: {}
+rutgers-cms:
+  ruhex-osgce.rutgers.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: rutgers-cms
+      gridtype: condor
+t3ussdsc:
+  osg-gw-6.t2.ucsd.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: US
+        GLIDEIN_ResourceName:
+          value: t3ussdsc
+      gridtype: condor
+umd-cms:
+  hepcms-1.umd.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: umd-cms
+      gridtype: condor
+uprm-cms:
+  cms-grid0.hep.uprm.edu:
+    DEFAULT_ENTRY:
+      attrs:
+        GLIDEIN_Country:
+          value: ''
+        GLIDEIN_ResourceName:
+          value: uprm-cms
+      gridtype: condor

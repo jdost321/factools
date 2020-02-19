@@ -1,0 +1,308 @@
+CIT_CMS_T2:
+  cit-gatekeeper.ultralight.org:
+    CMSHTPC_T2_US_Caltech_cit:
+      attrs:
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_ESTIMATED_CPUS:
+          value: 8
+        GLIDEIN_MaxMemMBs:
+          type: string
+          value: ""
+        GLIDEIN_MaxMemMBs_Estimate:
+          value: True
+        GLIDEIN_Site:
+          value: Caltech
+      submit_attrs:
+        +maxMemory: 16000
+        +WantWholeNode: True
+#  cit-gatekeeper2.ultralight.org:
+#    CMSHTPC_T2_US_Caltech_cit2:
+#      attrs:
+#        GLIDEIN_CPUS:
+#          value: auto
+#        GLIDEIN_ESTIMATED_CPUS:
+#          value: 8
+#        GLIDEIN_MaxMemMBs:
+#          type: string
+#          value: ""
+#        GLIDEIN_MaxMemMBs_Estimate:
+#          value: True
+#        GLIDEIN_Site:
+#          value: Caltech
+#      submit_attrs:
+#        +maxMemory: 16000
+#        +WantWholeNode: True
+  cit-gatekeeper3.ultralight.org:
+    CMSHTPC_T2_US_Caltech_cit3:
+      attrs:
+        GLIDEIN_CPUS:
+          value: auto
+        GLIDEIN_ESTIMATED_CPUS:
+          value: 8
+        GLIDEIN_MaxMemMBs:
+          type: string
+          value: ""
+        GLIDEIN_MaxMemMBs_Estimate:
+          value: True
+        GLIDEIN_Site:
+          value: Caltech
+      submit_attrs:
+        +maxMemory: 16000
+        +WantWholeNode: True
+GLOW:
+  cmsgrid01.hep.wisc.edu:
+    CMSHTPC_T2_US_Wisconsin_cmsgrid01:
+      attrs:
+        GLIDEIN_Site:
+          value: Wisconsin
+      submit_attrs:
+        +maxMemory: 20000
+#  cmsgrid02.hep.wisc.edu:
+#    CMSHTPC_T2_US_Wisconsin_cmsgrid02:
+#      attrs:
+#        GLIDEIN_Site:
+#          value: Wisconsin
+#      submit_attrs:
+#        +maxMemory: 20000
+  cmsgrid03.hep.wisc.edu:
+    CMSHTPC_T2_US_Wisconsin_cmsgrid03:
+      attrs:
+        GLIDEIN_Site:
+          value: Wisconsin
+      submit_attrs:
+        +maxMemory: 20000
+MIT_CMS:
+  ce01.cmsaf.mit.edu:
+    CMSHTPC_T2_US_MIT_ce01:
+      attrs:
+        GLIDEIN_Site:
+          value: MIT
+      submit_attrs:
+        +maxMemory: 16000
+  ce02.cmsaf.mit.edu:
+    CMSHTPC_T2_US_MIT_ce02:
+      attrs:
+        GLIDEIN_Site:
+          value: MIT
+      submit_attrs:
+        +maxMemory: 16000
+  ce03.cmsaf.mit.edu:
+    CMSHTPC_T2_US_MIT_ce03:
+#TODO speed=2
+      attrs:
+        GLIDEIN_Site:
+          value: MIT
+      submit_attrs:
+        +maxMemory: 16000
+Nebraska:
+  red-gw1.unl.edu:
+    CMS_T2_US_Nebraska_Red_gw1_whole_cms:
+      attrs:
+        GLIDEIN_MaxMemMBs:
+          type: string
+          value: ""
+        GLIDEIN_MaxMemMBs_Estimate:
+          value: True
+        UPDATE_COLLECTOR_WITH_TCP:
+          comment: Trying UDP to get around NAT issues, see 'Improving debug of glideIn failures' email 2014-03-12 --Jeff
+          value: False
+      submit_attrs:
+        +maxWallTime: 4320
+        +WantWholeNode: True
+#  red-gw2.unl.edu:
+#    CMSHTPC_T2_US_Nebraska_red-gw2:
+#      attrs:
+#        GLIDEIN_MaxMemMBs:
+#          type: string
+#          value: ""
+#        GLIDEIN_MaxMemMBs_Estimate:
+#          value: True
+#        UPDATE_COLLECTOR_WITH_TCP:
+#          comment: Trying UDP to get around NAT issues, see 'Improving debug of glideIn failures' email 2014-03-12 --Jeff
+#          value: False
+#      submit_attrs:
+#        +maxWallTime: 4320
+#        +WantWholeNode: True
+#  red.unl.edu:
+#    CMSHTPC_T2_US_Nebraska_red:
+#      attrs:
+#        GLIDEIN_MaxMemMBs:
+#          type: string
+#          value: ""
+#        GLIDEIN_MaxMemMBs_Estimate:
+#          value: True
+#        UPDATE_COLLECTOR_WITH_TCP:
+#          comment: Trying UDP to get around NAT issues, see 'Improving debug of glideIn failures' email 2014-03-12 --Jeff
+#          value: False
+#      submit_attrs:
+#        +maxWallTime: 4320
+#        +WantWholeNode: True
+#UCSDT2:
+#  osg-gw-2.t2.ucsd.edu:
+#    CMSHTPC_T2_US_UCSD_gw2:
+#      attrs:
+#        GLIDEIN_Site:
+#          value: UCSD
+#      submit_attrs:
+#        +maxMemory: 16020
+#  osg-gw-4.t2.ucsd.edu:
+#    CMSHTPC_T2_US_UCSD_gw4:
+#      attrs:
+#        GLIDEIN_Site:
+#          value: UCSD
+#      submit_attrs:
+#        +maxMemory: 16020
+#    CMSHTPC_T2_US_UCSD_gw4_gpu:
+#      attrs:
+#        GLIDEIN_Resource_Slots:
+#          comment: try just adding to main partitionable slot
+#          value: GPUs,1,type=main
+#        GLIDEIN_Retire_Time:
+#          value: 43200
+#        GLIDEIN_Site:
+#          value: UCSD
+#      submit_attrs:
+#        +maxMemory: 7500
+#        +xcount: 5
+#        Request_GPUs: 1
+#  osg-gw-7.t2.ucsd.edu:
+#    CMSHTPC_T2_US_UCSD_gw7:
+#      attrs:
+#        GLIDEIN_Site:
+#          value: UCSD
+#      submit_attrs:
+#        +maxMemory: 16020
+#    CMSHTPC_T2_US_UCSD_gw7_gpu:
+#      attrs:
+#        GLIDEIN_Resource_Slots:
+#          comment: try just adding to main partitionable slot
+#          value: GPUs,1,type=main
+#        GLIDEIN_Retire_Time:
+#          value: 43200
+#        GLIDEIN_Site:
+#          value: UCSD
+#      submit_attrs:
+#        +maxMemory: 7500
+#        +xcount: 5
+#        Request_GPUs: 1
+UFlorida-HPC:
+  cms.rc.ufl.edu:
+    CMSHTPC_T2_US_Florida_condor:
+      attrs:
+        ENABLE_IPV6:
+          type: expr
+          value: False
+        GLIDEIN_Site:
+          value: Florida
+        UPDATE_COLLECTOR_WITH_TCP:
+          comment: Trying UDP to get around NAT issues, see 'Improving debug of glideIn failures' email 2014-03-12 --Jeff
+          const: False
+          glidein_publish: False
+          value: False
+  cslrm.rc.ufl.edu:
+    CMSHTPC_T2_US_Florida_slurm:
+      attrs:
+        ENABLE_IPV6:
+          type: expr
+          value: False
+        GLIDEIN_Site:
+          value: Florida
+  osg.rc.ufl.edu:
+    CMSHTPC_T2_US_Florida_osg:
+      attrs:
+        ENABLE_IPV6:
+          type: expr
+          value: False
+        GLIDEIN_Site:
+          value: Florida
+        UPDATE_COLLECTOR_WITH_TCP:
+          comment: Trying UDP to get around NAT issues, see 'Improving debug of glideIn failures' email 2014-03-12 --Jeff
+          const: False
+          glidein_publish: False
+          value: False
+#Renamed ce3 and ce4 to ce2 and ce1. See https://github.com/opensciencegrid/osg-gfactory/commit/cb14dea51419843990fba269629929676543459d
+#Vanderbilt:
+#  ce3.accre.vanderbilt.edu:
+#    CMSHTPC_T2_US_Vanderbilt_ce3:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_MaxMemMBs_Estimate:
+#          value: True
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Retire_Time:
+#      submit_attrs:
+#        +WantWholeNode: True
+#    CMSHTPC_T2_US_Vanderbilt_ce3_2:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Retire_Time:
+#      submit_attrs:
+#        +maxWallTime: 2880
+#    CMSHTPC_T2_US_Vanderbilt_ce3_3:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Resource_Slots:
+#          comment: try just adding to main partitionable slot
+#          value: GPUs,1,type=main
+#        GLIDEIN_Retire_Time:
+#        GLIDEIN_Supported_VOs:
+#          value: CMSGPU
+#      submit_attrs:
+#        +maxMemory: 3100
+#        +maxWallTime: 2880
+#        Request_GPUs: 1
+#  ce4.accre.vanderbilt.edu:
+#    CMSHTPC_T2_US_Vanderbilt_ce4:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_MaxMemMBs_Estimate:
+#          value: True
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Retire_Time:
+#      submit_attrs:
+#        +WantWholeNode: True
+#    CMSHTPC_T2_US_Vanderbilt_ce4_2:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Resource_Slots:
+#          comment: try just adding to main partitionable slot
+#          value: GPUs,1,type=main
+#        GLIDEIN_Retire_Time:
+#        GLIDEIN_Supported_VOs:
+#          value: CMSGPU
+#      submit_attrs:
+#        +maxMemory: 3100
+#        +maxWallTime: 2880
+#        Request_GPUs: 1
+#    CMSHTPC_T2_US_Vanderbilt_ce4_3:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Retire_Time:
+#      submit_attrs:
+#        +maxWallTime: 2880
+#    CMSHTPC_T2_US_Vanderbilt_ce4_4:
+#      attrs:
+#        GLIDEIN_Country:
+#          value: US
+#        GLIDEIN_Max_Walltime:
+#          value: 171000
+#        GLIDEIN_Retire_Time:
+#      submit_attrs:
+#        +maxWallTime: 2880
