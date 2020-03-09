@@ -1,17 +1,30 @@
 """ Allows to retrieve information from the OSG collector and generate the factory cml file
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import sys
+import argparse
 import fractions
 
 import htcondor
 
-from cfg.config import OSG_COLLECTOR, OSG_YAML, OSG_WHITELIST, OSG_DEFAULT
-from libs.utils import entry_stub, GLIDEIN_Supported_VOs_map, MergeError, get_attr_str, update, \
+from libs.utils import ENTRY_STUB, GLIDEIN_SUPPORTED_VO_MAP, ProgramError, get_attr_str, update, \
      get_yaml_file_info, write_to_yaml_file, get_submit_attr_str, write_to_xml_file
 
+
+def load_config():
+    """Load few parameters from the configuration file
+    """
+    parser = argparse.ArgumentParser(prog='OSG collector')
+    parser.add_argument('config', nargs=1, help='The configuration file')
+    args = parser.parse_args()
+
+    config = get_yaml_file_info(args.config[0])
+
+    return config
+#from cfg.config import OSG_COLLECTOR, OSG_YAML, OSG_WHITELIST, OSG_DEFAULT
 
 def get_vos(allowed_vos):
     """This function converts the list of VO from the collector to the frontend ones
@@ -24,8 +37,8 @@ def get_vos(allowed_vos):
     """
     vos = set()
     for vorg in allowed_vos:
-        if vorg in GLIDEIN_Supported_VOs_map:
-            vos.add(GLIDEIN_Supported_VOs_map[vorg])
+        if vorg in GLIDEIN_SUPPORTED_VO_MAP:
+            vos.add(GLIDEIN_SUPPORTED_VO_MAP[vorg])
         else:
             print(vorg + " VO is not in GLIDEIN_Supported_VOs_map")
 
@@ -98,8 +111,8 @@ def get_information(host):
                             else:
                                 cpus = fractions.gcd(cpus, osg_catalog["CPUs"])
                     # Assigning this to an entry dict vriable to shorten the line
-                    edict = result[site][gatekeeper][entry]
                     edict = {}
+                    result[site][gatekeeper][entry] = edict
                     edict["gridtype"] = "condor"
                     edict["attrs"] = {}
                     edict["attrs"]["GLIDEIN_Site"] = {"value": resource}
@@ -158,12 +171,12 @@ def get_entries_configuration(data):
                     )
                 else:
                     entry_configuration["submit_attrs"] = ""
-                entries_configuration += entry_stub % entry_configuration
+                entries_configuration += ENTRY_STUB % entry_configuration
 
     return entries_configuration
 
 
-def merge_yaml():
+def merge_yaml(config):
     """Merges different yaml file and return the corresponding resource dictionary
 
     Three different yam files are merged. First we read the factory white list/override file that
@@ -178,19 +191,19 @@ def merge_yaml():
             and the operators overrides in place (only whitelisted entries are returned).
     """
     out = {}
-    out = get_yaml_file_info(OSG_WHITELIST, 5)
-    osg_info = get_yaml_file_info(OSG_YAML, 6)
-    default_information = get_yaml_file_info(OSG_DEFAULT, 7)
+    out = get_yaml_file_info(config["OSG_WHITELIST"])
+    osg_info = get_yaml_file_info(config["OSG_YAML"])
+    default_information = get_yaml_file_info(config["OSG_DEFAULT"])
     for site, site_information in out.items():
         if site not in osg_info:
             print("You put %s in the whitelist file, but the site is not present in the collector"
                   % site)
-            raise MergeError(8)
+            raise ProgramError(2)
         for celem, ce_information in site_information.items():
             if celem not in osg_info[site]:
                 print ("Working on whitelisted site %s: cant find ce %s in the generated OSG.yaml"
                        % (site, celem))
-                raise MergeError(9)
+                raise ProgramError(3)
             for entry, entry_information in ce_information.items():
                 if entry_information is None:
                     out[site][celem][entry] = osg_info[site][celem]["DEFAULT_ENTRY"]
@@ -208,12 +221,13 @@ def merge_yaml():
 
 def main():
     """The main"""
+    config = load_config()
     # Queries the OSG collector
-    result = get_information(OSG_COLLECTOR)
+    result = get_information(config["OSG_COLLECTOR"])
     # Write the received information to the OSG.yml file
-    write_to_yaml_file(OSG_YAML, result)
+    write_to_yaml_file(config["OSG_YAML"], result)
     # Merges different yaml files: the defaults, the generated one, and the factory overrides
-    result = merge_yaml()
+    result = merge_yaml(config)
     # Convert the resoruce dictionary obtained this way into a string (xml)
     entries_configuration = get_entries_configuration(result)
     # Write the factory configuration file on the disk
@@ -223,6 +237,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except MergeError as merr:
-        print("Error! " + MergeError.codes_map[merr.code])
+    except ProgramError as merr:
+        print("Error! " + ProgramError.codes_map[merr.code])
         sys.exit(merr.code)

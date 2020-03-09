@@ -1,10 +1,17 @@
-import os
-import yaml
+"""This module contains a list of shared utility function used by the both OSG collector and CRIC
+configuration generation helper tools
+"""
+from __future__ import division
+from __future__ import print_function
+
 import collections
 
-from cfg.config import *
+import os
+import yaml
 
-entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comment="Entry automatically generated" enabled="%(enabled)s" gatekeeper="%(gatekeeper)s" gridtype="%(gridtype)s"%(rsl)s proxy_url="OSG" trust_domain="grid" verbosity="std" work_dir="%(work_dir)s">
+
+# pylint: disable=line-too-long
+ENTRY_STUB = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comment="Entry automatically generated" enabled="%(enabled)s" gatekeeper="%(gatekeeper)s" gridtype="%(gridtype)s"%(rsl)s proxy_url="OSG" trust_domain="grid" verbosity="std" work_dir="%(work_dir)s">
          <config>
             <max_jobs>
                <default_per_frontend glideins="5000" held="50" idle="100"/>
@@ -36,7 +43,7 @@ entry_stub = """      <entry name="%(entry_name)s" auth_method="grid_proxy" comm
 
 
 # Default values of parameters attributes
-default_attr = {
+DEFAULT_ATTRS = {
     "const": "True",
     "glidein_publish": "True",
     "job_publish": "False",
@@ -45,7 +52,7 @@ default_attr = {
     "type": "string"
 }
 
-GLIDEIN_Supported_VOs_map = {
+GLIDEIN_SUPPORTED_VO_MAP = {
     "atlas": "ATLAS",
     "ATLAS": "ATLAS",
     "cdf": "CDF",
@@ -87,21 +94,34 @@ GLIDEIN_Supported_VOs_map = {
 
 
 # Class to handle error in the merge script
-class MergeError(Exception):
+class ProgramError(Exception):
+    """Simple collection of program error codes and related short messages
+    """
     codes_map = {
-        1: "%s file not found" % CRIC_CORE,
-        2: "%s file not found" % CRIC_CMS,
-        3: "%s file not found" % FACT_OVERRIDE,
-        4: "%s file not found" % DEFAULT,
-        5: "%s file not found" % "white_list.yaml",
-        6: "%s file not found" % "OSG.yml",
-        7: "%s file not found" % "default.yml",
-        8: "Site not found",
-        9: "CE not found",
+        1: "File not found",
+        2: "Site not found",
+        3: "CE not found",
     }
 
     def __init__(self, code):
+        super(ProgramError, self).__init__(self.codes_map[code])
         self.code = code
+
+
+def get_yaml_file_info(file_name):
+    """Loads a yaml file into a dictionary
+
+    Args:
+        file_name (str): The file to load
+        error_code (int): The error code to return if the file does not exist
+    """
+    if not os.path.isfile(file_name):
+        print("Cannot find file %s" % file_name)
+        raise ProgramError(1)
+    with open(file_name) as fdesc:
+        out = yaml.load(fdesc)
+
+    return out
 
 
 def write_to_yaml_file(file_name, information):
@@ -109,7 +129,7 @@ def write_to_yaml_file(file_name, information):
 
     Args:
         file_name (string): The yaml filename that will be written out
-        information (dict):  
+        information (dict):
     """
     with open(file_name, "w") as outfile:
         noalias_dumper = yaml.dumper.SafeDumper
@@ -131,12 +151,13 @@ def get_attr_str(attrs):
         if data is None:
             continue
         data["name"] = name
-        update(data, default_attr, overwrite=False)
+        update(data, DEFAULT_ATTRS, overwrite=False)
         if "comment" not in data:
             data["comment"] = ""
         else:
             data["comment"] = ' comment="' + data["comment"]  + '"'
         if "value" in data:
+            # pylint: disable=line-too-long
             out += '            <attr name="%(name)s"%(comment)s const="%(const)s" glidein_publish="%(glidein_publish)s" job_publish="%(job_publish)s" parameter="%(parameter)s" publish="%(publish)s" type="%(type)s" value="%(value)s"/>\n' % data
 
     return out[:-1]
@@ -170,7 +191,7 @@ def update(data, update_data, overwrite=True):
         overwrite (bool): wether existing keys are going to be overwritten
     """
     for key, value in update_data.items():
-        if value == None:
+        if value is None:
             if key in data:
                 del data[key]
         elif isinstance(value, collections.Mapping):
@@ -182,21 +203,6 @@ def update(data, update_data, overwrite=True):
                 data[key] = value
 
     return data
-
-
-def get_yaml_file_info(file_name, error_code):
-    """Loads a yaml file into a dictionary
-
-    Args:
-        file_name (str): The file to load
-        error_code (int): The error code to return if the file does not exist
-    """
-    if not os.path.isfile(file_name):
-        raise MergeError(error_code)
-    with open(file_name) as fd:
-        out = yaml.load(fd)
-
-    return out
 
 
 def write_to_xml_file(file_name, information):
