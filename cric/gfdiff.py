@@ -14,8 +14,12 @@ import requests
 from glideinwms.creation.lib.xmlConfig import DictElement, ListElement
 from glideinwms.creation.lib.factoryXmlConfig import _parse, EntryElement, FactAttrElement #, parse
 
+
+g_entry_a = None
+g_entry_b = None
 last_key = []
 tabs = 0
+
 def count_tabs(function_to_decorate):
     """ Decorator function that keeps track of how many intentation level are required.
     In other words, the decorator counts how many times the decorated function is called
@@ -50,7 +54,7 @@ def check_list_diff(list_a, list_b):
             if len(elem_b) == 1:
                 check_dict_diff(elem, elem_b[0], FactAttrElement.items)
             elif len(elem_b) == 0:
-                print("\t"*(tabs+1) + "%s: not present in %s" % (elem['name'], entry_b.getName()))
+                print("\t"*(tabs+1) + "%s: not present in %s" % (elem['name'], g_entry_b.getName()))
             else:
                 print('More than one FactAttrElement')
         else:
@@ -59,14 +63,13 @@ def check_list_diff(list_a, list_b):
         if isinstance(elem, FactAttrElement):
             elem_a = [x for x in list_a.children if x['name'] == elem['name']]
             if len(elem_a) == 0:
-                print("\t"*(tabs+1) + "%s: not present in %s" % (elem['name'], entry_a.getName()))
+                print("\t"*(tabs+1) + "%s: not present in %s" % (elem['name'], g_entry_a.getName()))
 
 
 @count_tabs
 def check_dict_diff(dict_a, dict_b, itemfunc=EntryElement.items, print_name=True):
     """Check differences between two dictionaries
     """
-    global last_key
     tmp_dict_a = dict(itemfunc(dict_a))
     tmp_dict_b = dict(itemfunc(dict_b))
     SKIP_KEYS = ['name', 'comment']#, 'gatekeeper']
@@ -76,7 +79,7 @@ def check_dict_diff(dict_a, dict_b, itemfunc=EntryElement.items, print_name=True
         if key in SKIP_KEYS:
             continue
         if key not in tmp_dict_b:
-            print("\t"*tabs + "Key %s(%s) not found in %s" % (key, val, entry_b.getName()))
+            print("\t"*tabs + "Key %s(%s) not found in %s" % (key, val, g_entry_b.getName()))
         elif isinstance(val, ListElement):
             check_list_diff(tmp_dict_a[key], tmp_dict_b[key])
         elif isinstance(val, DictElement):
@@ -92,7 +95,7 @@ def check_dict_diff(dict_a, dict_b, itemfunc=EntryElement.items, print_name=True
         if key in SKIP_KEYS:
             continue
         if key not in tmp_dict_a:
-            print("\t"*tabs + "Key %s(%s) not found in %s" % (key, val, entry_a.getName()))
+            print("\t"*tabs + "Key %s(%s) not found in %s" % (key, val, g_entry_a.getName()))
 
 
 def parse_opts():
@@ -169,8 +172,8 @@ def handle_mergely(entry_a, conf_a, entry_b, conf_b, mergely_only):
 def main():
     """ The main
     """
-    global entry_a
-    global entry_b
+    global g_entry_a
+    global g_entry_b
     options = parse_opts()
 
     if options.mergely:
@@ -197,8 +200,8 @@ def main():
         print("Cannot find entry %s in the configuration file %s" %
               (options.entry_b, options.conf_b))
         sys.exit(1)
-    entry_a = entry_a[0]
-    entry_b = entry_b[0]
+    g_entry_a = entry_a[0]
+    g_entry_b = entry_b[0]
 
 
     print("Checking entry attributes:")
