@@ -4,6 +4,7 @@ import urllib2
 import xml.parsers.expat
 import time
 import os
+import ssl
 
 from glideinwms.creation.lib import factoryXmlConfig
 
@@ -153,7 +154,7 @@ dt_xml.close()
 egi_url = 'https://goc.egi.eu/gocdbpi/public/?method=get_downtime&ongoing_only=yes'
 
 #dt_xml = open("egi_down.xml")
-dt_xml = urllib2.urlopen(egi_url)
+dt_xml = urllib2.urlopen(egi_url, context=ssl._create_unverified_context())
 
 xmlparser = xml.parsers.expat.ParserCreate()
 xmlparser.StartElementHandler = egi_start_element
