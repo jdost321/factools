@@ -7,7 +7,7 @@ if [ -e $ft_env ];then
 fi
 
 # default to rpm way
-stat_cmd="/sbin/service gwms-factory status"
+stat_cmd="/bin/systemctl status gwms-factory.service"
 
 # if set, assume non rpm-install
 if [ -n "$GLIDEIN_FACTORY_DIR" ]; then
@@ -17,8 +17,9 @@ if [ -n "$GLIDEIN_FACTORY_NAME" ];then
     factory_name="$GLIDEIN_FACTORY_NAME "
 fi
 
-STATUS=$($stat_cmd)
-DESIRED="Running"
+$stat_cmd | grep "active (running)"
+STATUS=$?
+DESIRED=0
 RETEST="10m"
 EMAIL=$1
 
@@ -27,10 +28,11 @@ EMAIL=$1
 
 if [ "$STATUS" != "$DESIRED" ]; then
     sleep $RETEST
-    STATUS=$($stat_cmd)
+    $stat_cmd | grep "active (running)"
+    STATUS=$?
     if [ "$STATUS" != "$DESIRED" ]; then
 	DATE="on `date +%D` at `date +%T`"
-	echo -e "WARNING: ${factory_name}Glidein Factory is not running.\nStatus: $STATUS\nLocation: $GLIDEIN_FACTORY_DIR\nPlease investigate.\n$DATE" | mail -s "WARNING: ${factory_name}Glidein Factory not running" $EMAIL
+	echo -e "WARNING: ${factory_name}Glidein Factory is not running.\nLocation: $GLIDEIN_FACTORY_DIR\nPlease investigate.\n$DATE" | mail -s "WARNING: ${factory_name}Glidein Factory not running" $EMAIL
     fi
 fi
 
