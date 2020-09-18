@@ -87,11 +87,11 @@ def egi_start_element(name, attrs):
 
   cur_el = name
 
-  if name == 'HOSTNAME' or name == 'START_DATE' or name == 'END_DATE' or name == 'DESCRIPTION' or name == 'SERVICE_TYPE':
+  if name == 'HOSTNAME' or name == 'START_DATE' or name == 'END_DATE' or name == 'DESCRIPTION' or name == 'SERVICE_TYPE' or name == 'SEVERITY':
     str_buf = []
 
 def egi_char_data(data):
-  if cur_el == 'HOSTNAME' or cur_el == 'START_DATE' or cur_el == 'END_DATE' or cur_el == 'DESCRIPTION' or cur_el == 'SERVICE_TYPE':
+  if cur_el == 'HOSTNAME' or cur_el == 'START_DATE' or cur_el == 'END_DATE' or cur_el == 'DESCRIPTION' or cur_el == 'SERVICE_TYPE' or cur_el == 'SEVERITY':
     str_buf.append(data)
 
 def egi_end_element(name):
@@ -100,9 +100,13 @@ def egi_end_element(name):
   global end_time
   global descript
   global service
+  global severity
 
   if name == 'DOWNTIME' and service in relevant_egi_services:
-    if hostname not in downtimes:
+    # Antonio proposes to not consider downtimes that are less than 12h.
+    # Need to discuss this, and do it for OSG if we agree
+#    downtime_hours = ( time.mktime(end_time) - time.mktime(start_time) ) / 3600
+    if hostname not in downtimes and severity == 'OUTAGE': #and downtime_hours > 12:
       downtimes[hostname] = []
     downtimes[hostname].append({'start': start_time, 'end': end_time, 'desc': descript})
   elif name == 'HOSTNAME':
@@ -115,6 +119,8 @@ def egi_end_element(name):
     descript = "".join(str_buf)
   elif name == 'SERVICE_TYPE':
     service = "".join(str_buf)
+  elif name == 'SEVERITY':
+    severity = "".join(str_buf)
 
 ###### END EGI downtimes xml parsing variables and callbacks
 
