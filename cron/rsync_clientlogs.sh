@@ -2,11 +2,15 @@
 
 script_dir=`dirname $0`
 conf=${script_dir}/../etc/rsync_clientlogs.conf
-lock=${script_dir}/../var/lock/rsync_clientlogs.lock
+pidfile=${script_dir}/../var/lock/rsync_clientlogs.pid
 
-[ -e $lock ] && exit 0
-
-touch $lock
+if [ -e $pidfile ]; then
+    pid=$(cat $pidfile)
+    if kill -0 $pid >/dev/null 2>&1; then
+        exit 0
+    fi
+fi
+echo $$ >$pidfile
 
 while read line; do
   if [ -n "$line" ] && ! echo "$line" | grep -q '^#'; then
@@ -18,8 +22,8 @@ while read line; do
     dest=$1
     shift
 
-    su $user -c "/usr/bin/rsync -e 'ssh' --timeout 2700 --include '/entry_*/' --include '/entry_*/job.*.out' --include '/entry_*/job.*.err' --exclude '*' --min-size 1 -axv --chmod=+r $src $dest >/tmp/rsync_${user}.log 2>&1"
+    su $user -c "timeout 1h /usr/bin/rsync -e 'ssh' --timeout 2700 --include '/entry_*/' --include '/entry_*/job.*.out' --include '/entry_*/job.*.err' --exclude '*' --min-size 1 -axv --chmod=+r $src $dest >/tmp/rsync_${user}.log 2>&1"
   fi
 done < $conf
 
-rm $lock
+rm $pidfile
