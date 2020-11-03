@@ -79,7 +79,7 @@ def osg_end_element(name):
 
 ###### EGI downtimes xml parsing variables and callbacks
 
-relevant_egi_services = set(['CREAM-CE','ARC-CE'])
+relevant_egi_services = set(['CREAM-CE','ARC-CE', 'org.opensciencegrid.htcondorce'])
 
 def egi_start_element(name, attrs):
   global cur_el
@@ -102,11 +102,8 @@ def egi_end_element(name):
   global service
   global severity
 
-  if name == 'DOWNTIME' and service in relevant_egi_services:
-    # Antonio proposes to not consider downtimes that are less than 12h.
-    # Need to discuss this, and do it for OSG if we agree
-#    downtime_hours = ( time.mktime(end_time) - time.mktime(start_time) ) / 3600
-    if hostname not in downtimes and severity == 'OUTAGE': #and downtime_hours > 12:
+  if name == 'DOWNTIME' and service in relevant_egi_services and severity == 'OUTAGE':
+    if hostname not in downtimes:
       downtimes[hostname] = []
     downtimes[hostname].append({'start': start_time, 'end': end_time, 'desc': descript})
   elif name == 'HOSTNAME':
