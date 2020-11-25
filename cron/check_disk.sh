@@ -23,7 +23,12 @@ limit=${2:-80}
 out=`df -h`
 
 hit=false
-for s in `echo "$out" | grep '[0-9]%' | sed 's|.* \([0-9]\+\)%.*|\1|g'`;do if [ $s -ge $limit ]; then hit=true;fi;done
+
+for s in `echo "$out" | grep '[0-9]%' | grep -v '/cvmfs/'| sed 's|.* \([0-9]\+\)%.*|\1|g'`; do
+  if [ $s -ge $limit ]; then
+    hit=true;
+  fi;
+done
 
 if ! $hit; then
     exit 0
