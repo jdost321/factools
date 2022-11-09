@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-import urllib2
 import xml.parsers.expat
 import time
 import os
 import ssl
 
+from urllib.request import urlopen
 from glideinwms.creation.lib import factoryXmlConfig
 
 def get_dt_format(t_struct):
@@ -132,7 +132,7 @@ else:
 
 url = 'https://topology.opensciencegrid.org/rgdowntime/xml'
 
-dt_xml = urllib2.urlopen(url)
+dt_xml = urlopen(url)
 #dt_xml = open("down.xml")
 
 #for line in dt_xml:
@@ -157,7 +157,7 @@ dt_xml.close()
 egi_url = 'https://goc.egi.eu/gocdbpi/public/?method=get_downtime&ongoing_only=yes'
 
 #dt_xml = open("egi_down.xml")
-dt_xml = urllib2.urlopen(egi_url, context=ssl._create_unverified_context())
+dt_xml = urlopen(egi_url, context=ssl._create_unverified_context())
 
 xmlparser = xml.parsers.expat.ParserCreate()
 xmlparser.StartElementHandler = egi_start_element
@@ -211,7 +211,7 @@ for entry in sorted(entry_downtimes):
     try:
       new_dt_file.write("%s\n" % desc_str)
     except UnicodeEncodeError as ue:
-      print "Unicode not allowed; skipping description for %s: %s" % (entry, ue)
+      print("Unicode not allowed; skipping description for %s: %s" % (entry, ue))
       new_dt_file.write("\n")
 
 for dt in manual_dts:
