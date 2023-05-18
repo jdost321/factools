@@ -116,12 +116,12 @@ class TarballManager(HTMLParser):
             
         out = ""
         for dest_file in self.downloaded_files:
-            _, version, os_arch, _ = dest_file.split("-")
-            arch, os = os_arch.rsplit("_", 1)
+            _, version, os_arch, _ = os.path.basename(dest_file).split("-")
+            arch, opsystem = os_arch.rsplit("_", 1)
             if version == latest_version:
                 major, minor, _ = version.split('.')
                 version += ','+major+'.0.x' if minor==0 else ','+major+'.x'
-            out += xml_snippet.format(arch=arch_map[arch], os=os_map[os], dest_file=dest_file, version=version)
+            out += xml_snippet.format(arch=arch_map[arch], os=os_map[opsystem], dest_file=dest_file, version=version)
         return out
 
 
