@@ -1,6 +1,7 @@
 #DESTINATION_DIR: "/var/lib/gwms-factory/condor/" 
 DESTINATION_DIR: "/tmp" 
 TARBALL_BASE_URL: "https://research.cs.wisc.edu/htcondor/tarball/"
+DEFAULT_TARBALL_VERSION: [ "10.0.3" ]
 CONDOR_TARBALL_LIST:
    - MAJOR_VERSION: "9.0"
      WHITELIST: [ "9.0.7", "9.0.17" ]

@@ -105,7 +105,7 @@ class TarballManager(HTMLParser):
         except KeyError:
             return None
 
-    def generate_xml(self, os_map, arch_map, whitelist, blacklist):
+    def generate_xml(self, os_map, arch_map, whitelist, blacklist, default_tarball_version):
         xml_snippet = '      <condor_tarball arch="{arch}" os="{os}" tar_file="{dest_file}" version="{version}"/>\n'
 
         if whitelist != []:
@@ -116,11 +116,14 @@ class TarballManager(HTMLParser):
             
         out = ""
         for dest_file in self.downloaded_files:
-            _, version, os_arch, _ = os.path.basename(dest_file).split("-")
+            _, sversion, os_arch, _ = os.path.basename(dest_file).split("-")
             arch, opsystem = os_arch.rsplit("_", 1)
-            if version == latest_version:
-                major, minor, _ = version.split('.')
+            version = sversion # sversion = "split" version
+            if sversion == latest_version:
+                major, minor, _ = sversion.split('.')
                 version += ','+major+'.0.x' if minor==0 else ','+major+'.x'
+            if sversion in default_tarball_version:
+                version += ",default" 
             out += xml_snippet.format(arch=arch_map[arch], os=os_map[opsystem], dest_file=dest_file, version=version)
         return out
 
@@ -158,9 +161,11 @@ def check_xml(release):
 
 def save_xml(dest_xml, xml):
     with open(dest_xml, "w") as fd:
+        fd.write("<glidein>\n")
         fd.write("   <condor_tarballs>\n")
         fd.write(xml)
         fd.write("   </condor_tarballs>\n")
+        fd.write("</glidein>\n")
 
 
 def parse_opts():
@@ -181,6 +186,7 @@ def main():
     args = parse_opts()
     config = Config()
     release_url = config["TARBALL_BASE_URL"]
+    default_tarball_version = config["DEFAULT_TARBALL_VERSION"]
     xml = ""
     
     for major_dict in config["CONDOR_TARBALL_LIST"]:
@@ -198,7 +204,7 @@ def main():
             to_download = sorted(set(manager.releases) - set(major_dict["BLACKLIST"]), key=StrictVersion)
             for version in to_download:
                 manager.download_tarballs(version)
-        xml += manager.generate_xml(config["OS_MAP"], config["ARCH_MAP"], major_dict["WHITELIST"], major_dict["BLACKLIST"])
+        xml += manager.generate_xml(config["OS_MAP"], config["ARCH_MAP"], major_dict["WHITELIST"], major_dict["BLACKLIST"], default_tarball_version)
 
     if config.get("XML_OUT") is not None:
         try:
