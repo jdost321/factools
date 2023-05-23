@@ -121,7 +121,7 @@ class TarballManager(HTMLParser):
             version = sversion # sversion = "split" version
             if sversion == latest_version:
                 major, minor, _ = sversion.split('.')
-                version += ','+major+'.0.x' if minor==0 else ','+major+'.x'
+                version += ','+major+'.0.x' if minor=='0' else ','+major+'.x'
             if sversion in default_tarball_version:
                 version += ",default" 
             out += xml_snippet.format(arch=arch_map[arch], os=os_map[opsystem], dest_file=dest_file, version=version)
