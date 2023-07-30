@@ -14,6 +14,8 @@ updates=0
 if [ $(git rev-parse HEAD) != $(git ls-remote $(git rev-parse --abbrev-ref @{u} | sed 's/\// /g') | cut -f1) ]; then
   git pull || exit 1
   updates=1
+else
+  echo "no updates in $GFACTORY_REPO detected; checking osg ce collector..."
 fi
 
 # next check if osg ce collector changes trigger updates
@@ -42,6 +44,7 @@ EOF
 fi
 
 if [ $updates -eq 0 ];then
+  echo "no updates found; exiting"
   exit 0
 fi
 
