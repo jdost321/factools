@@ -49,5 +49,5 @@ if [ $updates -eq 0 ];then
 fi
 
 supervisorctl stop factory
-gwms-factory reconfig
+/usr/sbin/gwms-factory reconfig
 supervisorctl start factory
