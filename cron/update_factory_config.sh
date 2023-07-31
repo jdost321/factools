@@ -2,9 +2,14 @@
 
 # this script keeps k8s factory configs up to date and is intented to run as a cron job
 
+log() {
+  echo "$(date +'%F %T') $1"
+}
+
 GFACTORY_REPO=/etc/osg-gfactory
 AUTOCONF_DIR=/var/lib/gwms-factory/OSG_autoconf
 
+log "Update script started; checking $GFACTORY_REPO for updates..."
 cd $GFACTORY_REPO
 
 updates=0
@@ -14,8 +19,9 @@ updates=0
 if [ $(git rev-parse HEAD) != $(git ls-remote $(git rev-parse --abbrev-ref @{u} | sed 's/\// /g') | cut -f1) ]; then
   git pull || exit 1
   updates=1
+  log "Updates detected and pulled; checking osg ce collector..."
 else
-  echo "no updates in $GFACTORY_REPO detected; checking osg ce collector..."
+  log "No updates in $GFACTORY_REPO detected; checking osg ce collector..."
 fi
 
 # next check if osg ce collector changes trigger updates
@@ -35,16 +41,16 @@ OSG_WHITELISTS: # Operator's whitelist/override files
   - "${GFACTORY_REPO}/OSG_autoconf/10-hosted-ces.auto.yml"
 EOF
 
-  OSG_autoconf /tmp/autoconf_tmp.yaml --skip-broken
+  OSG_autoconf /tmp/autoconf_tmp.yaml --skip-broken > /dev/null
 
-  diff $GFACTORY_REPO/10-hosted-ces.auto.xml /tmp/10-hosted-ces.auto.xml
+  diff $GFACTORY_REPO/10-hosted-ces.auto.xml /tmp/10-hosted-ces.auto.xml > /dev/null
   if [ $? -ne 0 ];then
     updates=1
   fi
 fi
 
 if [ $updates -eq 0 ];then
-  echo "no updates found; exiting"
+  log "No updates found; exiting"
   exit 0
 fi
 
