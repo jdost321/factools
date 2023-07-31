@@ -54,7 +54,7 @@ if [ $updates -eq 0 ];then
   exit 0
 fi
 
-log "Updates found; stopping and reconfigufing factory"
+log "Updates found; stopping and reconfiguring factory"
 supervisorctl stop factory
 /usr/sbin/gwms-factory reconfig
 supervisorctl start factory
