@@ -1,14 +1,19 @@
 #DESTINATION_DIR: "/var/lib/gwms-factory/condor/" 
 DESTINATION_DIR: "/tmp" 
 TARBALL_BASE_URL: "https://research.cs.wisc.edu/htcondor/tarball/"
-DEFAULT_TARBALL_VERSION: [ "10.0.3" ]
+DEFAULT_TARBALL_VERSION: [ "9.0.16" ] # Can be set to "latest"
 CONDOR_TARBALL_LIST:
    - MAJOR_VERSION: "9.0"
-     WHITELIST: [ "9.0.7", "9.0.17" ]
+     WHITELIST: [ "9.0.7", "9.0.16", "latest" ]
    - MAJOR_VERSION: "10.0"
+     WHITELIST: [ "latest" ]
      CHECK_LATEST: True
    - MAJOR_VERSION: "10.x"
-     BLACKLIST: [ "10.3.0", "10.3.2" ]
+     DOWNLOAD_LATEST: True # Same as adding "latest" to a WHITELIST. Default False
+   - MAJOR_VERSION: "23.0"
+     WHITELIST: [ "23.0.0" ]
+   - MAJOR_VERSION: "23.x"
+     WHITELIST: [ "23.0.0" ]
 FILENAME_LIST: [ "condor-{version}-x86_64_CentOS7-stripped.tar.gz", "condor-{version}-x86_64_CentOS8-stripped.tar.gz", "condor-{version}-x86_64_AlmaLinux8-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu18-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu20-stripped.tar.gz", "condor-{version}-aarch64_Stream8-stripped.tar.gz", "condor-{version}-ppc64le_CentOS8-stripped.tar.gz", "condor-{version}-ppc64le_AlmaLinux8-stripped.tar.gz", "condor-{version}-aarch64_AlmaLinux8-stripped.tar.gz" ]
 OS_MAP: { "CentOS7":"default,rhel7,linux-rhel7", "CentOS8":"rhel8,linux-rhel8", "AlmaLinux8":"rhel8,linux-rhel8", "Ubuntu18":"ubuntu18,linux-ubuntu18", "Ubuntu20":"ubuntu20,linux-ubuntu20"}
 ARCH_MAP: { "x86_64":"default", "ppc64le":"ppc64le", "aarch64":"aarch64" }
@@ -17,4 +22,4 @@ XML_OUT: "/tmp/out.xml"
 # WHITELIST: download only those
 # BLACKLIST: do not download them
 # Blacklist is ignored if whitelist is specified
-# CHECK_LATEST: print a warning if latest version of the major series is not on the factor xml
+# CHECK_LATEST: print a warning if latest version of the major series is not on the factory xml

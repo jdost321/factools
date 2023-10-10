@@ -143,9 +143,12 @@ class Config(UserDict):
     def validate(self):
         for major_dict in self["CONDOR_TARBALL_LIST"]:
             if "WHITELIST" not in major_dict:
-               major_dict["WHITELIST"] = []
+                major_dict["WHITELIST"] = []
             if "BLACKLIST" not in major_dict:
-               major_dict["BLACKLIST"] = []
+                major_dict["BLACKLIST"] = []
+            if "latest" in major_dict["WHITELIST"]:
+                major_dict["WHITELIST"].remove("latest")
+                major_dict["DOWNLOAD_LATEST"] = True
             major_dict["WHITELIST"].sort(key=StrictVersion)
             major_dict["BLACKLIST"].sort(key=StrictVersion)
 
@@ -193,6 +196,10 @@ def main():
         print(f'Handling major version {major_dict["MAJOR_VERSION"]}')
         major_version = major_dict["MAJOR_VERSION"]
         manager = TarballManager(urljoin(release_url, major_version), config["FILENAME_LIST"], config["DESTINATION_DIR"], args.verbose)
+        # If necessary, add the latest version to the whitelist now that we know the latest version for this major set of releases
+        if major_dict.get("DOWNLOAD_LATEST", False):
+            major_dict["WHITELIST"].append(manager.latest_version)
+        # I think CHACK_LATEST can be deprecated now that we have DOWNLOAD_LATEST
         if major_dict.get("CHECK_LATEST", False) == True and not check_xml(manager.latest_version):
             print(f"Latest version {manager.latest_version} not present in the glideinWMS.xml file.")
         if major_dict["WHITELIST"] != []:
@@ -204,7 +211,8 @@ def main():
             to_download = sorted(set(manager.releases) - set(major_dict["BLACKLIST"]), key=StrictVersion)
             for version in to_download:
                 manager.download_tarballs(version)
-        xml += manager.generate_xml(config["OS_MAP"], config["ARCH_MAP"], major_dict["WHITELIST"], major_dict["BLACKLIST"], default_tarball_version)
+        xml += manager.generate_xml(config["OS_MAP"], config["ARCH_MAP"], major_dict["WHITELIST"], major_dict["BLACKLIST"],
+                                    manager.latest_version if default_tarball_version == "latest" else default_tarball_version)
 
     if config.get("XML_OUT") is not None:
         try:
