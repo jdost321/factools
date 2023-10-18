@@ -6,14 +6,16 @@ log() {
   echo "$(date +'%F %T') $1"
 }
 
+RUNUSER=/usr/sbin/runuser
+
 test_repo_changed() {
   user=$1
   shift
   repo=$1
   pushd $repo
-  local_hash=$(runuser -u $user -- git rev-parse HEAD)
-  args=$(runuser -u $user -- git rev-parse --abbrev-ref @{u} | sed 's/\// /g')
-  remote_hash=$(runuser -u $user -- git ls-remote $args | cut -f1)
+  local_hash=$($RUNUSER -u $user -- git rev-parse HEAD)
+  args=$($RUNUSER -u $user -- git rev-parse --abbrev-ref @{u} | sed 's/\// /g')
+  remote_hash=$($RUNUSER -u $user -- git ls-remote $args | cut -f1)
   popd
   [ $local_hash != $remote_hash ]
 }
@@ -29,7 +31,7 @@ updates=0
 #first check if repo has updates
 # taken from https://github.com/opensciencegrid/tiger-osg-config/blob/master/manifests/base/vo-frontend-ospool/ospool-frontend-setup.sh
 if test_repo_changed gfactory $GFACTORY_REPO; then
-  runuser -u gfactory -- git pull || exit 1
+  $RUNUSER -u gfactory -- git pull || exit 1
   updates=1
   log "Updates detected and pulled; checking osg ce collector..."
 else
