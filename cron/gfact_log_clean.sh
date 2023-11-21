@@ -4,10 +4,6 @@ age=${1:-60} # how many days to keep logs
 shift
 state_age=${1:-60} # how many days to keep state
 
-echo "$age; $state_age"
-
-exit
-
 dirs="/var/log/gwms-factory/client /var/log/gwms-factory/server"
 state_dir="/var/lib/gwms-factory/web-area/stage"
 
