@@ -11,4 +11,10 @@ for d in $dirs; do
   find $d -type f -mtime +${age} | xargs rm -f
 done
 
-find $state_dir -type f -mtime +${state_age} | xargs rm -f
+num_desc=$(ls ${state_dir}/description.* | wc -l)
+to_remove=$(find $state_dir -maxdepth 1 -name description.* -mtime +${age} | wc -l)
+
+# make sure we keep at least one reconfig around
+if [ $to_remove -lt $num_desc ];then
+  find $state_dir -type f -mtime +${state_age} | xargs rm -f
+fi
