@@ -1,25 +1,25 @@
-#DESTINATION_DIR: "/var/lib/gwms-factory/condor/" 
-DESTINATION_DIR: "/tmp" 
+DESTINATION_DIR: "/var/lib/gwms-factory/condor/" 
 TARBALL_BASE_URL: "https://research.cs.wisc.edu/htcondor/tarball/"
-DEFAULT_TARBALL_VERSION: [ "9.0.16" ] # Can be set to "latest"
+DEFAULT_TARBALL_VERSION: [ "10.0.2" ]
 CONDOR_TARBALL_LIST:
-   - MAJOR_VERSION: "9.0"
-     WHITELIST: [ "9.0.7", "9.0.16", "latest" ]
    - MAJOR_VERSION: "10.0"
-     WHITELIST: [ "latest" ]
-     CHECK_LATEST: True
+     WHITELIST: [ "10.0.2" ]
    - MAJOR_VERSION: "10.x"
-     DOWNLOAD_LATEST: True # Same as adding "latest" to a WHITELIST. Default False
+     WHITELIST: [ "latest" ]
    - MAJOR_VERSION: "23.0"
-     WHITELIST: [ "23.0.0" ]
+     WHITELIST: [ "latest" ]
    - MAJOR_VERSION: "23.x"
-     WHITELIST: [ "23.0.0" ]
-FILENAME_LIST: [ "condor-{version}-x86_64_CentOS7-stripped.tar.gz", "condor-{version}-x86_64_CentOS8-stripped.tar.gz", "condor-{version}-x86_64_AlmaLinux8-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu18-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu20-stripped.tar.gz", "condor-{version}-aarch64_Stream8-stripped.tar.gz", "condor-{version}-ppc64le_CentOS8-stripped.tar.gz", "condor-{version}-ppc64le_AlmaLinux8-stripped.tar.gz", "condor-{version}-aarch64_AlmaLinux8-stripped.tar.gz" ]
-OS_MAP: { "CentOS7":"default,rhel7,linux-rhel7", "CentOS8":"rhel8,linux-rhel8", "AlmaLinux8":"rhel8,linux-rhel8", "Ubuntu18":"ubuntu18,linux-ubuntu18", "Ubuntu20":"ubuntu20,linux-ubuntu20"}
+     WHITELIST: [ "23.3.1", "latest" ]
+FILENAME_LIST: [ "condor-{version}-x86_64_CentOS7-stripped.tar.gz", "condor-{version}-x86_64_AlmaLinux8-stripped.tar.gz", "condor-{version}-x86_64_AlmaLinux9-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu18-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu20-stripped.tar.gz", "condor-{version}-aarch64_Stream8-stripped.tar.gz", "condor-{version}-ppc64le_AlmaLinux8-stripped.tar.gz", "condor-{version}-aarch64_AlmaLinux8-stripped.tar.gz", "condor-{version}-x86_64_Debian11-stripped.tar.gz" ]
+OS_MAP: { "CentOS7":"rhel7,linux-rhel7", "AlmaLinux8":"default,rhel8,linux-rhel8", "AlmaLinux9":"rhel9,linux-rhel9", "Ubuntu18":"ubuntu18,linux-ubuntu18", "Ubuntu20":"ubuntu20,linux-ubuntu20", "Debian11":"debian11,linux-debian11"}
 ARCH_MAP: { "x86_64":"default", "ppc64le":"ppc64le", "aarch64":"aarch64" }
-XML_OUT: "/tmp/out.xml"
+XML_OUT: "/etc/gwms-factory/config.d/01-condor-tarballs.xml"
 # Not specifying anything download everything
 # WHITELIST: download only those
 # BLACKLIST: do not download them
 # Blacklist is ignored if whitelist is specified
-# CHECK_LATEST: print a warning if latest version of the major series is not on the factory xml
+# CHECK_LATEST: print a warning if latest version of the major series is not on the factor xml
+
+# To generate the tarballs do:
+#export GET_TARBALLS_CONFIG=/etc/osg-gfactory/get_tarball/get_tarballs.yaml
+#sudo -Eu gfactory get_tarballs --verbose
