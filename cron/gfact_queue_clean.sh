@@ -6,11 +6,7 @@ if [ -e $ft_env ];then
     . $ft_env
 fi
 
-if [ -n "$GLIDEIN_FACTORY_DIR" ];then
-  factory_dir=$GLIDEIN_FACTORY_DIR
-else
-  factory_dir=/var/lib/gwms-factory/work-dir
-fi
+conf=/etc/gwms-factory/glideinWMS.xml
 
 [ -e /etc/profile.d/condor.sh ] && . /etc/profile.d/condor.sh
 now=`date +%s`
@@ -21,9 +17,7 @@ if [ "$#" -ge 1 ];then
   age=$1
 fi
 
-pushd $factory_dir > /dev/null
-schedds=`head -n 1 glideinWMS.xml | sed 's/^.*schedd_name="\([^"]\+\)".*/\1/' | tr , ' '`
-popd > /dev/null
+schedds=`head -n 1 $conf | sed 's/^.*schedd_name="\([^"]\+\)".*/\1/' | tr , ' '`
 
 for schedd in $schedds;do
     condor_rm -name $schedd -const "qdate <= $((now - 3600*24*age))"
