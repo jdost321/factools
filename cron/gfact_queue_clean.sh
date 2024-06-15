@@ -6,7 +6,18 @@ if [ -e $ft_env ];then
     . $ft_env
 fi
 
-conf=/etc/gwms-factory/glideinWMS.xml
+# try k8s config location first
+conf=/etc/gwms-factory/config.d/01-glidein-instance.xml
+
+# if not found try top level gwms config
+if [ ! -e $conf ];then
+    conf=/etc/gwms-factory/glideinWMS.xml
+
+    if [ ! -e $conf ];then
+        echo "ERROR neither /etc/gwms-factory/config.d/01-glidein-instance.xml nor /etc/gwms-factory/glideinWMS.xml found; exiting" >&2
+        exit 1
+    fi
+fi
 
 [ -e /etc/profile.d/condor.sh ] && . /etc/profile.d/condor.sh
 now=`date +%s`
