@@ -1,6 +1,6 @@
 DESTINATION_DIR: "/var/lib/gwms-factory/condor/" 
 TARBALL_BASE_URL: "https://research.cs.wisc.edu/htcondor/tarball/"
-DEFAULT_TARBALL_VERSION: [ "10.0.2" ]
+DEFAULT_TARBALL_VERSION: [ "23.0.x" ]
 CONDOR_TARBALL_LIST:
    - MAJOR_VERSION: "10.0"
      WHITELIST: [ "10.0.2" ]
@@ -21,5 +21,5 @@ XML_OUT: "/etc/gwms-factory/config.d/01-condor-tarballs.xml"
 # CHECK_LATEST: print a warning if latest version of the major series is not on the factor xml
 
 # To generate the tarballs do:
-#export GET_TARBALLS_CONFIG=/etc/osg-gfactory/get_tarball/get_tarballs.yaml
+#export GET_TARBALLS_CONFIG=/opt/factools/hooks.reconfig.pre/get_tarballs.yaml
 #sudo -Eu gfactory get_tarballs --verbose
