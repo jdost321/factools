@@ -10,7 +10,18 @@ CONDOR_TARBALL_LIST:
      WHITELIST: [ "latest" ]
    - MAJOR_VERSION: "23.x"
      WHITELIST: [ "23.3.1", "latest" ]
-FILENAME_LIST: [ "condor-{version}-x86_64_CentOS7-stripped.tar.gz", "condor-{version}-x86_64_AlmaLinux8-stripped.tar.gz", "condor-{version}-x86_64_AlmaLinux9-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu18-stripped.tar.gz", "condor-{version}-x86_64_Ubuntu20-stripped.tar.gz", "condor-{version}-aarch64_Stream8-stripped.tar.gz", "condor-{version}-ppc64le_AlmaLinux8-stripped.tar.gz", "condor-{version}-aarch64_AlmaLinux8-stripped.tar.gz", "condor-{version}-x86_64_Debian11-stripped.tar.gz" ]
+FILENAME_LIST: [
+    "condor-{version}-x86_64_CentOS7-stripped.tar.gz",
+    "condor-{version}-x86_64_AlmaLinux8-stripped.tar.gz",
+    "condor-{version}-x86_64_AlmaLinux9-stripped.tar.gz",
+    "condor-{version}-x86_64_Ubuntu18-stripped.tar.gz",
+    "condor-{version}-x86_64_Ubuntu20-stripped.tar.gz",
+#    "condor-{version}-aarch64_Stream8-stripped.tar.gz",
+    "condor-{version}-ppc64le_AlmaLinux8-stripped.tar.gz",
+    "condor-{version}-aarch64_AlmaLinux8-stripped.tar.gz",
+    "condor-{version}-aarch64_AlmaLinux9-stripped.tar.gz",
+    "condor-{version}-x86_64_Debian11-stripped.tar.gz"
+]
 OS_MAP: { "CentOS7":"rhel7,linux-rhel7", "AlmaLinux8":"default,rhel8,linux-rhel8", "AlmaLinux9":"rhel9,linux-rhel9", "Ubuntu18":"ubuntu18,linux-ubuntu18", "Ubuntu20":"ubuntu20,linux-ubuntu20", "Debian11":"debian11,linux-debian11"}
 ARCH_MAP: { "x86_64":"default", "ppc64le":"ppc64le", "aarch64":"aarch64" }
 XML_OUT: "/etc/gwms-factory/config.d/01-condor-tarballs.xml"
