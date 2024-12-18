@@ -1,0 +1,50 @@
+#!/bin/bash
+
+for arg in "$@"; do
+  if [ "$arg" = "-h" ];then
+    echo "usage: gfdiff2 [-h] CONF_A CONF_B ENTRY_A [ENTRY_B]"
+    exit 0
+  fi
+done
+
+conf1=$1
+conf2=$2
+e_name1=$3
+
+if [ $# -ge 4 ];then
+  e_name2=$4
+else
+  e_name2=$3
+fi
+
+line_on=0
+entry1=""
+
+while IFS= read -r line;do
+  if [ $line_on = 0 ]; then
+    if echo $line | grep -q "entry name=\"${e_name1}\""; then
+      line_on=1
+      entry1=$line
+    fi
+  else
+    entry1=$(echo -e "${entry1}\n${line}")
+    echo $line | grep -q '</entry>' && break
+  fi
+done < $conf1
+
+line_on=0
+entry2=""
+
+while IFS= read -r line;do
+  if [ $line_on = 0 ]; then
+    if echo $line | grep -q "entry name=\"${e_name2}\""; then
+      line_on=1
+      entry2=$line
+    fi
+  else
+    entry2=$(echo -e "${entry2}\n${line}")
+    echo $line | grep -q '</entry>' && break
+  fi
+done < $conf2
+
+diff -u <(echo "$entry1") <(echo "$entry2")
