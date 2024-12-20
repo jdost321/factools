@@ -17,34 +17,22 @@ else
   e_name2=$3
 fi
 
-line_on=0
-entry1=""
-
-while IFS= read -r line;do
-  if [ $line_on = 0 ]; then
-    if echo $line | grep -q "entry name=\"${e_name1}\""; then
+# get_entry conf entry_name
+get_entry() {
+  awk "BEGIN{line_on=0}{
+    if (match(\$0, /entry name=\"${2}\"/)) {
       line_on=1
-      entry1=$line
-    fi
-  else
-    entry1=$(echo -e "${entry1}\n${line}")
-    echo $line | grep -q '</entry>' && break
-  fi
-done < $conf1
+    }
+    if (line_on) {
+      print \$0
+    }
+    if (line_on && match(\$0, /<\/entry>/)) {
+      exit
+    }
+  }" $1
+}
 
-line_on=0
-entry2=""
-
-while IFS= read -r line;do
-  if [ $line_on = 0 ]; then
-    if echo $line | grep -q "entry name=\"${e_name2}\""; then
-      line_on=1
-      entry2=$line
-    fi
-  else
-    entry2=$(echo -e "${entry2}\n${line}")
-    echo $line | grep -q '</entry>' && break
-  fi
-done < $conf2
+entry1=$(get_entry $conf1 $e_name1)
+entry2=$(get_entry $conf2 $e_name2)
 
 diff -u <(echo "$entry1") <(echo "$entry2")
