@@ -21,7 +21,6 @@ test_repo_changed() {
 }
 
 GFACTORY_REPO=/etc/osg-gfactory
-AUTOCONF_DIR=/var/lib/gwms-factory/OSG_autoconf
 
 log "Update script started; checking if factory is running..."
 
@@ -53,15 +52,19 @@ if test_repo_changed gfactory $GFACTORY_REPO; then
   updates=1
   log "Updates detected and pulled; checking osg ce collector..."
 else
-  log "No updates in $GFACTORY_REPO detected; checking osg ce collector..."
+  if [ -n "$1" ];then
+    log "No updates in $GFACTORY_REPO detected; checking osg ce collector..."
+  else
+    log "No updates in $GFACTORY_REPO detected"
+  fi
 fi
 
 # next check if osg ce collector changes trigger updates
-if [ $updates -eq 0 ];then
+if [ -n "$1" -a $updates -eq 0 ];then
   rm -f /tmp/missing.yml
   rm -f /tmp/OSG.yml
-  [ -e ${AUTOCONF_DIR}/missing.yml ] && cp ${AUTOCONF_DIR}/missing.yml /tmp/missing.yml
-  [ -e ${AUTOCONF_DIR}/OSG.yml ] && cp ${AUTOCONF_DIR}/OSG.yml /tmp/OSG.yml
+  [ -e "${1}/missing.yml" ] && cp "${1}/missing.yml" /tmp/missing.yml
+  [ -e "${1}/OSG.yml" ] && cp "${1}/OSG.yml" /tmp/OSG.yml
 
   cat > /tmp/autoconf_tmp.yaml <<EOF
 MISSING_YAML: "/tmp/missing.yml" # File used to put CEs that are in the whitelist, but disappear from the OSG collector
