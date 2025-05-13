@@ -23,7 +23,25 @@ test_repo_changed() {
 GFACTORY_REPO=/etc/osg-gfactory
 AUTOCONF_DIR=/var/lib/gwms-factory/OSG_autoconf
 
-log "Update script started; checking $GFACTORY_REPO for updates..."
+log "Update script started; checking if factory is running..."
+
+use_supervisor=1
+
+supervisorctl status factory
+res=$?
+
+if [ $res -ne 0 -a $res -ne 3 ];then
+  systemctl status gwms-factory
+  res=$?
+  use_supervisor=0
+fi
+
+if [ $res -ne 0 ];then
+  log "Factory does not appear running; exiting in case someone is making changes"
+  exit 0
+fi
+
+log "Checking $GFACTORY_REPO for updates..."
 cd $GFACTORY_REPO
 
 updates=0
@@ -70,16 +88,15 @@ fi
 
 log "Updates found; stopping and reconfiguring factory"
 
-use_supervisor=1
-supervisorctl stop factory
-if [ $? -ne 0 ];then
-  use_supervisor=0
+if [ $use_supervisor -eq 1 ];then
+  supervisorctl stop factory
+else
   systemctl stop gwms-factory
 fi
 
 /usr/sbin/gwms-factory reconfig
 
-if [ $use_supervisor -eq 1 ]; then
+if [ $use_supervisor -eq 1 ];then
   supervisorctl start factory
 else
   systemctl start gwms-factory
