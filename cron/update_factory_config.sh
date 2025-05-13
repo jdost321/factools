@@ -69,7 +69,20 @@ if [ $updates -eq 0 ];then
 fi
 
 log "Updates found; stopping and reconfiguring factory"
+
+use_supervisor=1
 supervisorctl stop factory
+if [ $? -ne 0 ];then
+  use_supervisor=0
+  systemctl stop gwms-factory
+fi
+
 /usr/sbin/gwms-factory reconfig
-supervisorctl start factory
+
+if [ $use_supervisor -eq 1 ]; then
+  supervisorctl start factory
+else
+  systemctl start gwms-factory
+fi
+
 log "Update completed; exiting"
