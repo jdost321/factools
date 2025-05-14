@@ -50,17 +50,14 @@ updates=0
 if test_repo_changed gfactory $GFACTORY_REPO; then
   $RUNUSER -u gfactory -- git pull || exit 1
   updates=1
-  log "Updates detected and pulled; checking osg ce collector..."
+  log "Updates detected and pulled"
 else
-  if [ -n "$1" ];then
-    log "No updates in $GFACTORY_REPO detected; checking osg ce collector..."
-  else
-    log "No updates in $GFACTORY_REPO detected"
-  fi
+  log "No updates in $GFACTORY_REPO detected"
 fi
 
 # next check if osg ce collector changes trigger updates
 if [ -n "$1" -a $updates -eq 0 ];then
+  log "Checking osg ce collecor..."
   rm -f /tmp/missing.yml
   rm -f /tmp/OSG.yml
   [ -e "${1}/missing.yml" ] && cp "${1}/missing.yml" /tmp/missing.yml
@@ -80,6 +77,16 @@ EOF
 
   diff $GFACTORY_REPO/10-hosted-ces.auto.xml /tmp/10-hosted-ces.auto.xml > /dev/null
   if [ $? -ne 0 ];then
+    updates=1
+  else
+    log "No updates in osg collector detected"
+  fi
+fi
+
+if [ $updates -eq 0 -a -x /etc/gwms-factory/hooks.reconfig.pre/get_tarballs ];then
+  log "Checking tarballs..."
+  /etc/gwms-factory/hooks.reconfig.pre/get_tarballs --checklatest
+  if [ $? -eq 4 ];then
     updates=1
   fi
 fi
