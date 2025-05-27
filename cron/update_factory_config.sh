@@ -104,7 +104,7 @@ else
   systemctl stop gwms-factory
 fi
 
-/usr/sbin/gwms-factory reconfig
+/usr/sbin/gwms-factory reconfig -force_delete
 
 if [ $use_supervisor -eq 1 ];then
   supervisorctl start factory
