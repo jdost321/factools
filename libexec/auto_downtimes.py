@@ -132,41 +132,23 @@ else:
 
 url = 'https://topology.opensciencegrid.org/rgdowntime/xml'
 
-dt_xml = urlopen(url)
-#dt_xml = open("down.xml")
+with urlopen(url) as dt_xml:
+  xmlparser = xml.parsers.expat.ParserCreate()
+  xmlparser.StartElementHandler = osg_start_element
+  xmlparser.EndElementHandler = osg_end_element
+  xmlparser.CharacterDataHandler = osg_char_data
 
-#for line in dt_xml:
-#  print line,
-
-#fout = open('osg_debug.xml','w')
-#for line in dt_xml:
-#  fout.write(line)
-
-#fout.close()
-#dt_xml.seek(0)
-
-xmlparser = xml.parsers.expat.ParserCreate()
-xmlparser.StartElementHandler = osg_start_element
-xmlparser.EndElementHandler = osg_end_element
-xmlparser.CharacterDataHandler = osg_char_data
-
-xmlparser.ParseFile(dt_xml)
-
-dt_xml.close()
+  xmlparser.ParseFile(dt_xml)
 
 egi_url = 'https://goc.egi.eu/gocdbpi/public/?method=get_downtime&ongoing_only=yes'
 
-#dt_xml = open("egi_down.xml")
-dt_xml = urlopen(egi_url, context=ssl._create_unverified_context())
+with urlopen(egi_url, context=ssl._create_unverified_context()) as dt_xml:
+  xmlparser = xml.parsers.expat.ParserCreate()
+  xmlparser.StartElementHandler = egi_start_element
+  xmlparser.EndElementHandler = egi_end_element
+  xmlparser.CharacterDataHandler = egi_char_data
 
-xmlparser = xml.parsers.expat.ParserCreate()
-xmlparser.StartElementHandler = egi_start_element
-xmlparser.EndElementHandler = egi_end_element
-xmlparser.CharacterDataHandler = egi_char_data
-
-xmlparser.ParseFile(dt_xml)
-
-dt_xml.close()
+  xmlparser.ParseFile(dt_xml)
 
 conf_path = "/etc/gwms-factory/glideinWMS.xml"
 conf = factoryXmlConfig.parse(conf_path)
@@ -184,39 +166,34 @@ for entry in conf.get_child_list('entries'):
       #for dt in downtimes[hostname]:
       #  print "%s %s %s All All # _ad_ %s" % (get_dt_format(dt['start']), get_dt_format(dt['end']), attrs['name'], ";".join(dt['desc'].split('\n')))
 
-dt_file = open(os.path.join(gfactory_dir, "glideinWMS.downtimes"))
 manual_dts = []
+with open(os.path.join(gfactory_dir, "glideinWMS.downtimes")) as dt_file:
+  for line in dt_file:
+    lines = line.split("#")
 
-for line in dt_file:
-  lines = line.split("#")
+    # _force_ means don't consider for auto downtime at all
+    # include in list of manual downtimes, and remove from aggregated list
+    if '_force_' in lines[1]:
+      manual_dts.append(line)
+      entry = lines[0].split()[2]
+      if entry in entry_downtimes:
+        del entry_downtimes[entry]
 
-  # _force_ means don't consider for auto downtime at all
-  # include in list of manual downtimes, and remove from aggregated list
-  if '_force_' in lines[1]:
-    manual_dts.append(line)
-    entry = lines[0].split()[2]
-    if entry in entry_downtimes:
-      del entry_downtimes[entry]
+    elif '_ad_' not in lines[1]:
+      manual_dts.append(line)
 
-  elif '_ad_' not in lines[1]:
-    manual_dts.append(line)
+with open(os.path.join(gfactory_dir, "glideinWMS.downtimes.tmp"), 'w') as new_dt_file:
+  for entry in sorted(entry_downtimes):
+    for dt in entry_downtimes[entry]:
+      new_dt_file.write("%s %s %s All All # _ad_ " % (get_dt_format(dt['start']), get_dt_format(dt['end']), entry))
+      desc_str = ";".join(dt['desc'].split('\n'))
+      try:
+        new_dt_file.write("%s\n" % desc_str)
+      except UnicodeEncodeError as ue:
+        print("Unicode not allowed; skipping description for %s: %s" % (entry, ue))
+        new_dt_file.write("\n")
 
-dt_file.close()
-
-new_dt_file = open(os.path.join(gfactory_dir, "glideinWMS.downtimes.tmp"), 'w')
-for entry in sorted(entry_downtimes):
-  for dt in entry_downtimes[entry]:
-    new_dt_file.write("%s %s %s All All # _ad_ " % (get_dt_format(dt['start']), get_dt_format(dt['end']), entry))
-    desc_str = ";".join(dt['desc'].split('\n'))
-    try:
-      new_dt_file.write("%s\n" % desc_str)
-    except UnicodeEncodeError as ue:
-      print("Unicode not allowed; skipping description for %s: %s" % (entry, ue))
-      new_dt_file.write("\n")
-
-for dt in manual_dts:
-  new_dt_file.write(dt)
-
-new_dt_file.close()
+  for dt in manual_dts:
+    new_dt_file.write(dt)
 
 os.rename(os.path.join(gfactory_dir, "glideinWMS.downtimes.tmp"), os.path.join(gfactory_dir, "glideinWMS.downtimes"))
