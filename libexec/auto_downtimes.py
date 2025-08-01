@@ -167,6 +167,16 @@ for entry in conf.get_child_list('entries'):
       #  print "%s %s %s All All # _ad_ %s" % (get_dt_format(dt['start']), get_dt_format(dt['end']), attrs['name'], ";".join(dt['desc'].split('\n')))
 
 manual_dts = []
+
+# test if dt file exists and if not create it first
+try:
+  with open(os.path.join(gfactory_dir, "glideinWMS.downtimes")) as dt_file:
+    pass
+except FileNotFoundError:
+  with open(os.path.join(gfactory_dir, "glideinWMS.downtimes"), 'w') as dt_file:
+    dt_file.write("#Start                         End                            Entry" \
+      "                             Frontend                       Sec_Class            # Comment\n")
+
 with open(os.path.join(gfactory_dir, "glideinWMS.downtimes")) as dt_file:
   for line in dt_file:
     lines = line.split("#")
