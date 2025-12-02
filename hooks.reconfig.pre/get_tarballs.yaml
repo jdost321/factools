@@ -1,6 +1,6 @@
 DESTINATION_DIR: "/var/lib/gwms-factory/condor/" 
 TARBALL_BASE_URL: "https://research.cs.wisc.edu/htcondor/tarball/"
-DEFAULT_TARBALL_VERSION: [ "23.0.19" ]
+DEFAULT_TARBALL_VERSION: [ "24.0.14" ]
 CONDOR_TARBALL_LIST:
    - MAJOR_VERSION: "10.0"
      WHITELIST: [ "10.0.2" ]
@@ -11,7 +11,7 @@ CONDOR_TARBALL_LIST:
    - MAJOR_VERSION: "23.x"
      WHITELIST: [ "23.3.1", "latest" ]
    - MAJOR_VERSION: "24.0"
-     WHITELIST: [ "latest" ]
+     WHITELIST: [ "24.0.14", "latest" ]
    - MAJOR_VERSION: "24.x"
      WHITELIST: [ "latest" ]
 FILENAME_LIST: [
