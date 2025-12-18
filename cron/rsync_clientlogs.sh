@@ -12,6 +12,8 @@ if [ -e $pidfile ]; then
 fi
 echo $$ >$pidfile
 
+extra_args=""
+
 while read line; do
   if [ -n "$line" ] && ! echo "$line" | grep -q '^#'; then
     set -- $line
@@ -21,8 +23,13 @@ while read line; do
     shift
     dest=$1
     shift
+    if [ $# -gt 0 ]; then
+      if [ $1 = "--delete" ]; then
+        extra_args=$1
+      fi
+    fi
 
-    timeout 1h /usr/bin/rsync -e "ssh -o StrictHostKeyChecking=no -i /home/${user}/.ssh/id_rsa" --timeout 2700 --include "/entry_*/" --include "/entry_*/job.*.out" --include "/entry_*/job.*.err" --exclude "*" --min-size 1 -axv --chmod=+r $src $dest >/tmp/rsync_${user}.log 2>&1
+    timeout 1h /usr/bin/rsync -e "ssh -o StrictHostKeyChecking=no -i /home/${user}/.ssh/id_rsa" --timeout 2700 --include "/entry_*/" --include "/entry_*/job.*.out" --include "/entry_*/job.*.err" --exclude "*" --min-size 1 -axv --chmod=+r $extra_args $src $dest >/tmp/rsync_${user}.log 2>&1"
   fi
 done < $conf
 
