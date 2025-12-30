@@ -29,7 +29,7 @@ while read line; do
       fi
     fi
 
-    timeout 1h /usr/bin/rsync -e "ssh -o StrictHostKeyChecking=no -i /home/${user}/.ssh/id_rsa" --timeout 2700 --include "/entry_*/" --include "/entry_*/job.*.out" --include "/entry_*/job.*.err" --exclude "*" --min-size 1 -axv --chmod=+r $extra_args $src $dest >/tmp/rsync_${user}.log 2>&1"
+    timeout 1h /usr/bin/rsync -e "ssh -o StrictHostKeyChecking=no -i /home/${user}/.ssh/id_rsa" --timeout 2700 --include "/entry_*/" --include "/entry_*/job.*.out" --include "/entry_*/job.*.err" --exclude "*" --min-size 1 -axv --chmod=+r $extra_args $src $dest >/tmp/rsync_${user}.log 2>&1
   fi
 done < $conf
 
